@@ -5,40 +5,16 @@ import org.andengine.engine.options.EngineOptions;
 import org.andengine.engine.options.ScreenOrientation;
 import org.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
 import org.andengine.entity.scene.Scene;
-import org.andengine.ui.activity.SimpleLayoutGameActivity;
 
 /**
  * {@link BaseGameActivity}のサブクラスであり、XMLLayoutを利用してActivityを生成するクラス.
  * 逆にXMLLayoutを使わずにゲームを描画する際は、{@link SimpleBaseGameActivity}を利用する。
  * Layoutにしておくと後から広告を入れたり一部をWebViewにしたり簡単にできる。
  * 
- * 以下、ライフサイクル。
- * 
- * onCreate
- * onResume
- * onSurfaceCreated
- * onCreateGame
- * 
- * onCreateResources
- * onCreateScene
- * 
- * onPopulateScene
- * onGameCreated
- * onSurfaceChanged
- * onResumeGame
- * 
- * - Activity実行中 -
- * 
- * onPause
- * onPauseGame
- * onDestroy
- * onDestroyResources
- * onGameDestroyed
- * 
  * @author kyokomi
  *
  */
-public class MainActivity extends SimpleLayoutGameActivity {
+public class MainActivity extends MultiSceneActivity {
 
 	// 画面サイズ
 	private int CAMERA_WIDTH = 480;
@@ -60,14 +36,6 @@ public class MainActivity extends SimpleLayoutGameActivity {
 				camera);
 		
 		return eo;
-	}
-
-	/**
-	 * リソース類管理クラスを準備.
-	 */
-	@Override
-	protected void onCreateResources() {
-
 	}
 
 	/**
@@ -94,5 +62,20 @@ public class MainActivity extends SimpleLayoutGameActivity {
 	@Override
 	protected int getRenderSurfaceViewID() {
 		return R.id.renderview;
+	}
+
+	@Override
+	public void appendScene(KeyListenScene scene) {
+		
+	}
+
+	@Override
+	public void backToInitial() {
+		
+	}
+
+	@Override
+	public void refreshRunningScene(KeyListenScene scene) {
+		
 	}
 }

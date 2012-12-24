@@ -1,16 +1,6 @@
 package com.kyokomi.gamebase;
 
-import javax.microedition.khronos.opengles.GL10;
-
-import org.andengine.entity.scene.Scene;
-import org.andengine.entity.sprite.Sprite;
-import org.andengine.opengl.texture.TextureOptions;
-import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
-import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
-import org.andengine.opengl.texture.region.ITextureRegion;
-import org.andengine.ui.activity.BaseGameActivity;
-
-import com.kyokomi.gamebase.utils.ResourceUtil;
+import android.view.KeyEvent;
 
 /**
  * 全画面を描画範囲として持つクラス.
@@ -24,21 +14,14 @@ import com.kyokomi.gamebase.utils.ResourceUtil;
  * @author kyokomi
  *
  */
-public class MainScene extends Scene {
+public class MainScene extends KeyListenScene {
 
 	/**
-	 * Sceneを管理するActivityのインスタンスを保持.
-	 * アプリの場合のContextと同じように利用できる。
-	 */
-	private BaseGameActivity mBaseGameActivity;
-	private ResourceUtil mResourceUtil;
-	
-	/**
 	 * コンストラクタ.
-	 * @param baseGameActivity Sceneを管理するActivity
+	 * @param baseActivity Sceneを管理するActivity
 	 */
-	public MainScene(BaseGameActivity baseGameActivity) {
-		this.mBaseGameActivity = baseGameActivity;
+	public MainScene(MultiSceneActivity baseActivity) {
+		super(baseActivity);
 		init();
 	}
 	
@@ -46,8 +29,16 @@ public class MainScene extends Scene {
 	 * イニシャライズ.
 	 */
 	public void init() {
-		mResourceUtil = ResourceUtil.getInstance(mBaseGameActivity);
-		// 背景画像配置
-		attachChild(mResourceUtil.getSprite("main_bg.png"));
+		attachChild(getBaseActivity().getResourceUtil().getSprite("main_bg.png"));
+	}
+
+	@Override
+	public void prepareSoundAndMusic() {
+		
+	}
+
+	@Override
+	public boolean dispatchKeyEvent(KeyEvent e) {
+		return false;
 	}
 }
