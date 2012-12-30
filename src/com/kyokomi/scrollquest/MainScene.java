@@ -1,5 +1,7 @@
 package com.kyokomi.scrollquest;
 
+import java.util.ArrayList;
+
 import org.andengine.engine.handler.timer.ITimerCallback;
 import org.andengine.engine.handler.timer.TimerHandler;
 import org.andengine.entity.scene.IOnSceneTouchListener;
@@ -24,6 +26,14 @@ import android.view.KeyEvent;
  */
 public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 
+	// ----------------------------------------
+	// 障害物用TAG定数
+	// ----------------------------------------
+	private static final int TAG_OBSTACLE_TRAP  = 1;
+	private static final int TAG_OBSTACLE_FIRE  = 2;
+	private static final int TAG_OBSTACLE_ENEMY = 3;
+	private static final int TAG_OBSTACLE_EAGLE = 4;
+	
 	// ----------------------------------------
 	// オブジェクト
 	// ----------------------------------------
@@ -66,8 +76,12 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 	/** スライディング中フラグ. */
 	private boolean isSlideing;
 	
+	
 	/** ドラッグ開始座標. */
 	private float[] touchStartPoint;
+	
+	/** 画面外に移動した障害物を除去する為に利用する配列. */
+	private ArrayList<Sprite> spriteOutOfBoundArray;
 	
 	// -------------------------------------------------------
 	/**
@@ -88,6 +102,7 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 		attachChild(background);
 		
 		// --------- 設定、初期化 -----------
+		spriteOutOfBoundArray = new ArrayList<Sprite>();
 		touchStartPoint = new float[2];
 		isTouchEnabled = true;
 		isJumping      = false;
@@ -139,9 +154,11 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 		playerAttack.setAlpha(0.0f);
 		attachChild(playerAttack);
 		
+		
 		// 1秒間に60回、updateHandlerを呼び出す
 		registerUpdateHandler(updateHandler);
-		
+		// 1秒毎に障害物出現関数を呼び出し
+		registerUpdateHandler(obstacleAppearHandler);
 		// Sceneのタッチリスナーを登録
 		setOnSceneTouchListener(this);
 	}
@@ -184,6 +201,77 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 				// 草の右側が画面左端より左に移動した場合は、画面幅＊２分だけ右へ移動
 				grass02.setX(grass02.getX() + (getWindowWidth() * 2));
 			}
+			
+			// 障害物を移動
+			for (int i = 0; i < getChildCount(); i++) {
+				if (getChildByIndex(i).getTag() == TAG_OBSTACLE_TRAP 
+						|| getChildByIndex(i).getTag() == TAG_OBSTACLE_FIRE
+						|| getChildByIndex(i).getTag() == TAG_OBSTACLE_ENEMY
+						|| getChildByIndex(i).getTag() == TAG_OBSTACLE_EAGLE) {
+					
+					// 鷹のみ上空から滑空させる
+					if (getChildByIndex(i).getTag() == TAG_OBSTACLE_EAGLE) {
+						if (getChildByIndex(i).getX() < 300) {
+							getChildByIndex(i).setY(getChildByIndex(i).getY() + 10);
+						}
+					}
+					getChildByIndex(i).setPosition(
+							getChildByIndex(i).getX() - scrollSpeed,
+							getChildByIndex(i).getY());
+					if (getChildByIndex(i).getX() + ((Sprite) getChildByIndex(i)).getWidth() < 0) {
+						// すぐに削除するとインデックスがずれるため一旦配列に追加
+						spriteOutOfBoundArray.add((Sprite) getChildByIndex(i));
+					}
+				}
+			}
+			// 配列の中身を削除
+			for (Sprite sp : spriteOutOfBoundArray) {
+				sp.detachSelf();
+			}
+		}
+	});
+	
+	public TimerHandler obstacleAppearHandler = new TimerHandler(1, true, new ITimerCallback() {
+		@Override
+		public void onTimePassed(TimerHandler pTimerHandler) {
+			Sprite obstacle = null;
+			AnimatedSprite animatedObstacle = null;
+			// 敵の種類をランダムに選択
+			int r = (int) (Math.random() * 4);
+			switch (r) {
+			case 0:
+				// 竹でできた罠
+				obstacle = getResourceSprite("main_trap.png");
+				obstacle.setPosition(getWindowWidth() + obstacle.getWidth(), 380);
+				obstacle.setTag(TAG_OBSTACLE_TRAP);
+				attachChild(obstacle);
+				break;
+			case 1:
+				// 火の玉
+				obstacle = getResourceSprite("main_fire.png");
+				obstacle.setPosition(getWindowWidth() + obstacle.getWidth(), 260);
+				obstacle.setTag(TAG_OBSTACLE_FIRE);
+				attachChild(obstacle);
+				break;
+			case 2:
+				// 敵
+				animatedObstacle = getResourceAnimatedSprite("main_enemy.png", 1, 2);
+				animatedObstacle.setPosition(getWindowWidth() + animatedObstacle.getWidth(), 325);
+				animatedObstacle.setTag(TAG_OBSTACLE_ENEMY);
+				attachChild(animatedObstacle);
+				animatedObstacle.animate(100);
+			case 3:
+				// 鷹
+				animatedObstacle = getResourceAnimatedSprite("main_eagle.png", 1, 2);
+				animatedObstacle.setPosition(getWindowWidth() + animatedObstacle.getWidth(), 30);
+				animatedObstacle.setTag(TAG_OBSTACLE_EAGLE);
+				attachChild(animatedObstacle);
+				animatedObstacle.animate(200);
+				break;
+			default:
+				break;
+			}
+			sortChildren();
 		}
 	});
 	
