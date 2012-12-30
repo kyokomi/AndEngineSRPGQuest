@@ -8,6 +8,7 @@ import org.andengine.entity.sprite.AnimatedSprite;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.input.touch.TouchEvent;
 
+import android.util.Log;
 import android.view.KeyEvent;
 
 /**
@@ -27,10 +28,17 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 	// ----------------------------------------
 	// オブジェクト
 	// ----------------------------------------
+	/** 背景. */
+	private Sprite background;
 	/** 草1. */
 	private Sprite grass01;
 	/** 草2. */
 	private Sprite grass02;
+	
+	/** 武器（アイコンセット）. */
+	private AnimatedSprite weapon;
+	/** 攻撃エフェクト. */
+	private AnimatedSprite attackEffect;
 	
 	/** プレイヤーキャラクター. */
 	private AnimatedSprite player;
@@ -50,6 +58,15 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 	// ----------------------------------------
 	/** タッチ可否. */
 	private boolean isTouchEnabled;
+	
+	// ---- ユーザーアクション ----
+	/** 攻撃中フラグ. */
+	private boolean isAttacking;
+	/** ジャンプ中フラグ. */
+	private boolean isJumping;
+	/** スライディング中フラグ. */
+	private boolean isSlideing;
+	
 	/** ドラッグ開始座標. */
 	private float[] touchStartPoint;
 	
@@ -67,11 +84,16 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 	 * イニシャライズ.
 	 */
 	public void init() {
-		attachChild(getResourceSprite("main_bg.png"));
+		background = getResourceSprite("main_bg.png");
+		background.setZIndex(-1);
+		attachChild(background);
 		
 		// --------- 設定、初期化 -----------
 		touchStartPoint = new float[2];
 		isTouchEnabled = true;
+		isJumping      = false;
+		isAttacking    = false;
+		isSlideing     = false;
 		
 		// スクロール速度の初期値を設定
 		scrollSpeed = 6;
@@ -87,6 +109,18 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 		grass02 = getResourceSprite("main_grass.png");
 		grass02.setPosition(getBaseActivity().getEngine().getCamera().getWidth(), 420);
 		attachChild(grass02);
+		
+		// アイコンオブジェクトを追加（プレイヤーの下に表示）
+		weapon = getResourceAnimatedSprite("icon_set.png", 16, 48);
+		weapon.setScale(2f);
+		weapon.setAlpha(0.0f);
+		attachChild(weapon);
+		
+		// エフェクトオブジェクトを追加（武器の上に表示）
+		attackEffect = getResourceAnimatedSprite("effect002_b2.png", 5, 1);
+		attackEffect.setAlpha(0.0f);
+		attackEffect.setScale(0.5f);
+		attachChild(attackEffect);
 		
 		// playerキャラを追加
 		player = getResourceAnimatedSprite("actor110_0_s.png", 3, 4);
@@ -163,18 +197,34 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 	 */
 	@Override
 	public boolean onSceneTouchEvent(Scene pScene, TouchEvent pSceneTouchEvent) {
-		if (!isTouchEnabled) {
-			return true;
-		}
 		
 		// タッチの座標を取得
 		float x = pSceneTouchEvent.getX();
 		float y = pSceneTouchEvent.getY();
 		
 		if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
+			
+			// 攻撃判定(画面中心より右側の場合)
+			if (x > getWindowWidth() / 2) {
+				// スライディング中でなく、攻撃中でもなければ攻撃
+				if (!isSlideing && !isAttacking && !isJumping) {
+					// 攻撃
+					attackSprite();
+				}
+				return true;
+			}
+		}
+		
+		if (!isTouchEnabled) {
+			return true;
+		}
+	
+		if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
+			
 			// 開始点を登録
 			touchStartPoint[0] = x;
 			touchStartPoint[1] = y;
+			
 		} else if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_UP 
 				|| pSceneTouchEvent.getAction() == TouchEvent.ACTION_CANCEL) {
 			float[] touchEndPoint = new float[2];
@@ -205,12 +255,38 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 	// プレイヤー関連メソッド
 	// --------------------------------------------------
 	
+	public void attackSprite() {
+		// 攻撃の連射を防ぐ
+		isAttacking = true;
+		
+		// プレイヤーの歩行を停止
+		player.stopAnimation();
+		player.setAlpha(0.0f);
+		// 攻撃
+		setPlayerToAttackPosition();
+		// 武器とエフェクト
+		setWeaponPosition();
+		
+		// ジャンプ終了時ハンドラー設定
+		registerUpdateHandler(new TimerHandler(0.5f, new ITimerCallback() {
+			@Override
+			public void onTimePassed(TimerHandler pTimerHandler) {
+				// 元に戻す
+				playerAttack.setAlpha(0.0f);
+				attackEffect.setAlpha(0.0f);
+				weapon.setAlpha(0.0f);
+				setPlayerToDefaultPosition();
+				isAttacking = false;
+			}
+		}));
+	}
 	/**
 	 * プレイヤージャンプ.
 	 */
 	public void jumpSprite() {
 		// ジャンプ中はタップを受け付けない
 		isTouchEnabled = false;
+		isJumping = true;
 		
 		// プレイヤーの歩行を停止
 		player.stopAnimation();
@@ -225,6 +301,7 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 				playerDefense.setAlpha(0.0f);
 				setPlayerToDefaultPosition();
 				isTouchEnabled = true;
+				isJumping = false;
 			}
 		}));
 	}
@@ -235,6 +312,7 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 	public void slideSprite() {
 		// スライディング中はタップを受け付けない
 		isTouchEnabled = false;
+		isSlideing = true;
 		
 		// プレイヤーの歩行を停止
 		player.stopAnimation();
@@ -249,6 +327,7 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 				playerDefense.setAlpha(0.0f);
 				setPlayerToDefaultPosition();
 				isTouchEnabled = true;
+				isSlideing = false;
 			}
 		}));
 	}
@@ -257,12 +336,72 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 	 * プレイヤーデフォルトポジション設定.
 	 */
 	public void setPlayerToDefaultPosition() {
-		player.setAlpha(1.0f);
 		player.animate(
 				new long[]{100, 100, 100}, 
 				new int[]{6, 7, 8}, 
 				true);
 		player.setPosition(80, 400);// 325
+		player.setAlpha(1.0f);
+	}
+	
+	/**
+	 * 武器ポジション設定.
+	 */
+	public void setWeaponPosition() {
+		
+		weapon.setCurrentTileIndex(16 * 16 + 5);
+		weapon.setZIndex(playerAttack.getZIndex() + 1);
+		sortChildren();// Z-indexを反映
+		
+		weapon.setRotation(340f);
+		weapon.setPosition(playerAttack.getX() - 25, playerAttack.getY() + 10);
+		weapon.setAlpha(1.0f);
+		
+		// 武器
+		registerUpdateHandler(new TimerHandler(0.3f, new ITimerCallback() {
+			@Override
+			public void onTimePassed(TimerHandler pTimerHandler) {
+				float time = pTimerHandler.getTimerSeconds();
+				Log.d("Timer", "TimerSeconds = " + time);
+				
+				weapon.setZIndex(playerAttack.getZIndex() - 1);
+				sortChildren();// Z-indexを反映
+				
+				weapon.setRotation(100f);
+				weapon.setPosition(playerAttack.getX() + 50, playerAttack.getY() - 10);
+			}
+		}));
+		
+		// エフェクト
+		registerUpdateHandler(new TimerHandler(0.2f, new ITimerCallback() {
+			@Override
+			public void onTimePassed(TimerHandler pTimerHandler) {
+				attackEffect.animate(
+						new long[]{100, 100, 100}, 
+						new int[]{4, 3, 2}, 
+						false);
+				attackEffect.setPosition(playerAttack.getX(), playerAttack.getY() - 70);
+				attackEffect.setAlpha(1.0f);
+			}
+		}));
+	}
+	
+	/**
+	 * プレイヤー攻撃ポジション設定.
+	 */
+	public void setPlayerToAttackPosition() {
+		playerAttack.animate(
+				new long[]{100, 100, 100}, 
+				new int[]{8, 7, 6}, 
+				false);
+		playerAttack.setPosition(player.getX(), player.getY());
+		playerAttack.setAlpha(1.0f);
+//		registerUpdateHandler(new TimerHandler(0.2f, new ITimerCallback() {
+//			@Override
+//			public void onTimePassed(TimerHandler pTimerHandler) {
+//
+//			}
+//		}));
 	}
 	
 	/**
