@@ -39,6 +39,16 @@ public class MainScene extends KeyListenScene {
 
 	@Override
 	public boolean dispatchKeyEvent(KeyEvent e) {
+		// バックボタンが押された時
+		if (e.getAction() == KeyEvent.ACTION_DOWN && e.getKeyCode() == KeyEvent.KEYCODE_BACK) {
+			
+			return false;
+			
+		// メニューキーを押した時
+		} else if (e.getAction() == KeyEvent.ACTION_DOWN && e.getKeyCode() == KeyEvent.KEYCODE_MENU) {
+			
+			return false;
+		}
 		return false;
 	}
 }

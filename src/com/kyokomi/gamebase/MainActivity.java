@@ -6,6 +6,11 @@ import org.andengine.engine.options.ScreenOrientation;
 import org.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
 import org.andengine.entity.scene.Scene;
 
+import com.kyokomi.gamebase.utils.ResourceUtil;
+
+import android.view.KeyEvent;
+
+
 /**
  * {@link BaseGameActivity}のサブクラスであり、XMLLayoutを利用してActivityを生成するクラス.
  * 逆にXMLLayoutを使わずにゲームを描画する際は、{@link SimpleBaseGameActivity}を利用する。
@@ -77,5 +82,30 @@ public class MainActivity extends MultiSceneActivity {
 	@Override
 	public void refreshRunningScene(KeyListenScene scene) {
 		
+	}
+	
+	@Override
+	public boolean dispatchKeyEvent(KeyEvent e) {
+		// バックボタンが押された時
+		if (e.getAction() == KeyEvent.ACTION_DOWN && e.getKeyCode() == KeyEvent.KEYCODE_BACK) {
+
+			// 起動中のSceneのdispatchEvent関数を呼び出す
+			// 追加の処理が必要なときは、falseがかえってくるため処理する
+			if (!getSceneArray().get(getSceneArray().size() - 1).dispatchKeyEvent(e)) {
+				// Sceneが1つしか起動していないときはゲーム終了
+				if (getSceneArray().size() == 1) {
+					ResourceUtil.getInstance(this).resetAllTexture();
+					finish();
+				} else {
+					getEngine().setScene(getSceneArray().get(getSceneArray().size() - 2));
+					getSceneArray().remove(getSceneArray().size() - 1);
+				}
+			}
+			return true;
+		} else if (e.getAction() == KeyEvent.ACTION_DOWN && e.getKeyCode() == KeyEvent.KEYCODE_MENU) {
+			getSceneArray().get(getSceneArray().size() - 1).dispatchKeyEvent(e);
+			return true;
+		}
+		return false;
 	}
 }
