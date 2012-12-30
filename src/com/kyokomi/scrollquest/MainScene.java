@@ -8,7 +8,6 @@ import org.andengine.entity.sprite.AnimatedSprite;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.input.touch.TouchEvent;
 
-import android.util.Log;
 import android.view.KeyEvent;
 
 /**
@@ -363,9 +362,6 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 		registerUpdateHandler(new TimerHandler(0.3f, new ITimerCallback() {
 			@Override
 			public void onTimePassed(TimerHandler pTimerHandler) {
-				float time = pTimerHandler.getTimerSeconds();
-				Log.d("Timer", "TimerSeconds = " + time);
-				
 				weapon.setZIndex(playerAttack.getZIndex() - 1);
 				sortChildren();// Z-indexを反映
 				
