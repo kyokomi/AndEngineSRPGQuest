@@ -258,6 +258,7 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 	public void attackSprite() {
 		// 攻撃の連射を防ぐ
 		isAttacking = true;
+		isTouchEnabled = false;
 		
 		// プレイヤーの歩行を停止
 		player.stopAnimation();
@@ -277,6 +278,7 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 				weapon.setAlpha(0.0f);
 				setPlayerToDefaultPosition();
 				isAttacking = false;
+				isTouchEnabled = true;
 			}
 		}));
 	}
@@ -396,12 +398,6 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 				false);
 		playerAttack.setPosition(player.getX(), player.getY());
 		playerAttack.setAlpha(1.0f);
-//		registerUpdateHandler(new TimerHandler(0.2f, new ITimerCallback() {
-//			@Override
-//			public void onTimePassed(TimerHandler pTimerHandler) {
-//
-//			}
-//		}));
 	}
 	
 	/**
