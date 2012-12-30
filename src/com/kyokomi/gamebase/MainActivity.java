@@ -7,6 +7,7 @@ import org.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
 import org.andengine.entity.scene.Scene;
 
 import com.kyokomi.gamebase.utils.ResourceUtil;
+import com.kyokomi.scrollquest.R;
 
 import android.view.KeyEvent;
 

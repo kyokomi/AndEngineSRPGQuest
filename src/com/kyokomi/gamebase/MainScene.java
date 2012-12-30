@@ -1,6 +1,7 @@
 package com.kyokomi.gamebase;
 
 import android.view.KeyEvent;
+import com.kyokomi.scrollquest.R;
 
 /**
  * 全画面を描画範囲として持つクラス.
