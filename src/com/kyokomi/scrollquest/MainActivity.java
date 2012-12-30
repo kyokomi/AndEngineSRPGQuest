@@ -1,4 +1,4 @@
-package com.kyokomi.gamebase;
+package com.kyokomi.scrollquest;
 
 import org.andengine.engine.camera.Camera;
 import org.andengine.engine.options.EngineOptions;
@@ -6,7 +6,7 @@ import org.andengine.engine.options.ScreenOrientation;
 import org.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
 import org.andengine.entity.scene.Scene;
 
-import com.kyokomi.gamebase.utils.ResourceUtil;
+import com.kyokomi.scrollquest.utils.ResourceUtil;
 import com.kyokomi.scrollquest.R;
 
 import android.view.KeyEvent;

@@ -1,4 +1,4 @@
-package com.kyokomi.gamebase;
+package com.kyokomi.scrollquest;
 
 import android.view.KeyEvent;
 import com.kyokomi.scrollquest.R;

@@ -1,4 +1,4 @@
-package com.kyokomi.gamebase;
+package com.kyokomi.scrollquest;
 
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.sprite.Sprite;

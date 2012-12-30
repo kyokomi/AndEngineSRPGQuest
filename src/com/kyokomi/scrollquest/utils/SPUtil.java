@@ -1,4 +1,4 @@
-package com.kyokomi.gamebase.utils;
+package com.kyokomi.scrollquest.utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;

@@ -1,11 +1,11 @@
-package com.kyokomi.gamebase;
+package com.kyokomi.scrollquest;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.andengine.ui.activity.SimpleLayoutGameActivity;
 
-import com.kyokomi.gamebase.utils.ResourceUtil;
+import com.kyokomi.scrollquest.utils.ResourceUtil;
 import com.kyokomi.scrollquest.R;
 
 /**

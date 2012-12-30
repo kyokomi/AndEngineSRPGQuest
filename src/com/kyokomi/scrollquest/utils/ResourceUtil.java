@@ -1,4 +1,4 @@
-package com.kyokomi.gamebase.utils;
+package com.kyokomi.scrollquest.utils;
 
 import java.io.IOException;
 import java.io.InputStream;
