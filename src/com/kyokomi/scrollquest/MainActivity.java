@@ -23,8 +23,8 @@ import android.view.KeyEvent;
 public class MainActivity extends MultiSceneActivity {
 
 	// 画面サイズ
-	private int CAMERA_WIDTH = 480;
-	private int CAMERA_HEIGHT = 800;
+	private int CAMERA_WIDTH = 800;
+	private int CAMERA_HEIGHT = 480;
 	
 	@Override
 	public EngineOptions onCreateEngineOptions() {
@@ -34,9 +34,9 @@ public class MainActivity extends MultiSceneActivity {
 		EngineOptions eo = new EngineOptions(
 				// タイトルバー非表示モード
 				true, 
-				// 画面縦向き
-				ScreenOrientation.PORTRAIT_FIXED,  
-				// 画面（480 * 800）解像度の縦横比を保ったまま最大まで拡大
+				// 画面横向き
+				ScreenOrientation.LANDSCAPE_FIXED,  
+				// 画面（800 x 480）解像度の縦横比を保ったまま最大まで拡大
 				new RatioResolutionPolicy(CAMERA_WIDTH, CAMERA_HEIGHT),
 				 // 描画範囲
 				camera);
