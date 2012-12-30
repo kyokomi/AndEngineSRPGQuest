@@ -4,7 +4,6 @@ import org.andengine.entity.scene.Scene;
 import org.andengine.entity.sprite.Sprite;
 
 import android.view.KeyEvent;
-import com.kyokomi.scrollquest.R;
 
 /**
  * ActivityからのKeyEventなどを受け取り処理を行うリスナーを持つSceneクラスのサブクラス.

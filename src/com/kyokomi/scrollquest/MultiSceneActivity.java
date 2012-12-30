@@ -6,7 +6,6 @@ import java.util.List;
 import org.andengine.ui.activity.SimpleLayoutGameActivity;
 
 import com.kyokomi.scrollquest.utils.ResourceUtil;
-import com.kyokomi.scrollquest.R;
 
 /**
  * {@link BaseGameActivity}のサブクラスであり、XMLLayoutを利用してActivityを生成するクラス.
