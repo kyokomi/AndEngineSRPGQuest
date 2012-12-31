@@ -4,6 +4,10 @@ import java.util.ArrayList;
 
 import org.andengine.engine.handler.timer.ITimerCallback;
 import org.andengine.engine.handler.timer.TimerHandler;
+import org.andengine.entity.modifier.FadeInModifier;
+import org.andengine.entity.modifier.FadeOutModifier;
+import org.andengine.entity.modifier.LoopEntityModifier;
+import org.andengine.entity.modifier.SequenceEntityModifier;
 import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.sprite.AnimatedSprite;
@@ -27,13 +31,58 @@ import android.view.KeyEvent;
 public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 
 	// ----------------------------------------
-	// 障害物用TAG定数
+	// 障害物用enum
 	// ----------------------------------------
-	private static final int TAG_OBSTACLE_TRAP  = 1;
-	private static final int TAG_OBSTACLE_FIRE  = 2;
-	private static final int TAG_OBSTACLE_ENEMY = 3;
-	private static final int TAG_OBSTACLE_EAGLE = 4;
-	
+	enum ObstacleTag {
+		TAG_OBSTACLE_DEFAULT(0, 0, "", 0, 0),
+		TAG_OBSTACLE_TRAP(1, 50, "main_trap.png", 0, 0),
+		TAG_OBSTACLE_FIRE(2, 40, "main_fire.png", 0, 0),
+		TAG_OBSTACLE_ENEMY(3, 80, "main_enemy.png", 1, 2),
+		TAG_OBSTACLE_EAGLE(4, 70, "main_eagle.png", 1, 2),
+		;
+		/** 値. */
+		private Integer value;
+		/** 衝突許容値. */
+		private Integer allowable;
+		/** ファイル名. */
+		private String fileName;
+		/** Spriteコマ数(横). */
+		private Integer column;
+		/** Spriteコマ数(縦). */
+		private Integer row;
+		
+		ObstacleTag(Integer value, Integer allowable, String fileName, Integer column, Integer row) {
+			this.value = value;
+			this.allowable = allowable;
+			this.fileName = fileName;
+			this.column = column;
+			this.row = row;
+		}
+		public static ObstacleTag getObstacleTag(Integer tag) {
+			ObstacleTag[] values = values();
+			for (ObstacleTag obstacleTag : values) {
+				if (obstacleTag.getValue() == tag) {
+					return obstacleTag;
+				}
+			}
+			return ObstacleTag.TAG_OBSTACLE_DEFAULT;
+		}
+		public Integer getValue() {
+			return value;
+		}
+		public Integer getAllowable() {
+			return allowable;
+		}
+		public String getFileName() {
+			return fileName;
+		}
+		public Integer getColumn() {
+			return column;
+		}
+		public Integer getRow() {
+			return row;
+		}
+	}
 	// ----------------------------------------
 	// オブジェクト
 	// ----------------------------------------
@@ -75,7 +124,10 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 	private boolean isJumping;
 	/** スライディング中フラグ. */
 	private boolean isSlideing;
-	
+	/** 死亡中フラグ. */
+	private boolean isDeading;
+	/** 死んだ後の回復中フラグ. */
+	private boolean isRecovering;
 	
 	/** ドラッグ開始座標. */
 	private float[] touchStartPoint;
@@ -108,6 +160,8 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 		isJumping      = false;
 		isAttacking    = false;
 		isSlideing     = false;
+		isRecovering   = false;
+		isDeading      = false;
 		
 		// スクロール速度の初期値を設定
 		scrollSpeed = 6;
@@ -204,13 +258,13 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 			
 			// 障害物を移動
 			for (int i = 0; i < getChildCount(); i++) {
-				if (getChildByIndex(i).getTag() == TAG_OBSTACLE_TRAP 
-						|| getChildByIndex(i).getTag() == TAG_OBSTACLE_FIRE
-						|| getChildByIndex(i).getTag() == TAG_OBSTACLE_ENEMY
-						|| getChildByIndex(i).getTag() == TAG_OBSTACLE_EAGLE) {
+				if (getChildByIndex(i).getTag() == ObstacleTag.TAG_OBSTACLE_TRAP.getValue() 
+						|| getChildByIndex(i).getTag() == ObstacleTag.TAG_OBSTACLE_FIRE.getValue()
+						|| getChildByIndex(i).getTag() == ObstacleTag.TAG_OBSTACLE_ENEMY.getValue()
+						|| getChildByIndex(i).getTag() == ObstacleTag.TAG_OBSTACLE_EAGLE.getValue()) {
 					
 					// 鷹のみ上空から滑空させる
-					if (getChildByIndex(i).getTag() == TAG_OBSTACLE_EAGLE) {
+					if (getChildByIndex(i).getTag() == ObstacleTag.TAG_OBSTACLE_EAGLE.getValue()) {
 						if (getChildByIndex(i).getX() < 300) {
 							getChildByIndex(i).setY(getChildByIndex(i).getY() + 10);
 						}
@@ -222,6 +276,25 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 						// すぐに削除するとインデックスがずれるため一旦配列に追加
 						spriteOutOfBoundArray.add((Sprite) getChildByIndex(i));
 					}
+					
+					// 回復中は無視
+					if (!isRecovering && !isDeading) {
+						// Sprite同士が衝突している時のみ高度な衝突判定を行う
+						Sprite obj = (Sprite) getChildByIndex(i);
+						if (obj.collidesWith(player)) {
+							
+							// プレイヤーのｘ座標と障害物のx座標中心間の距離
+							float distanceBetweenCenterXOfPlayerAndObstacle = getDistanceBetween(player, obj);
+							
+							// 衝突を許容する距離
+							ObstacleTag objTag = ObstacleTag.getObstacleTag(obj.getTag());
+							float allowableDistance = getAllowableDistance(player, obj, objTag.getAllowable());
+							if (distanceBetweenCenterXOfPlayerAndObstacle < allowableDistance) {
+								// 敵の攻撃
+								enemyAttackSprite(objTag); 
+							}
+						}
+					}
 				}
 			}
 			// 配列の中身を削除
@@ -231,6 +304,9 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 		}
 	});
 	
+	/**
+	 * 障害物生成タイマー.
+	 */
 	public TimerHandler obstacleAppearHandler = new TimerHandler(1, true, new ITimerCallback() {
 		@Override
 		public void onTimePassed(TimerHandler pTimerHandler) {
@@ -241,30 +317,36 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 			switch (r) {
 			case 0:
 				// 竹でできた罠
-				obstacle = getResourceSprite("main_trap.png");
+				obstacle = getResourceSprite(ObstacleTag.TAG_OBSTACLE_TRAP.getFileName());
 				obstacle.setPosition(getWindowWidth() + obstacle.getWidth(), 380);
-				obstacle.setTag(TAG_OBSTACLE_TRAP);
+				obstacle.setTag(ObstacleTag.TAG_OBSTACLE_TRAP.getValue());
 				attachChild(obstacle);
 				break;
 			case 1:
 				// 火の玉
-				obstacle = getResourceSprite("main_fire.png");
+				obstacle = getResourceSprite(ObstacleTag.TAG_OBSTACLE_FIRE.getFileName());
 				obstacle.setPosition(getWindowWidth() + obstacle.getWidth(), 260);
-				obstacle.setTag(TAG_OBSTACLE_FIRE);
+				obstacle.setTag(ObstacleTag.TAG_OBSTACLE_FIRE.getValue());
 				attachChild(obstacle);
 				break;
 			case 2:
 				// 敵
-				animatedObstacle = getResourceAnimatedSprite("main_enemy.png", 1, 2);
+				animatedObstacle = getResourceAnimatedSprite(
+						ObstacleTag.TAG_OBSTACLE_ENEMY.getFileName(), 
+						ObstacleTag.TAG_OBSTACLE_ENEMY.getColumn(), 
+						ObstacleTag.TAG_OBSTACLE_ENEMY.getRow());
 				animatedObstacle.setPosition(getWindowWidth() + animatedObstacle.getWidth(), 325);
-				animatedObstacle.setTag(TAG_OBSTACLE_ENEMY);
+				animatedObstacle.setTag(ObstacleTag.TAG_OBSTACLE_ENEMY.getValue());
 				attachChild(animatedObstacle);
 				animatedObstacle.animate(100);
 			case 3:
 				// 鷹
-				animatedObstacle = getResourceAnimatedSprite("main_eagle.png", 1, 2);
+				animatedObstacle = getResourceAnimatedSprite(
+						ObstacleTag.TAG_OBSTACLE_EAGLE.getFileName(), 
+						ObstacleTag.TAG_OBSTACLE_ENEMY.getColumn(), 
+						ObstacleTag.TAG_OBSTACLE_ENEMY.getRow());
 				animatedObstacle.setPosition(getWindowWidth() + animatedObstacle.getWidth(), 30);
-				animatedObstacle.setTag(TAG_OBSTACLE_EAGLE);
+				animatedObstacle.setTag(ObstacleTag.TAG_OBSTACLE_EAGLE.getValue());
 				attachChild(animatedObstacle);
 				animatedObstacle.animate(200);
 				break;
@@ -284,6 +366,10 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 	 */
 	@Override
 	public boolean onSceneTouchEvent(Scene pScene, TouchEvent pSceneTouchEvent) {
+		// 死亡中は受け付けない
+		if (isDeading) {
+			return true;
+		}
 		
 		// タッチの座標を取得
 		float x = pSceneTouchEvent.getX();
@@ -341,6 +427,48 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 	// --------------------------------------------------
 	// プレイヤー関連メソッド
 	// --------------------------------------------------
+	public void enemyAttackSprite(ObstacleTag enemyObstacleTag) {
+		
+		// プレイヤーの歩行を停止
+		player.stopAnimation();
+		player.setAlpha(0.0f);
+		
+		// 倒れ画像にする
+		playerDefense.stopAnimation();
+		playerDefense.setCurrentTileIndex(11);
+		playerDefense.setPosition(player.getX(), player.getY());
+		playerDefense.setAlpha(1.0f);
+
+		// 死亡
+		isDeading = true;
+		
+		registerUpdateHandler(new TimerHandler(1.0f, new ITimerCallback() {
+			@Override
+			public void onTimePassed(TimerHandler pTimerHandler) {
+				// 回復後は一定時間無敵状態
+				isDeading = false;
+				isRecovering = true;
+				
+				playerDefense.setAlpha(0.0f);
+				setPlayerToDefaultPosition();
+				
+				// 4回ループでフェードアウトとフェードインを繰り返して点滅させる
+				player.registerEntityModifier(new LoopEntityModifier(
+							new SequenceEntityModifier(
+									new FadeOutModifier(0.25f),
+									new FadeInModifier(0.25f)
+							), 4));
+				
+				// 無敵状態を解除
+				registerUpdateHandler(new TimerHandler(2.0f, new ITimerCallback() {
+					@Override
+					public void onTimePassed(TimerHandler pTimerHandler) {
+						isRecovering = false;
+					}
+				}));
+			}
+		}));
+	}
 	
 	public void attackSprite() {
 		// 攻撃の連射を防ぐ
@@ -589,5 +717,26 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 		result += 270;
 		
 		return result;
+	}
+	
+	/**
+	 * Sprite同士のx座標中心間の距離を求める.
+	 * @param sprite1 左側
+	 * @param sprite2 右側
+	 * @return x座標中心間の距離
+	 */
+	private float getDistanceBetween(Sprite sprite1, Sprite sprite2) {
+		return Math.abs((sprite2.getX() + sprite2.getWidth() / 2) - (sprite1.getX() + sprite1.getWidth() / 2));
+	}
+	
+	/**
+	 * 衝突の許容値を考慮した距離を求める.
+	 * @param sprite1 左側
+	 * @param sprite2 右側
+	 * @param allowable 衝突の許容値
+	 * @return 衝突の許容値を考慮した距離
+	 */
+	private float getAllowableDistance(Sprite sprite1, Sprite sprite2, float allowable) {
+		return (sprite1.getWidth() / 2) + (sprite2.getWidth() / 2 - allowable);
 	}
 }
