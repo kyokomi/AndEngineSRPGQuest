@@ -107,6 +107,11 @@ public class MainScene extends KeyListenScene
 	// ----------------------------------------
 	// オブジェクト
 	// ----------------------------------------
+	/** 遊び方画面. */
+	private Sprite instructionSprite;
+	/** 遊び方画面のボタン. */
+	private ButtonSprite instructionBtn;
+	
 	/** 背景. */
 	private Sprite background;
 	/** 草1. */
@@ -281,13 +286,17 @@ public class MainScene extends KeyListenScene
 		playerAttack.setAlpha(0.0f);
 		attachChild(playerAttack);
 		
-		
-		// 1秒間に60回、updateHandlerを呼び出す
-		registerUpdateHandler(updateHandler);
-		// 1秒毎に障害物出現関数を呼び出し
-		registerUpdateHandler(obstacleAppearHandler);
-		// Sceneのタッチリスナーを登録
-		setOnSceneTouchListener(this);
+		// ハイスコアが500以下の時のみヘルプ画面を出す
+		if (SPUtil.getInstance(getBaseActivity()).getHighScore() > 500) {
+			// 1秒間に60回、updateHandlerを呼び出す
+			registerUpdateHandler(updateHandler);
+			// 1秒毎に障害物出現関数を呼び出し
+			registerUpdateHandler(obstacleAppearHandler);
+			// Sceneのタッチリスナーを登録
+			setOnSceneTouchListener(this);
+		} else {
+			showHelp();
+		}
 	}
 
 	@Override
@@ -460,6 +469,33 @@ public class MainScene extends KeyListenScene
 		}
 	});
 	
+	public void showHelp() {
+		instructionSprite = getResourceSprite("instruction.png");
+		placeToCenter(instructionSprite);
+		attachChild(instructionSprite);
+		
+		instructionBtn = getResourceButtonSprite(
+				"instruction_btn.png", "instruction_btn_p.png");
+		placeToCenterX(instructionBtn, 380);
+		attachChild(instructionBtn);
+		registerTouchArea(instructionBtn);
+		instructionBtn.setOnClickListener(new ButtonSprite.OnClickListener() {
+			@Override
+			public void onClick(ButtonSprite pButtonSprite, float pTouchAreaLocalX,
+					float pTouchAreaLocalY) {
+				instructionSprite.detachSelf();
+				instructionBtn.detachSelf();
+				unregisterTouchArea(instructionBtn);
+				
+				// 1秒間に60回、updateHandlerを呼び出す
+				registerUpdateHandler(updateHandler);
+				// 1秒毎に障害物出現関数を呼び出し
+				registerUpdateHandler(obstacleAppearHandler);
+				// Sceneのタッチリスナーを登録
+				setOnSceneTouchListener(MainScene.this);
+			}
+		});
+	}
 	// --------------------------------------------------
 	// IOnSceneTouchListener
 	// --------------------------------------------------
