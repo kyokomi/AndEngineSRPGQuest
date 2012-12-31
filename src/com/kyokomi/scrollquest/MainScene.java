@@ -5,17 +5,34 @@ import java.util.List;
 
 import org.andengine.engine.handler.timer.ITimerCallback;
 import org.andengine.engine.handler.timer.TimerHandler;
+import org.andengine.entity.modifier.DelayModifier;
 import org.andengine.entity.modifier.FadeInModifier;
 import org.andengine.entity.modifier.FadeOutModifier;
 import org.andengine.entity.modifier.LoopEntityModifier;
+import org.andengine.entity.modifier.MoveModifier;
 import org.andengine.entity.modifier.ScaleModifier;
 import org.andengine.entity.modifier.SequenceEntityModifier;
+import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.sprite.AnimatedSprite;
+import org.andengine.entity.sprite.ButtonSprite;
 import org.andengine.entity.sprite.Sprite;
+import org.andengine.entity.text.Text;
+import org.andengine.entity.text.TextOptions;
 import org.andengine.input.touch.TouchEvent;
+import org.andengine.opengl.font.BitmapFont;
+import org.andengine.opengl.font.Font;
+import org.andengine.opengl.texture.Texture;
+import org.andengine.opengl.texture.TextureOptions;
+import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
+import org.andengine.util.HorizontalAlign;
+import org.andengine.util.color.Color;
+import org.andengine.util.modifier.ease.EaseQuadOut;
 
+import com.kyokomi.scrollquest.utils.SPUtil;
+
+import android.graphics.Typeface;
 import android.view.KeyEvent;
 
 /**
@@ -30,7 +47,8 @@ import android.view.KeyEvent;
  * @author kyokomi
  *
  */
-public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
+public class MainScene extends KeyListenScene 
+	implements IOnSceneTouchListener, ButtonSprite.OnClickListener {
 
 	// ----------------------------------------
 	// 障害物用enum
@@ -111,12 +129,22 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 	/** ライフ表示. */
 	private ArrayList<Sprite> lifeSpriteArray;
 	
+	/** 現在のスコアを表示するテキスト. */
+	private Text currentScoreText;
+	/** 過去最高のスコアを表示するテキスト. */
+	private Text highScoreText;
+	/** 現在のスコア. */
+	private int currentScore;
+	
 	// ----------------------------------------
 	// ゲーム設定パラメータ
 	// ----------------------------------------
 	/** スクロールの速度. */
 	private float scrollSpeed;
 
+	/** 結果画面用. */
+	private int zIndexResult = 2;
+	
 	// ----------------------------------------
 	// プレイ情報
 	// ----------------------------------------
@@ -174,10 +202,33 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 		isSlideing     = false;
 		isRecovering   = false;
 		isDeading      = false;
+		currentScore = 0;
 		
 		// スクロール速度の初期値を設定
 		scrollSpeed = 6;
 
+		// ------ テキスト ------
+		Texture texture = new BitmapTextureAtlas(
+				getBaseActivity().getTextureManager(), 512, 512, 
+				TextureOptions.BILINEAR_PREMULTIPLYALPHA);
+		Font font = new Font(getBaseActivity().getFontManager(), 
+				texture, Typeface.DEFAULT_BOLD, 22, true, Color.YELLOW);
+		// EngineのTextureManagerにフォントTextureを読み込み
+		getBaseActivity().getTextureManager().loadTexture(texture);
+		getBaseActivity().getFontManager().loadFont(font);
+		
+		// 読み込んだフォントを利用して得点を表示
+		currentScoreText = new Text(20, 20, font, "得点：" + currentScore, 20, 
+				new TextOptions(HorizontalAlign.LEFT), 
+				getBaseActivity().getVertexBufferObjectManager());
+		attachChild(currentScoreText);
+		highScoreText = new Text(20, 50, font, "ハイスコア：" + SPUtil.getInstance(getBaseActivity()).getHighScore(), 20, 
+				new TextOptions(HorizontalAlign.LEFT), 
+				getBaseActivity().getVertexBufferObjectManager());
+		attachChild(highScoreText);
+		
+		// ------ ライフ -------
+		
 		// ライフの初期値を3とし、画面左上にSpriteを表示
 		lifeSpriteArray = new ArrayList<Sprite>();
 		life = 3;
@@ -266,6 +317,15 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 	public TimerHandler updateHandler = new TimerHandler(1 / 60f, true, new ITimerCallback() {
 		@Override
 		public void onTimePassed(TimerHandler pTimerHandler) {
+			
+			// スコアの増加とセット
+			if (!isRecovering) {
+				// スコアをインクリメント
+				currentScore++;
+				// スコアをセット
+				currentScoreText.setText("得点：" + currentScore);
+			}
+			
 			// 草をscrollSpeedの分移動させる
 			grass01.setX(grass01.getX() - scrollSpeed);
 			if (grass01.getX() <= -getWindowWidth()) {
@@ -467,9 +527,107 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 		return false;
 	}
 	
+	/**
+	 * ButtonSpriteのClick判定.
+	 */
+	@Override
+	public void onClick(ButtonSprite pButtonSprite, float pTouchAreaLocalX,
+			float pTouchAreaLocalY) {
+		// TODO Auto-generated method stub
+		
+	}
+	
 	// --------------------------------------------------
 	// プレイヤー関連メソッド
 	// --------------------------------------------------
+	
+	private static final int MENU_MENU = 1;
+	private static final int MENU_TWEET = 2;
+	private static final int MENU_RANKING = 3;
+	private static final int MENU_RETRY = 4;
+	
+	/**
+	 * ゲームオーバー表示.
+	 */
+	public void showGameOver() {
+	
+		// Sceneのタッチリスナーを解除
+		setOnSceneTouchListener(null);
+		
+		// ハイスコア更新時は保存
+		if (currentScore > SPUtil.getInstance(getBaseActivity()).getHighScore()) {
+			SPUtil.getInstance(getBaseActivity()).setHighScore(currentScore);
+		}
+		
+		// 透明な背景を作成
+		Rectangle resultBackground = new Rectangle(
+				getWindowWidth(), 0,
+				getWindowWidth(), getWindowHeight(), 
+				getBaseActivity().getVertexBufferObjectManager());
+		// 透明にする
+		resultBackground.setColor(Color.TRANSPARENT);
+		// 敵キャラクターより全面に表示
+		resultBackground.setZIndex(zIndexResult);
+		attachChild(resultBackground);
+		sortChildren();
+		
+		// ビットマップフォントを作成
+		BitmapFont bitmapFont = new BitmapFont(
+				getBaseActivity().getTextureManager(), 
+				getBaseActivity().getAssets(), 
+				"font/result.fnt");
+		bitmapFont.load();
+		
+		// ビットマップフォントを元にスコアを表示
+		Text resultText = new Text(0, 0, bitmapFont, 
+				"" + currentScore + " pts", 
+				getBaseActivity().getVertexBufferObjectManager());
+		resultText.setPosition(getWindowWidth() / 2.0f - resultText.getWidth() / 2.0f, 60);
+		resultBackground.attachChild(resultText);
+		
+		// 各ボタン
+		ButtonSprite btnRanking = getResourceButtonSprite("menu_btn_01.png", "menu_btn_01_p.png");
+		placeToCenterX(btnRanking, 145);
+		btnRanking.setTag(MENU_RANKING);
+		btnRanking.setOnClickListener(this);
+		resultBackground.attachChild(btnRanking);
+		registerTouchArea(btnRanking);
+		
+		ButtonSprite btnRetry = getResourceButtonSprite("menu_btn_02.png", "menu_btn_02_p.png");
+		placeToCenterX(btnRetry, 260);
+		btnRetry.setTag(MENU_RETRY);
+		btnRetry.setOnClickListener(this);
+		resultBackground.attachChild(btnRetry);
+		registerTouchArea(btnRetry);
+		
+		ButtonSprite btnTweet = getResourceButtonSprite("menu_btn_03.png", "menu_btn_03_p.png");
+		placeToCenterX(btnTweet, 330);
+		btnTweet.setTag(MENU_TWEET);
+		btnTweet.setOnClickListener(this);
+		resultBackground.attachChild(btnTweet);
+		registerTouchArea(btnTweet);
+		
+		ButtonSprite btnMenu = getResourceButtonSprite("menu_btn_04.png", "menu_btn_04_p.png");
+		placeToCenterX(btnMenu, 400);
+		btnMenu.setTag(MENU_MENU);
+		btnMenu.setOnClickListener(this);
+		resultBackground.attachChild(btnMenu);
+		registerTouchArea(btnMenu);
+		
+		resultBackground.registerEntityModifier(new SequenceEntityModifier(
+				new DelayModifier(1.0f), 
+				new MoveModifier(1.0f, 
+						resultBackground.getX(), 
+						resultBackground.getX() - getWindowWidth(), 
+						resultBackground.getY(),
+						resultBackground.getY(),
+						EaseQuadOut.getInstance())));
+	}
+	
+	/**
+	 * 敵攻撃.
+	 * @param enemyObstacleTag 敵オブジェクトTag
+	 */
 	public void enemyAttackSprite(ObstacleTag enemyObstacleTag) {
 		
 		// プレイヤーの歩行を停止
@@ -491,6 +649,8 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 		
 		// ライフが0ならゲームオーバー
 		if (life == 0) {
+			showGameOver();
+			// TODO: とりあえずハンドラーを消してる CustomTimerを作る必要がある
 			unregisterUpdateHandler(updateHandler);
 			unregisterUpdateHandler(obstacleAppearHandler);
 		}
@@ -746,6 +906,16 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 	}
 	
 	/**
+	 * リソースファイルからSpriteを取得.
+	 * @param normalFileName 通常時ファイル名
+	 * @param pressedFileName 押下時ファイル名
+	 * @return Sprite
+	 */
+	private ButtonSprite getResourceButtonSprite(String normalFileName, String pressedFileName) {
+		return getBaseActivity().getResourceUtil().getButtonSprite(normalFileName, pressedFileName);
+	}
+	
+	/**
 	 * リソースファイルからAnimatedSpriteを取得.
 	 * @param fileName ファイル名
 	 * @param column 横のコマ数
@@ -762,6 +932,14 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 	 */
 	private float getWindowWidth() {
 		return getBaseActivity().getEngine().getCamera().getWidth();
+	}
+	
+	/**
+	 * 画面縦サイズを取得.
+	 * @return 画面横サイズ
+	 */
+	private float getWindowHeight() {
+		return getBaseActivity().getEngine().getCamera().getHeight();
 	}
 	
 	/**

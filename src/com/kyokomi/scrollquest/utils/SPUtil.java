@@ -26,4 +26,21 @@ public class SPUtil {
 		settings = context.getSharedPreferences("shared_preference_1.0", 0);
 		editor = settings.edit();
 	}
+	
+	/**
+	 * ハイスコア取得.
+	 * @return ハイスコア
+	 */
+	public int getHighScore() {
+		return settings.getInt("highScore", 0);
+	}
+	
+	/**
+	 * ハイスコア設定.
+	 * @param value スコア
+	 */
+	public void setHighScore(int value) {
+		editor.putInt("highScore", value);
+		editor.commit();
+	}
 }
