@@ -1,12 +1,14 @@
 package com.kyokomi.scrollquest;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.andengine.engine.handler.timer.ITimerCallback;
 import org.andengine.engine.handler.timer.TimerHandler;
 import org.andengine.entity.modifier.FadeInModifier;
 import org.andengine.entity.modifier.FadeOutModifier;
 import org.andengine.entity.modifier.LoopEntityModifier;
+import org.andengine.entity.modifier.ScaleModifier;
 import org.andengine.entity.modifier.SequenceEntityModifier;
 import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.Scene;
@@ -39,6 +41,7 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 		TAG_OBSTACLE_FIRE(2, 40, "main_fire.png", 0, 0),
 		TAG_OBSTACLE_ENEMY(3, 80, "main_enemy.png", 1, 2),
 		TAG_OBSTACLE_EAGLE(4, 70, "main_eagle.png", 1, 2),
+		TAG_OBSTACLE_HEART(5, 0, "main_heart.png", 0, 0),
 		;
 		/** 値. */
 		private Integer value;
@@ -105,12 +108,21 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 	/** プレイヤーキャラクター(攻撃). */
 	private AnimatedSprite playerAttack;
 	
+	/** ライフ表示. */
+	private ArrayList<Sprite> lifeSpriteArray;
+	
 	// ----------------------------------------
 	// ゲーム設定パラメータ
 	// ----------------------------------------
 	/** スクロールの速度. */
 	private float scrollSpeed;
 
+	// ----------------------------------------
+	// プレイ情報
+	// ----------------------------------------
+	/** 残りライフ. */
+	private int life;
+	
 	// ----------------------------------------
 	// ゲームステータス
 	// ----------------------------------------
@@ -166,6 +178,16 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 		// スクロール速度の初期値を設定
 		scrollSpeed = 6;
 
+		// ライフの初期値を3とし、画面左上にSpriteを表示
+		lifeSpriteArray = new ArrayList<Sprite>();
+		life = 3;
+		for (int i = 0; i < life; i++) {
+			Sprite heart = getResourceSprite(ObstacleTag.TAG_OBSTACLE_HEART.getFileName());
+			heart.setScale(0.6f);
+			heart.setPosition(10 + 45 * i, 90);
+			attachChild(heart);
+			lifeSpriteArray.add(heart);
+		}
 		// --------- オブジェクト関連 -----------
 		
 		// 草1オブジェクトを追加
@@ -261,7 +283,8 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 				if (getChildByIndex(i).getTag() == ObstacleTag.TAG_OBSTACLE_TRAP.getValue() 
 						|| getChildByIndex(i).getTag() == ObstacleTag.TAG_OBSTACLE_FIRE.getValue()
 						|| getChildByIndex(i).getTag() == ObstacleTag.TAG_OBSTACLE_ENEMY.getValue()
-						|| getChildByIndex(i).getTag() == ObstacleTag.TAG_OBSTACLE_EAGLE.getValue()) {
+						|| getChildByIndex(i).getTag() == ObstacleTag.TAG_OBSTACLE_EAGLE.getValue()
+						|| getChildByIndex(i).getTag() == ObstacleTag.TAG_OBSTACLE_HEART.getValue()) {
 					
 					// 鷹のみ上空から滑空させる
 					if (getChildByIndex(i).getTag() == ObstacleTag.TAG_OBSTACLE_EAGLE.getValue()) {
@@ -281,17 +304,25 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 					if (!isRecovering && !isDeading) {
 						// Sprite同士が衝突している時のみ高度な衝突判定を行う
 						Sprite obj = (Sprite) getChildByIndex(i);
-						if (obj.collidesWith(player)) {
+						
+						if (obj.getTag() == ObstacleTag.TAG_OBSTACLE_HEART.getValue()) {
+							spriteOutOfBoundArray.add(obj);
+							addLifeSprite();
 							
-							// プレイヤーのｘ座標と障害物のx座標中心間の距離
-							float distanceBetweenCenterXOfPlayerAndObstacle = getDistanceBetween(player, obj);
+						} else {
 							
-							// 衝突を許容する距離
-							ObstacleTag objTag = ObstacleTag.getObstacleTag(obj.getTag());
-							float allowableDistance = getAllowableDistance(player, obj, objTag.getAllowable());
-							if (distanceBetweenCenterXOfPlayerAndObstacle < allowableDistance) {
-								// 敵の攻撃
-								enemyAttackSprite(objTag); 
+							if (obj.collidesWith(player)) {
+								
+								// プレイヤーのｘ座標と障害物のx座標中心間の距離
+								float distanceBetweenCenterXOfPlayerAndObstacle = getDistanceBetween(player, obj);
+								
+								// 衝突を許容する距離
+								ObstacleTag objTag = ObstacleTag.getObstacleTag(obj.getTag());
+								float allowableDistance = getAllowableDistance(player, obj, objTag.getAllowable());
+								if (distanceBetweenCenterXOfPlayerAndObstacle < allowableDistance) {
+									// 敵の攻撃
+									enemyAttackSprite(objTag); 
+								}
 							}
 						}
 					}
@@ -300,6 +331,18 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 			// 配列の中身を削除
 			for (Sprite sp : spriteOutOfBoundArray) {
 				sp.detachSelf();
+			}
+			
+			// 残りライフが3未満かつステージ上に回復アイテムが無い時
+			if (life < 3 && getChildByTag(ObstacleTag.TAG_OBSTACLE_HEART.getValue()) == null) {
+				// 500分の1の確率で回復アイテムを出現
+				if ((int) (Math.random() * 500) == 1) {
+					Sprite obstacle = getResourceSprite(ObstacleTag.TAG_OBSTACLE_HEART.getFileName());
+					// 画面右外に追加。y座標はランダム
+					obstacle.setPosition(getWindowWidth(), 350 - (int) (Math.random() * 200));
+					obstacle.setTag(ObstacleTag.TAG_OBSTACLE_HEART.getValue());
+					attachChild(obstacle);
+				}
 			}
 		}
 	});
@@ -441,6 +484,16 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 
 		// 死亡
 		isDeading = true;
+					
+		// ライフを減らす
+		lifeSpriteArray.get(life - 1).detachSelf();
+		life--;
+		
+		// ライフが0ならゲームオーバー
+		if (life == 0) {
+			unregisterUpdateHandler(updateHandler);
+			unregisterUpdateHandler(obstacleAppearHandler);
+		}
 		
 		registerUpdateHandler(new TimerHandler(1.0f, new ITimerCallback() {
 			@Override
@@ -470,6 +523,16 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 		}));
 	}
 	
+	public void addLifeSprite() {
+		if (life < 3) {
+			life++;
+			attachChild(lifeSpriteArray.get(life - 1));
+			lifeSpriteArray.get(life - 1).registerEntityModifier(
+					new LoopEntityModifier(new SequenceEntityModifier(
+					new ScaleModifier(0.25f, 0.6f, 1.3f),
+					new ScaleModifier(0.25f, 1.3f, 0.6f)), 4));
+		}
+	}
 	public void attackSprite() {
 		// 攻撃の連射を防ぐ
 		isAttacking = true;
@@ -596,6 +659,25 @@ public class MainScene extends KeyListenScene implements IOnSceneTouchListener {
 						false);
 				attackEffect.setPosition(playerAttack.getX(), playerAttack.getY() - 70);
 				attackEffect.setAlpha(1.0f);
+				
+				// 削除するSpriteを一旦格納する配列
+				List<AnimatedSprite> spToRemoveArray = new ArrayList<AnimatedSprite>();
+				
+				for (int i = 0; i < getChildCount(); i++) {
+					// 攻撃で倒せるのは敵と鷹のみ
+					if (getChildByIndex(i).getTag() == ObstacleTag.TAG_OBSTACLE_ENEMY.getValue() 
+							|| getChildByIndex(i).getTag() == ObstacleTag.TAG_OBSTACLE_EAGLE.getValue()) {
+						// 衝突判定
+						AnimatedSprite obj = (AnimatedSprite) getChildByIndex(i);
+						if (obj.collidesWith(weapon) || obj.collidesWith(attackEffect)) {
+							spToRemoveArray.add(obj);
+						}
+					}
+				}
+				// 削除
+				for (AnimatedSprite sp :spToRemoveArray) {
+					sp.detachSelf();
+				}
 			}
 		}));
 	}
