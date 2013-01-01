@@ -1,5 +1,9 @@
 package com.kyokomi.core.scene;
 
+import java.io.IOException;
+
+import org.andengine.audio.sound.Sound;
+import org.andengine.audio.sound.SoundFactory;
 import org.andengine.entity.Entity;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.sprite.AnimatedSprite;
@@ -150,6 +154,15 @@ public abstract class KeyListenScene extends Scene {
 		});
 	}
 	
+	// ------- サウンド ------
+	protected Sound createSoundFromFileName(String fileName) throws IOException {
+		return SoundFactory.createSoundFromAsset(
+				getBaseActivity().getSoundManager(), 
+				getBaseActivity(), 
+				fileName);
+	}
+	
+	// ------- Intent ------
 	/**
 	 * TWEET送信.
 	 * @param text 本文

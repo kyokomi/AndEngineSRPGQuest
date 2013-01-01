@@ -1,5 +1,8 @@
 package com.kyokomi.scrollquest.scene;
 
+import java.io.IOException;
+
+import org.andengine.audio.sound.Sound;
 import org.andengine.entity.modifier.DelayModifier;
 import org.andengine.entity.modifier.MoveModifier;
 import org.andengine.entity.modifier.SequenceEntityModifier;
@@ -21,7 +24,7 @@ public class InitialScene extends KeyListenScene implements ButtonSprite.OnClick
 	private static final int INITIAL_FEEDBACK = 3;
 	
 	/** ボタンが押された時のサウンド. */
-//	private Sound btnPressedSound;
+	private Sound btnPressedSound;
 	
 	public InitialScene(MultiSceneActivity baseActivity) {
 		super(baseActivity);
@@ -112,14 +115,11 @@ public class InitialScene extends KeyListenScene implements ButtonSprite.OnClick
 	@Override
 	public void prepareSoundAndMusic() {
 		// 効果音をロード
-//		try {
-//			btnPressedSound = SoundFactory.createSoundFromAsset(
-//					getBaseActivity().getSoundManager(), 
-//					getBaseActivity(), 
-//					"clock00.wav");
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
+		try {
+			btnPressedSound = createSoundFromFileName("clock00.wav");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 			
 	}
 
@@ -133,7 +133,7 @@ public class InitialScene extends KeyListenScene implements ButtonSprite.OnClick
 	public void onClick(ButtonSprite pButtonSprite, float pTouchAreaLocalX,
 			float pTouchAreaLocalY) {
 		// 効果音を再生
-//		btnPressedSound.play();
+		btnPressedSound.play();
 		
 		switch (pButtonSprite.getTag()) {
 		case INITIAL_START:

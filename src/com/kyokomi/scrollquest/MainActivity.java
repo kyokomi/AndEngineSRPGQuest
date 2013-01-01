@@ -11,6 +11,7 @@ import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.core.utils.ResourceUtil;
 import com.kyokomi.scrollquest.scene.InitialScene;
+import com.kyokomi.scrollquest.scene.MainScene;
 import com.kyokomi.scrollquest.R;
 
 import android.view.KeyEvent;
@@ -44,6 +45,9 @@ public class MainActivity extends MultiSceneActivity {
 				new RatioResolutionPolicy(CAMERA_WIDTH, CAMERA_HEIGHT),
 				 // 描画範囲
 				camera);
+		
+		// 効果音の使用を許可する
+		eo.getAudioOptions().setNeedsSound(true);
 		
 		return eo;
 	}
@@ -124,5 +128,15 @@ public class MainActivity extends MultiSceneActivity {
 			return true;
 		}
 		return false;
+	}
+	
+	@Override
+	protected void onPause() {
+		super.onPause();
+		
+		// MainScene実行中なら一時停止
+		if (getEngine().getScene() instanceof MainScene) {
+			((MainScene) getEngine().getScene()).showMenu();
+		}
 	}
 }

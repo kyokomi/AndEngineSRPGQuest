@@ -1,10 +1,12 @@
 package com.kyokomi.scrollquest.scene;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.microedition.khronos.opengles.GL10;
 
+import org.andengine.audio.sound.Sound;
 import org.andengine.engine.handler.timer.ITimerCallback;
 import org.andengine.engine.handler.timer.TimerHandler;
 import org.andengine.entity.IEntity;
@@ -39,6 +41,7 @@ import com.kyokomi.core.handler.CustomTimerHandler;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.core.utils.CollidesUtil;
 import com.kyokomi.core.utils.SPUtil;
+import com.kyokomi.scrollquest.constant.ObstacleType;
 
 import android.graphics.Typeface;
 import android.util.Log;
@@ -60,77 +63,15 @@ public class MainScene extends KeyListenScene
 	implements IOnSceneTouchListener, ButtonSprite.OnClickListener {
 
 	// ----------------------------------------
-	// 障害物用enum
+	// サウンド
 	// ----------------------------------------
-	enum ObstacleTag {
-		TAG_OBSTACLE_DEFAULT(0, 0, "", 0, 0, 0, 0, 0),
-		TAG_OBSTACLE_TRAP(1, 50, "main_trap.png", 0, 0, 0, 0, 380),
-		TAG_OBSTACLE_FIRE(2, 40, "main_fire.png", 0, 0, 0, 0, 260),
-		TAG_OBSTACLE_ENEMY(3, 80, "main_enemy.png", 1, 2, 100, 0, 325),
-		TAG_OBSTACLE_EAGLE(4, 70, "main_eagle.png", 1, 2, 200, 0, 30),
-		TAG_OBSTACLE_HEART(5, 0, "main_heart.png", 0, 0, 0, 0, 0),
-		;
-		/** 値. */
-		private Integer value;
-		/** 衝突許容値. */
-		private Integer allowable;
-		/** ファイル名. */
-		private String fileName;
-		/** Spriteコマ数(横). */
-		private Integer column;
-		/** Spriteコマ数(縦). */
-		private Integer row;
-		/** Animated Duration. */
-		private Integer duration;
-		/** x座標. */
-		private Integer x;
-		/** y座標. */
-		private Integer y;
-		
-		ObstacleTag(Integer value, Integer allowable, String fileName, Integer column, Integer row, Integer duration, Integer x, Integer y) {
-			this.value = value;
-			this.allowable = allowable;
-			this.fileName = fileName;
-			this.column = column;
-			this.row = row;
-			this.duration = duration;
-			this.x = x;
-			this.y = y;
-		}
-		public static ObstacleTag getObstacleTag(Integer tag) {
-			ObstacleTag[] values = values();
-			for (ObstacleTag obstacleTag : values) {
-				if (obstacleTag.getValue() == tag) {
-					return obstacleTag;
-				}
-			}
-			return ObstacleTag.TAG_OBSTACLE_DEFAULT;
-		}
-		public Integer getValue() {
-			return value;
-		}
-		public Integer getAllowable() {
-			return allowable;
-		}
-		public String getFileName() {
-			return fileName;
-		}
-		public Integer getColumn() {
-			return column;
-		}
-		public Integer getRow() {
-			return row;
-		}
-		public Integer getDuration() {
-			return duration;
-		}
-		public Integer getX() {
-			return x;
-		}
-		public Integer getY() {
-			return y;
-		}
-	}
+	private Sound playerAttackSound;
+	private Sound enemyAttackSound;
+	private Sound recoverySound;
+	private Sound gameOverSound;
+	/** ボタンが押された時のサウンド. */
+	private Sound btnPressedSound;
+	
 	// ----------------------------------------
 	// オブジェクト
 	// ----------------------------------------
@@ -280,7 +221,7 @@ public class MainScene extends KeyListenScene
 		lifeSpriteArray = new ArrayList<Sprite>();
 		life = 3;
 		for (int i = 0; i < life; i++) {
-			Sprite heart = getResourceSprite(ObstacleTag.TAG_OBSTACLE_HEART.getFileName());
+			Sprite heart = getResourceSprite(ObstacleType.TAG_OBSTACLE_HEART.getFileName());
 			heart.setScale(0.6f);
 			heart.setPosition(10 + 45 * i, 90);
 			attachChild(heart);
@@ -338,7 +279,15 @@ public class MainScene extends KeyListenScene
 
 	@Override
 	public void prepareSoundAndMusic() {
-		
+		try {
+			playerAttackSound = createSoundFromFileName("SE_ATTACK_ZANGEKI_01.wav");
+			enemyAttackSound = createSoundFromFileName("SE_ATTACK_DAGEKI_01.wav");
+			recoverySound = createSoundFromFileName("SE_HP_CURE.wav");
+			gameOverSound = createSoundFromFileName("SE_LOSE.wav");
+			btnPressedSound = createSoundFromFileName("clock00.wav");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -405,14 +354,14 @@ public class MainScene extends KeyListenScene
 			
 			// 障害物を移動
 			for (int i = 0; i < getChildCount(); i++) {
-				if (getChildByIndex(i).getTag() == ObstacleTag.TAG_OBSTACLE_TRAP.getValue() 
-						|| getChildByIndex(i).getTag() == ObstacleTag.TAG_OBSTACLE_FIRE.getValue()
-						|| getChildByIndex(i).getTag() == ObstacleTag.TAG_OBSTACLE_ENEMY.getValue()
-						|| getChildByIndex(i).getTag() == ObstacleTag.TAG_OBSTACLE_EAGLE.getValue()
-						|| getChildByIndex(i).getTag() == ObstacleTag.TAG_OBSTACLE_HEART.getValue()) {
+				if (getChildByIndex(i).getTag() == ObstacleType.TAG_OBSTACLE_TRAP.getValue() 
+						|| getChildByIndex(i).getTag() == ObstacleType.TAG_OBSTACLE_FIRE.getValue()
+						|| getChildByIndex(i).getTag() == ObstacleType.TAG_OBSTACLE_ENEMY.getValue()
+						|| getChildByIndex(i).getTag() == ObstacleType.TAG_OBSTACLE_EAGLE.getValue()
+						|| getChildByIndex(i).getTag() == ObstacleType.TAG_OBSTACLE_HEART.getValue()) {
 					
 					// 鷹のみ上空から滑空させる
-					if (getChildByIndex(i).getTag() == ObstacleTag.TAG_OBSTACLE_EAGLE.getValue()) {
+					if (getChildByIndex(i).getTag() == ObstacleType.TAG_OBSTACLE_EAGLE.getValue()) {
 						if (getChildByIndex(i).getX() < 300) {
 							getChildByIndex(i).setY(getChildByIndex(i).getY() + 10);
 						}
@@ -430,7 +379,7 @@ public class MainScene extends KeyListenScene
 						// Sprite同士が衝突している時のみ高度な衝突判定を行う
 						Sprite obj = (Sprite) getChildByIndex(i);
 						
-						if (obj.getTag() == ObstacleTag.TAG_OBSTACLE_HEART.getValue()) {
+						if (obj.getTag() == ObstacleType.TAG_OBSTACLE_HEART.getValue()) {
 							spriteOutOfBoundArray.add(obj);
 							addLifeSprite();
 							
@@ -442,7 +391,7 @@ public class MainScene extends KeyListenScene
 								float distanceBetweenCenterXOfPlayerAndObstacle = CollidesUtil.getDistanceBetween(player, obj);
 								
 								// 衝突を許容する距離
-								ObstacleTag objTag = ObstacleTag.getObstacleTag(obj.getTag());
+								ObstacleType objTag = ObstacleType.getObstacleType(obj.getTag());
 								float allowableDistance = CollidesUtil.getAllowableDistance(
 										player, obj, objTag.getAllowable());
 								if (distanceBetweenCenterXOfPlayerAndObstacle < allowableDistance) {
@@ -460,13 +409,13 @@ public class MainScene extends KeyListenScene
 			}
 			
 			// 残りライフが3未満かつステージ上に回復アイテムが無い時
-			if (life < 3 && getChildByTag(ObstacleTag.TAG_OBSTACLE_HEART.getValue()) == null) {
+			if (life < 3 && getChildByTag(ObstacleType.TAG_OBSTACLE_HEART.getValue()) == null) {
 				// 500分の1の確率で回復アイテムを出現
 				if ((int) (Math.random() * 500) == 1) {
-					Sprite obstacle = getResourceSprite(ObstacleTag.TAG_OBSTACLE_HEART.getFileName());
+					Sprite obstacle = getResourceSprite(ObstacleType.TAG_OBSTACLE_HEART.getFileName());
 					// 画面右外に追加。y座標はランダム
 					obstacle.setPosition(getWindowWidth(), 350 - (int) (Math.random() * 200));
-					obstacle.setTag(ObstacleTag.TAG_OBSTACLE_HEART.getValue());
+					obstacle.setTag(ObstacleType.TAG_OBSTACLE_HEART.getValue());
 					attachChild(obstacle);
 				}
 			}
@@ -483,16 +432,16 @@ public class MainScene extends KeyListenScene
 			int r = (int) (Math.random() * 4);
 			switch (r) {
 			case 0:
-				attachChild(makeObstacleSprite(ObstacleTag.TAG_OBSTACLE_TRAP));
+				attachChild(makeObstacleSprite(ObstacleType.TAG_OBSTACLE_TRAP));
 				break;
 			case 1:
-				attachChild(makeObstacleSprite(ObstacleTag.TAG_OBSTACLE_FIRE));
+				attachChild(makeObstacleSprite(ObstacleType.TAG_OBSTACLE_FIRE));
 				break;
 			case 2:
-				attachChild(makeObstacleSprite(ObstacleTag.TAG_OBSTACLE_ENEMY));
+				attachChild(makeObstacleSprite(ObstacleType.TAG_OBSTACLE_ENEMY));
 				break;
 			case 3:
-				attachChild(makeObstacleSprite(ObstacleTag.TAG_OBSTACLE_EAGLE));
+				attachChild(makeObstacleSprite(ObstacleType.TAG_OBSTACLE_EAGLE));
 				break;
 			default:
 				break;
@@ -533,14 +482,14 @@ public class MainScene extends KeyListenScene
 		attachChild(pauseBackground);
 		
 		try {
-			ButtonSprite btnMenu = getResourceButtonSprite("menu_btn_05.png", "menu_btn_05_p.png");
-			attachMenuButton(pauseBackground, MENU_RESUME, btnMenu, 100, this);
+			ButtonSprite btnResume = getResourceButtonSprite("menu_btn_05.png", "menu_btn_05_p.png");
+			attachMenuButton(pauseBackground, MENU_RESUME, btnResume, 100, this);
 			
-			ButtonSprite btnTweet = getResourceButtonSprite("menu_btn_02.png", "menu_btn_02_p.png");
-			attachMenuButton(pauseBackground, MENU_TWEET, btnTweet, 220, this);
+			ButtonSprite btnRetry = getResourceButtonSprite("menu_btn_02.png", "menu_btn_02_p.png");
+			attachMenuButton(pauseBackground, MENU_RETRY, btnRetry, 220, this);
 			
-			ButtonSprite btnRanking = getResourceButtonSprite("menu_btn_04.png", "menu_btn_04_p.png");
-			attachMenuButton(pauseBackground, MENU_RANKING, btnRanking, 340, this);
+			ButtonSprite btnMenu = getResourceButtonSprite("menu_btn_04.png", "menu_btn_04_p.png");
+			attachMenuButton(pauseBackground, MENU_MENU, btnMenu, 340, this);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -711,6 +660,8 @@ public class MainScene extends KeyListenScene
 	@Override
 	public void onClick(ButtonSprite pButtonSprite, float pTouchAreaLocalX,
 			float pTouchAreaLocalY) {
+		btnPressedSound.play();
+		
 		switch (pButtonSprite.getTag()) {
 		case MENU_RESUME:
 			// detachChildrenとdetachSelfを同じタイミングで呼ぶときは別スレッドで
@@ -780,7 +731,7 @@ public class MainScene extends KeyListenScene
 		for (int i = 0; i < getChildCount(); i++) {
 			if (getChildByIndex(i) instanceof AnimatedSprite) {
 				AnimatedSprite animeSprite = (AnimatedSprite) getChildByIndex(i);
-				ObstacleTag obstacleType = ObstacleTag.getObstacleTag(animeSprite.getTag());
+				ObstacleType obstacleType = ObstacleType.getObstacleType(animeSprite.getTag());
 				if (obstacleType.getDuration() > 0) {
 					animeSprite.animate(obstacleType.getDuration());
 				}
@@ -851,8 +802,8 @@ public class MainScene extends KeyListenScene
 			
 			for (int i = 0; i < getChildCount(); i++) {
 				// 攻撃で倒せるのは敵と鷹のみ
-				if (getChildByIndex(i).getTag() == ObstacleTag.TAG_OBSTACLE_ENEMY.getValue() 
-						|| getChildByIndex(i).getTag() == ObstacleTag.TAG_OBSTACLE_EAGLE.getValue()) {
+				if (getChildByIndex(i).getTag() == ObstacleType.TAG_OBSTACLE_ENEMY.getValue() 
+						|| getChildByIndex(i).getTag() == ObstacleType.TAG_OBSTACLE_EAGLE.getValue()) {
 					// 衝突判定
 					AnimatedSprite obj = (AnimatedSprite) getChildByIndex(i);
 					if (obj.collidesWith(weapon) || obj.collidesWith(attackEffect)) {
@@ -940,15 +891,16 @@ public class MainScene extends KeyListenScene
 			unregisterCustomUpdateHandler(playerIsFadeClearTimerHandler);
 		}
 	});
+	
 	// --------------------------------------------------
 	// プレイヤー関連メソッド
 	// --------------------------------------------------
 		
 	/**
 	 * 敵攻撃.
-	 * @param enemyObstacleTag 敵オブジェクトTag
+	 * @param enemyObstacleType 敵オブジェクトTag
 	 */
-	public void enemyAttackSprite(ObstacleTag enemyObstacleTag) {
+	public void enemyAttackSprite(ObstacleType enemyObstacleType) {
 		
 		// プレイヤーの歩行を停止
 		player.stopAnimation();
@@ -960,6 +912,9 @@ public class MainScene extends KeyListenScene
 		playerDefense.setPosition(player.getX(), player.getY());
 		playerDefense.setAlpha(1.0f);
 
+		// 攻撃を食らう効果音
+		enemyAttackSound.play();
+		
 		// 死亡
 		isDeading = true;
 					
@@ -969,10 +924,12 @@ public class MainScene extends KeyListenScene
 		
 		// ライフが0ならゲームオーバー
 		if (life == 0) {
+			// 画面止める
+			pauseGame();
+			// ゲームオーバー効果音
+			gameOverSound.play();
+			// ゲームオーバー画面表示
 			showGameOver();
-			// TODO: とりあえずハンドラーを消してる CustomTimerを作る必要がある
-			unregisterUpdateHandler(updateHandler);
-			unregisterUpdateHandler(obstacleAppearHandler);
 		}
 		
 		registerCustomUpdateHandler(playerIsDeadTimerHandler);
@@ -980,6 +937,9 @@ public class MainScene extends KeyListenScene
 	
 	public void addLifeSprite() {
 		if (life < 3) {
+			// 効果音再生
+			recoverySound.play();
+			
 			life++;
 			attachChild(lifeSpriteArray.get(life - 1));
 			lifeSpriteArray.get(life - 1).registerEntityModifier(
@@ -1000,6 +960,9 @@ public class MainScene extends KeyListenScene
 		setPlayerToAttackPosition();
 		// 武器とエフェクト
 		setWeaponPosition();
+		
+		// 攻撃効果音
+		playerAttackSound.play();
 		
 		// 攻撃終了時ハンドラー設定
 		registerCustomUpdateHandler(playerIsAttackTimerHandler);
@@ -1141,7 +1104,7 @@ public class MainScene extends KeyListenScene
 	 * @param obstacleType 障害物タイプ
 	 * @return 障害物Sprite
 	 */
-	private Sprite makeObstacleSprite(ObstacleTag obstacleType) {
+	private Sprite makeObstacleSprite(ObstacleType obstacleType) {
 		
 		// 縦横が設定されていない場合は通常Spriteとする
 		if (obstacleType.getColumn() == 0 && obstacleType.getRow() == 0) {
