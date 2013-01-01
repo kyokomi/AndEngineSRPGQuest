@@ -7,7 +7,10 @@ import org.andengine.engine.options.ScreenOrientation;
 import org.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
 import org.andengine.entity.scene.Scene;
 
-import com.kyokomi.scrollquest.utils.ResourceUtil;
+import com.kyokomi.core.activity.MultiSceneActivity;
+import com.kyokomi.core.scene.KeyListenScene;
+import com.kyokomi.core.utils.ResourceUtil;
+import com.kyokomi.scrollquest.scene.InitialScene;
 import com.kyokomi.scrollquest.R;
 
 import android.view.KeyEvent;

@@ -1,4 +1,4 @@
-package com.kyokomi.scrollquest;
+package com.kyokomi.scrollquest.scene;
 
 import org.andengine.entity.modifier.DelayModifier;
 import org.andengine.entity.modifier.MoveModifier;
@@ -7,7 +7,9 @@ import org.andengine.entity.sprite.ButtonSprite;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.util.modifier.ease.EaseBackInOut;
 
-import com.kyokomi.scrollquest.utils.ResourceUtil;
+import com.kyokomi.core.activity.MultiSceneActivity;
+import com.kyokomi.core.scene.KeyListenScene;
+import com.kyokomi.core.utils.ResourceUtil;
 
 import android.view.KeyEvent;
 
@@ -143,8 +145,10 @@ public class InitialScene extends KeyListenScene implements ButtonSprite.OnClick
 			getBaseActivity().appendScene(scene);
 			break;
 		case INITIAL_RANKING:
+			getBaseActivity().showToast("ランキング未実装");;
 			break;
 		case INITIAL_FEEDBACK:
+			getBaseActivity().showToast("未実装やで!");;
 			break;
 		}
 	}

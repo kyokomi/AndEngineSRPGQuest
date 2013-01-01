@@ -1,4 +1,4 @@
-package com.kyokomi.scrollquest;
+package com.kyokomi.scrollquest.scene;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +30,9 @@ import org.andengine.util.HorizontalAlign;
 import org.andengine.util.color.Color;
 import org.andengine.util.modifier.ease.EaseQuadOut;
 
-import com.kyokomi.scrollquest.utils.SPUtil;
+import com.kyokomi.core.activity.MultiSceneActivity;
+import com.kyokomi.core.scene.KeyListenScene;
+import com.kyokomi.core.utils.SPUtil;
 
 import android.graphics.Typeface;
 import android.view.KeyEvent;

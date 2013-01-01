@@ -1,11 +1,14 @@
-package com.kyokomi.scrollquest;
+package com.kyokomi.core.activity;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.andengine.ui.activity.SimpleLayoutGameActivity;
 
-import com.kyokomi.scrollquest.utils.ResourceUtil;
+import android.widget.Toast;
+
+import com.kyokomi.core.scene.KeyListenScene;
+import com.kyokomi.core.utils.ResourceUtil;
 
 /**
  * {@link BaseGameActivity}のサブクラスであり、XMLLayoutを利用してActivityを生成するクラス.
@@ -79,4 +82,13 @@ public abstract class MultiSceneActivity extends SimpleLayoutGameActivity {
 	 * @param scene
 	 */
 	public abstract void refreshRunningScene(KeyListenScene scene);
+	
+	public void showToast(final CharSequence text) {
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				Toast.makeText(getBaseContext(), text, Toast.LENGTH_SHORT).show();
+			}
+		});
+	}
 }

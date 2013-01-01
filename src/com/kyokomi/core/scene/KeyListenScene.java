@@ -1,7 +1,9 @@
-package com.kyokomi.scrollquest;
+package com.kyokomi.core.scene;
 
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.sprite.Sprite;
+
+import com.kyokomi.core.activity.MultiSceneActivity;
 
 import android.view.KeyEvent;
 
