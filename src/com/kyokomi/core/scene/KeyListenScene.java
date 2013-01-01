@@ -1,6 +1,8 @@
 package com.kyokomi.core.scene;
 
 import org.andengine.entity.scene.Scene;
+import org.andengine.entity.sprite.AnimatedSprite;
+import org.andengine.entity.sprite.ButtonSprite;
 import org.andengine.entity.sprite.Sprite;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
@@ -77,5 +79,54 @@ public abstract class KeyListenScene extends Scene {
 	public Sprite placeToCenterY(Sprite sp, float x) {
 		sp.setPosition(x, baseActivity.getEngine().getCamera().getHeight() / 2.0f - sp.getHeight() / 2.0f);
 		return sp;
+	}
+	
+	// -------------------
+	// 汎用
+	// -------------------
+	/**
+	 * リソースファイルからSpriteを取得.
+	 * @param fileName ファイル名
+	 * @return Sprite
+	 */
+	public Sprite getResourceSprite(String fileName) {
+		return getBaseActivity().getResourceUtil().getSprite(fileName);
+	}
+	
+	/**
+	 * リソースファイルからSpriteを取得.
+	 * @param normalFileName 通常時ファイル名
+	 * @param pressedFileName 押下時ファイル名
+	 * @return Sprite
+	 */
+	public ButtonSprite getResourceButtonSprite(String normalFileName, String pressedFileName) {
+		return getBaseActivity().getResourceUtil().getButtonSprite(normalFileName, pressedFileName);
+	}
+	
+	/**
+	 * リソースファイルからAnimatedSpriteを取得.
+	 * @param fileName ファイル名
+	 * @param column 横のコマ数
+	 * @param row 縦のコマ数
+	 * @return Sprite
+	 */
+	public AnimatedSprite getResourceAnimatedSprite(String fileName, int column, int row) {
+		return getBaseActivity().getResourceUtil().getAnimatedSprite(fileName, column, row);
+	}
+	
+	/**
+	 * 画面横サイズを取得.
+	 * @return 画面横サイズ
+	 */
+	public float getWindowWidth() {
+		return getBaseActivity().getEngine().getCamera().getWidth();
+	}
+	
+	/**
+	 * 画面縦サイズを取得.
+	 * @return 画面横サイズ
+	 */
+	public float getWindowHeight() {
+		return getBaseActivity().getEngine().getCamera().getHeight();
 	}
 }

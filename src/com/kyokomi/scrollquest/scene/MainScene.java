@@ -32,6 +32,7 @@ import org.andengine.util.modifier.ease.EaseQuadOut;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.scene.KeyListenScene;
+import com.kyokomi.core.utils.CollidesUtil;
 import com.kyokomi.core.utils.SPUtil;
 
 import android.graphics.Typeface;
@@ -385,11 +386,12 @@ public class MainScene extends KeyListenScene
 							if (obj.collidesWith(player)) {
 								
 								// プレイヤーのｘ座標と障害物のx座標中心間の距離
-								float distanceBetweenCenterXOfPlayerAndObstacle = getDistanceBetween(player, obj);
+								float distanceBetweenCenterXOfPlayerAndObstacle = CollidesUtil.getDistanceBetween(player, obj);
 								
 								// 衝突を許容する距離
 								ObstacleTag objTag = ObstacleTag.getObstacleTag(obj.getTag());
-								float allowableDistance = getAllowableDistance(player, obj, objTag.getAllowable());
+								float allowableDistance = CollidesUtil.getAllowableDistance(
+										player, obj, objTag.getAllowable());
 								if (distanceBetweenCenterXOfPlayerAndObstacle < allowableDistance) {
 									// 敵の攻撃
 									enemyAttackSprite(objTag); 
@@ -546,12 +548,12 @@ public class MainScene extends KeyListenScene
 			touchEndPoint[1] = y;
 			
 			// フリックの距離が短すぎるときにはフリックと判定しない
-			if (!isTouchFlick(touchStartPoint, touchEndPoint)) {
+			if (!CollidesUtil.isTouchFlick(touchStartPoint, touchEndPoint)) {
 				return true;
 			}
 			
 			// フリックの角度を求める
-			double angle = getAngleByTwoPostion(touchStartPoint, touchEndPoint);
+			double angle = CollidesUtil.getAngleByTwoPostion(touchStartPoint, touchEndPoint);
 			// 下から上へのフリックを0度に調整
 			angle -= 180;
 			// 下から上へのフリック（ジャンプ）
@@ -934,107 +936,4 @@ public class MainScene extends KeyListenScene
 	// 汎用メソッド
 	// --------------------------------------------------
 			
-	/**
-	 * リソースファイルからSpriteを取得.
-	 * @param fileName ファイル名
-	 * @return Sprite
-	 */
-	private Sprite getResourceSprite(String fileName) {
-		return getBaseActivity().getResourceUtil().getSprite(fileName);
-	}
-	
-	/**
-	 * リソースファイルからSpriteを取得.
-	 * @param normalFileName 通常時ファイル名
-	 * @param pressedFileName 押下時ファイル名
-	 * @return Sprite
-	 */
-	private ButtonSprite getResourceButtonSprite(String normalFileName, String pressedFileName) {
-		return getBaseActivity().getResourceUtil().getButtonSprite(normalFileName, pressedFileName);
-	}
-	
-	/**
-	 * リソースファイルからAnimatedSpriteを取得.
-	 * @param fileName ファイル名
-	 * @param column 横のコマ数
-	 * @param row 縦のコマ数
-	 * @return Sprite
-	 */
-	private AnimatedSprite getResourceAnimatedSprite(String fileName, int column, int row) {
-		return getBaseActivity().getResourceUtil().getAnimatedSprite(fileName, column, row);
-	}
-	
-	/**
-	 * 画面横サイズを取得.
-	 * @return 画面横サイズ
-	 */
-	private float getWindowWidth() {
-		return getBaseActivity().getEngine().getCamera().getWidth();
-	}
-	
-	/**
-	 * 画面縦サイズを取得.
-	 * @return 画面横サイズ
-	 */
-	private float getWindowHeight() {
-		return getBaseActivity().getEngine().getCamera().getHeight();
-	}
-	
-	/**
-	 * タッチ開始位置と終了位置を元にフリックなのか判定.
-	 * float[]は new float[2]で [0]がx座標 [1]がy座標
-	 * @param startPoints タッチ開始位置
-	 * @param endPoint タッチ終了位置
-	 * @return true:フリック / false:フリックとみなさない
-	 */
-	private boolean isTouchFlick(float[] startPoints, float[] endPoint) {
-		
-		float xDistance = endPoint[0] -startPoints[0];
-		float yDistance = endPoint[1] -startPoints[1];
-		
-		if (Math.abs(xDistance) < 50 && Math.abs(yDistance) < 50) {
-			return false;
-		}
-		return true;
-	}
-	
-	/**
-	 * タッチ開始位置と終了位置を元に2点間の角度を求める.
-	 * @param startPoints
-	 * @param endPoint
-	 * @return 2点間の角度
-	 */
-	private double getAngleByTwoPostion(float[] startPoints, float[] endPoint) {
-		double result = 0;
-		
-		float xDistance = endPoint[0] -startPoints[0];
-		float yDistance = endPoint[1] -startPoints[1];
-		
-		result = Math.atan2((double) yDistance, (double) xDistance) * 180 / Math.PI;
-		
-		result += 270;
-		
-		return result;
-	}
-	
-	/**
-	 * Sprite同士のx座標中心間の距離を求める.
-	 * @param sprite1 左側
-	 * @param sprite2 右側
-	 * @return x座標中心間の距離
-	 */
-	private float getDistanceBetween(Sprite sprite1, Sprite sprite2) {
-		return Math.abs((sprite2.getX() + sprite2.getWidth() / 2) - (sprite1.getX() + sprite1.getWidth() / 2));
-	}
-	
-	/**
-	 * 衝突の許容値を考慮した距離を求める.
-	 * @param sprite1 左側
-	 * @param sprite2 右側
-	 * @param allowable 衝突の許容値
-	 * @return 衝突の許容値を考慮した距離
-	 */
-	private float getAllowableDistance(Sprite sprite1, Sprite sprite2, float allowable) {
-		return (sprite1.getWidth() / 2) + (sprite2.getWidth() / 2 - allowable);
-	}
 }
