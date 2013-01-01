@@ -3,8 +3,11 @@ package com.kyokomi.scrollquest.scene;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.microedition.khronos.opengles.GL10;
+
 import org.andengine.engine.handler.timer.ITimerCallback;
 import org.andengine.engine.handler.timer.TimerHandler;
+import org.andengine.entity.IEntity;
 import org.andengine.entity.modifier.DelayModifier;
 import org.andengine.entity.modifier.FadeInModifier;
 import org.andengine.entity.modifier.FadeOutModifier;
@@ -17,6 +20,7 @@ import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.sprite.AnimatedSprite;
 import org.andengine.entity.sprite.ButtonSprite;
+import org.andengine.entity.sprite.ButtonSprite.OnClickListener;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.text.Text;
 import org.andengine.entity.text.TextOptions;
@@ -31,11 +35,13 @@ import org.andengine.util.color.Color;
 import org.andengine.util.modifier.ease.EaseQuadOut;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
+import com.kyokomi.core.handler.CustomTimerHandler;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.core.utils.CollidesUtil;
 import com.kyokomi.core.utils.SPUtil;
 
 import android.graphics.Typeface;
+import android.util.Log;
 import android.view.KeyEvent;
 
 /**
@@ -57,12 +63,12 @@ public class MainScene extends KeyListenScene
 	// 障害物用enum
 	// ----------------------------------------
 	enum ObstacleTag {
-		TAG_OBSTACLE_DEFAULT(0, 0, "", 0, 0),
-		TAG_OBSTACLE_TRAP(1, 50, "main_trap.png", 0, 0),
-		TAG_OBSTACLE_FIRE(2, 40, "main_fire.png", 0, 0),
-		TAG_OBSTACLE_ENEMY(3, 80, "main_enemy.png", 1, 2),
-		TAG_OBSTACLE_EAGLE(4, 70, "main_eagle.png", 1, 2),
-		TAG_OBSTACLE_HEART(5, 0, "main_heart.png", 0, 0),
+		TAG_OBSTACLE_DEFAULT(0, 0, "", 0, 0, 0, 0, 0),
+		TAG_OBSTACLE_TRAP(1, 50, "main_trap.png", 0, 0, 0, 0, 380),
+		TAG_OBSTACLE_FIRE(2, 40, "main_fire.png", 0, 0, 0, 0, 260),
+		TAG_OBSTACLE_ENEMY(3, 80, "main_enemy.png", 1, 2, 100, 0, 325),
+		TAG_OBSTACLE_EAGLE(4, 70, "main_eagle.png", 1, 2, 200, 0, 30),
+		TAG_OBSTACLE_HEART(5, 0, "main_heart.png", 0, 0, 0, 0, 0),
 		;
 		/** 値. */
 		private Integer value;
@@ -74,13 +80,22 @@ public class MainScene extends KeyListenScene
 		private Integer column;
 		/** Spriteコマ数(縦). */
 		private Integer row;
+		/** Animated Duration. */
+		private Integer duration;
+		/** x座標. */
+		private Integer x;
+		/** y座標. */
+		private Integer y;
 		
-		ObstacleTag(Integer value, Integer allowable, String fileName, Integer column, Integer row) {
+		ObstacleTag(Integer value, Integer allowable, String fileName, Integer column, Integer row, Integer duration, Integer x, Integer y) {
 			this.value = value;
 			this.allowable = allowable;
 			this.fileName = fileName;
 			this.column = column;
 			this.row = row;
+			this.duration = duration;
+			this.x = x;
+			this.y = y;
 		}
 		public static ObstacleTag getObstacleTag(Integer tag) {
 			ObstacleTag[] values = values();
@@ -105,6 +120,15 @@ public class MainScene extends KeyListenScene
 		}
 		public Integer getRow() {
 			return row;
+		}
+		public Integer getDuration() {
+			return duration;
+		}
+		public Integer getX() {
+			return x;
+		}
+		public Integer getY() {
+			return y;
 		}
 	}
 	// ----------------------------------------
@@ -137,12 +161,17 @@ public class MainScene extends KeyListenScene
 	/** ライフ表示. */
 	private ArrayList<Sprite> lifeSpriteArray;
 	
+	// --- スコア ---
+	
 	/** 現在のスコアを表示するテキスト. */
 	private Text currentScoreText;
 	/** 過去最高のスコアを表示するテキスト. */
 	private Text highScoreText;
 	/** 現在のスコア. */
 	private int currentScore;
+	
+	// --- ポーズ ---
+	private Rectangle pauseBackground;
 	
 	// ----------------------------------------
 	// ゲーム設定パラメータ
@@ -164,6 +193,8 @@ public class MainScene extends KeyListenScene
 	// ----------------------------------------
 	/** タッチ可否. */
 	private boolean isTouchEnabled;
+	/** ポーズ中か否か. */
+	private boolean isPaused;
 	
 	// ---- ユーザーアクション ----
 	/** 攻撃中フラグ. */
@@ -176,12 +207,17 @@ public class MainScene extends KeyListenScene
 	private boolean isDeading;
 	/** 死んだ後の回復中フラグ. */
 	private boolean isRecovering;
+	/** ゲームオーバーフラグ. */
+	private boolean isGameOver;
 	
 	/** ドラッグ開始座標. */
 	private float[] touchStartPoint;
 	
 	/** 画面外に移動した障害物を除去する為に利用する配列. */
 	private ArrayList<Sprite> spriteOutOfBoundArray;
+	
+	/** 登録済みアップデートハンドラを格納する配列. */
+	private List<CustomTimerHandler> updateHandlerList;
 	
 	// -------------------------------------------------------
 	/**
@@ -203,6 +239,7 @@ public class MainScene extends KeyListenScene
 		
 		// --------- 設定、初期化 -----------
 		spriteOutOfBoundArray = new ArrayList<Sprite>();
+		updateHandlerList = new ArrayList<CustomTimerHandler>();
 		touchStartPoint = new float[2];
 		isTouchEnabled = true;
 		isJumping      = false;
@@ -210,6 +247,8 @@ public class MainScene extends KeyListenScene
 		isSlideing     = false;
 		isRecovering   = false;
 		isDeading      = false;
+		isPaused       = false;
+		isGameOver     = false;
 		currentScore = 0;
 		
 		// スクロール速度の初期値を設定
@@ -291,12 +330,7 @@ public class MainScene extends KeyListenScene
 		
 		// ハイスコアが500以下の時のみヘルプ画面を出す
 		if (SPUtil.getInstance(getBaseActivity()).getHighScore() > 500) {
-			// 1秒間に60回、updateHandlerを呼び出す
-			registerUpdateHandler(updateHandler);
-			// 1秒毎に障害物出現関数を呼び出し
-			registerUpdateHandler(obstacleAppearHandler);
-			// Sceneのタッチリスナーを登録
-			setOnSceneTouchListener(this);
+			startGame();
 		} else {
 			showHelp();
 		}
@@ -309,14 +343,33 @@ public class MainScene extends KeyListenScene
 
 	@Override
 	public boolean dispatchKeyEvent(KeyEvent e) {
+		
 		// バックボタンが押された時
 		if (e.getAction() == KeyEvent.ACTION_DOWN && e.getKeyCode() == KeyEvent.KEYCODE_BACK) {
-			
-			return false;
+			// ゲームオーバー済みなら何もしない
+			if (isGameOver) {
+				return false;
+			}
+			// ポーズ中ならポーズ画面を消去
+			if (isPaused) {
+				// 別スレッドで破棄
+				detachEntity(pauseBackground);
+				
+				// ゲーム再開
+				resumeGame();
+				isPaused = false;
+				return true;
+			} else {
+				// ポーズ中以外のBackキー何もしない
+				return false;
+			}
 			
 		// メニューキーを押した時
 		} else if (e.getAction() == KeyEvent.ACTION_DOWN && e.getKeyCode() == KeyEvent.KEYCODE_MENU) {
-			
+			// ポーズ中でなければメニューを表示
+			if (!isPaused) {
+				showMenu();
+			}
 			return false;
 		}
 		return false;
@@ -426,53 +479,78 @@ public class MainScene extends KeyListenScene
 	public TimerHandler obstacleAppearHandler = new TimerHandler(1, true, new ITimerCallback() {
 		@Override
 		public void onTimePassed(TimerHandler pTimerHandler) {
-			Sprite obstacle = null;
-			AnimatedSprite animatedObstacle = null;
 			// 敵の種類をランダムに選択
 			int r = (int) (Math.random() * 4);
 			switch (r) {
 			case 0:
-				// 竹でできた罠
-				obstacle = getResourceSprite(ObstacleTag.TAG_OBSTACLE_TRAP.getFileName());
-				obstacle.setPosition(getWindowWidth() + obstacle.getWidth(), 380);
-				obstacle.setTag(ObstacleTag.TAG_OBSTACLE_TRAP.getValue());
-				attachChild(obstacle);
+				attachChild(makeObstacleSprite(ObstacleTag.TAG_OBSTACLE_TRAP));
 				break;
 			case 1:
-				// 火の玉
-				obstacle = getResourceSprite(ObstacleTag.TAG_OBSTACLE_FIRE.getFileName());
-				obstacle.setPosition(getWindowWidth() + obstacle.getWidth(), 260);
-				obstacle.setTag(ObstacleTag.TAG_OBSTACLE_FIRE.getValue());
-				attachChild(obstacle);
+				attachChild(makeObstacleSprite(ObstacleTag.TAG_OBSTACLE_FIRE));
 				break;
 			case 2:
-				// 敵
-				animatedObstacle = getResourceAnimatedSprite(
-						ObstacleTag.TAG_OBSTACLE_ENEMY.getFileName(), 
-						ObstacleTag.TAG_OBSTACLE_ENEMY.getColumn(), 
-						ObstacleTag.TAG_OBSTACLE_ENEMY.getRow());
-				animatedObstacle.setPosition(getWindowWidth() + animatedObstacle.getWidth(), 325);
-				animatedObstacle.setTag(ObstacleTag.TAG_OBSTACLE_ENEMY.getValue());
-				attachChild(animatedObstacle);
-				animatedObstacle.animate(100);
+				attachChild(makeObstacleSprite(ObstacleTag.TAG_OBSTACLE_ENEMY));
+				break;
 			case 3:
-				// 鷹
-				animatedObstacle = getResourceAnimatedSprite(
-						ObstacleTag.TAG_OBSTACLE_EAGLE.getFileName(), 
-						ObstacleTag.TAG_OBSTACLE_ENEMY.getColumn(), 
-						ObstacleTag.TAG_OBSTACLE_ENEMY.getRow());
-				animatedObstacle.setPosition(getWindowWidth() + animatedObstacle.getWidth(), 30);
-				animatedObstacle.setTag(ObstacleTag.TAG_OBSTACLE_EAGLE.getValue());
-				attachChild(animatedObstacle);
-				animatedObstacle.animate(200);
+				attachChild(makeObstacleSprite(ObstacleTag.TAG_OBSTACLE_EAGLE));
 				break;
 			default:
 				break;
 			}
+			// ZIndexを並べ直し
 			sortChildren();
 		}
 	});
 	
+	// ------------------------------------------------
+	// 画面表示など
+	// ------------------------------------------------
+	
+	// メニュー用定数
+	private static final int MENU_MENU    = 21;
+	private static final int MENU_TWEET   = 22;
+	private static final int MENU_RANKING = 23;
+	private static final int MENU_RETRY   = 24;
+	private static final int MENU_RESUME  = 25;
+	
+	/**
+	 * メニュー表示.
+	 */
+	public void showMenu() {
+		// ゲームオーバー時は無視
+		if (isGameOver) {
+			return;
+		}
+		// ゲームを一時停止させる
+		pauseGame();
+		
+		// 四角形を描画(TODO: 汎用メソッドにしてもいいかも)
+		pauseBackground = new Rectangle(0, 0, getWindowWidth(), 
+				getWindowHeight(), getBaseActivity().getVertexBufferObjectManager());
+		pauseBackground.setBlendFunction(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
+		pauseBackground.setColor(0, 0, 0);
+		pauseBackground.setAlpha(0.7f);
+		attachChild(pauseBackground);
+		
+		try {
+			ButtonSprite btnMenu = getResourceButtonSprite("menu_btn_05.png", "menu_btn_05_p.png");
+			attachMenuButton(pauseBackground, MENU_RESUME, btnMenu, 100, this);
+			
+			ButtonSprite btnTweet = getResourceButtonSprite("menu_btn_02.png", "menu_btn_02_p.png");
+			attachMenuButton(pauseBackground, MENU_TWEET, btnTweet, 220, this);
+			
+			ButtonSprite btnRanking = getResourceButtonSprite("menu_btn_04.png", "menu_btn_04_p.png");
+			attachMenuButton(pauseBackground, MENU_RANKING, btnRanking, 340, this);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		isPaused = true;
+	}
+
+	/**
+	 * ヘルプ表示.
+	 */
 	public void showHelp() {
 		instructionSprite = getResourceSprite("instruction.png");
 		placeToCenter(instructionSprite);
@@ -491,15 +569,75 @@ public class MainScene extends KeyListenScene
 				instructionBtn.detachSelf();
 				unregisterTouchArea(instructionBtn);
 				
-				// 1秒間に60回、updateHandlerを呼び出す
-				registerUpdateHandler(updateHandler);
-				// 1秒毎に障害物出現関数を呼び出し
-				registerUpdateHandler(obstacleAppearHandler);
-				// Sceneのタッチリスナーを登録
-				setOnSceneTouchListener(MainScene.this);
+				// ゲーム開始
+				startGame();
 			}
 		});
 	}
+	
+	/**
+	 * ゲームオーバー表示.
+	 */
+	public void showGameOver() {
+	
+		// Sceneのタッチリスナーを解除
+		setOnSceneTouchListener(null);
+		
+		// ハイスコア更新時は保存
+		if (currentScore > SPUtil.getInstance(getBaseActivity()).getHighScore()) {
+			SPUtil.getInstance(getBaseActivity()).setHighScore(currentScore);
+		}
+		
+		// 透明な背景を作成
+		Rectangle resultBackground = new Rectangle(
+				getWindowWidth(), 0,
+				getWindowWidth(), getWindowHeight(), 
+				getBaseActivity().getVertexBufferObjectManager());
+		// 透明にする
+		resultBackground.setColor(Color.TRANSPARENT);
+		// 敵キャラクターより全面に表示
+		resultBackground.setZIndex(zIndexResult);
+		attachChild(resultBackground);
+		sortChildren();
+		
+		// ビットマップフォントを作成
+		BitmapFont bitmapFont = new BitmapFont(
+				getBaseActivity().getTextureManager(), 
+				getBaseActivity().getAssets(), 
+				"font/result.fnt");
+		bitmapFont.load();
+		
+		// ビットマップフォントを元にスコアを表示
+		Text resultText = new Text(0, 0, bitmapFont, 
+				"" + currentScore + " pts", 
+				getBaseActivity().getVertexBufferObjectManager());
+		resultText.setPosition(getWindowWidth() / 2.0f - resultText.getWidth() / 2.0f, 60);
+		resultBackground.attachChild(resultText);
+		
+		// 各ボタン配置
+		ButtonSprite btnRanking = getResourceButtonSprite("menu_btn_01.png", "menu_btn_01_p.png");
+		attachMenuButton(resultBackground, MENU_RANKING, btnRanking, 145, this);
+		
+		ButtonSprite btnRetry = getResourceButtonSprite("menu_btn_02.png", "menu_btn_02_p.png");
+		attachMenuButton(resultBackground, MENU_RETRY, btnRetry, 260, this);
+		
+		ButtonSprite btnTweet = getResourceButtonSprite("menu_btn_03.png", "menu_btn_03_p.png");
+		attachMenuButton(resultBackground, MENU_TWEET, btnTweet, 330, this);
+		
+		ButtonSprite btnMenu = getResourceButtonSprite("menu_btn_04.png", "menu_btn_04_p.png");
+		attachMenuButton(resultBackground, MENU_MENU, btnMenu, 400, this);
+		
+		// 横から移動してくるアニメーション
+		resultBackground.registerEntityModifier(new SequenceEntityModifier(
+				new DelayModifier(1.0f), 
+				new MoveModifier(1.0f, 
+						resultBackground.getX(), 
+						resultBackground.getX() - getWindowWidth(), 
+						resultBackground.getY(),
+						resultBackground.getY(),
+						EaseQuadOut.getInstance())));
+	}
+
 	// --------------------------------------------------
 	// IOnSceneTouchListener
 	// --------------------------------------------------
@@ -573,97 +711,239 @@ public class MainScene extends KeyListenScene
 	@Override
 	public void onClick(ButtonSprite pButtonSprite, float pTouchAreaLocalX,
 			float pTouchAreaLocalY) {
-		// TODO Auto-generated method stub
-		
+		switch (pButtonSprite.getTag()) {
+		case MENU_RESUME:
+			// detachChildrenとdetachSelfを同じタイミングで呼ぶときは別スレッドで
+			detachEntity(pauseBackground);
+			resumeGame();
+			isPaused = false;
+			break;
+		case MENU_RETRY:
+			MainScene scene = new MainScene(getBaseActivity());
+			getBaseActivity().refreshRunningScene(scene);
+			break;
+		case MENU_MENU:
+			getBaseActivity().backToInitial();
+			break;
+		case MENU_TWEET:
+			break;
+		default:
+			break;
+		}
+	}
+	// --------------------------------------------------
+	// ゲーム状況変更
+	// --------------------------------------------------
+	
+	/**
+	 * ゲーム開始.
+	 */
+	public void startGame() {
+		// 1秒間に60回、updateHandlerを呼び出す
+		registerUpdateHandler(updateHandler);
+		// 1秒毎に障害物出現関数を呼び出し
+		registerUpdateHandler(obstacleAppearHandler);
+		// Sceneのタッチリスナーを登録
+		setOnSceneTouchListener(MainScene.this);
 	}
 	
+	/**
+	 * ゲーム一時停止.
+	 */
+	public void pauseGame() {
+		// 全てのAnimatedSpriteのアニメーションをストップ
+		for (int i = 0; i < getChildCount(); i++) {
+			if (getChildByIndex(i) instanceof AnimatedSprite) {
+				((AnimatedSprite) getChildByIndex(i)).stopAnimation();
+			}
+		}
+		unregisterUpdateHandler(updateHandler);
+		unregisterUpdateHandler(obstacleAppearHandler);
+		
+		for (CustomTimerHandler handler : updateHandlerList) {
+			handler.pause();
+		}
+	}
+	
+	/**
+	 * ゲーム再開.
+	 */
+	public void resumeGame() {
+		// 1秒間に60回、updateHandlerを呼び出す
+		registerUpdateHandler(updateHandler);
+		// 1秒毎に障害物出現関数を呼び出し
+		registerUpdateHandler(obstacleAppearHandler);
+		
+		// AnimatedSpriteのアニメーションを再開
+		
+		// --- 障害物のアニメーション ---
+		for (int i = 0; i < getChildCount(); i++) {
+			if (getChildByIndex(i) instanceof AnimatedSprite) {
+				AnimatedSprite animeSprite = (AnimatedSprite) getChildByIndex(i);
+				ObstacleTag obstacleType = ObstacleTag.getObstacleTag(animeSprite.getTag());
+				if (obstacleType.getDuration() > 0) {
+					animeSprite.animate(obstacleType.getDuration());
+				}
+			}
+		}
+		
+		// --- プレイヤーのアニメーション --- 
+		for (CustomTimerHandler handler : updateHandlerList) {
+			handler.resume();
+		}
+	}
+
+	// --------------------------------------------------
+	// TimerHandler
+	// --------------------------------------------------
+	/**
+	 * プレイヤー攻撃時ハンドラー.
+	 */
+	private CustomTimerHandler playerIsAttackTimerHandler = 
+			new CustomTimerHandler(0.5f, new ITimerCallback() {
+		@Override
+		public void onTimePassed(TimerHandler pTimerHandler) {
+			Log.d("Timer", "playerIsAttackTimerHandler");
+			
+			// 元に戻す
+			playerAttack.setAlpha(0.0f);
+			attackEffect.setAlpha(0.0f);
+			weapon.setAlpha(0.0f);
+			setPlayerToDefaultPosition();
+			isAttacking = false;
+			isTouchEnabled = true;
+			
+			unregisterCustomUpdateHandler(playerIsAttackTimerHandler);
+		}
+	});
+	
+	private CustomTimerHandler weaponIsTimerHandler = 
+			new CustomTimerHandler(0.3f, new ITimerCallback() {
+		@Override
+		public void onTimePassed(TimerHandler pTimerHandler) {
+			Log.d("Timer", "weaponIsTimerHandler");
+			
+			weapon.setZIndex(playerAttack.getZIndex() - 1);
+			sortChildren();// Z-indexを反映
+			
+			weapon.setRotation(100f);
+			weapon.setPosition(playerAttack.getX() + 50, playerAttack.getY() - 10);
+			
+			unregisterCustomUpdateHandler(weaponIsTimerHandler);
+		}
+	}); 
+	
+	private CustomTimerHandler weaponIsEffectTimerHandler = 
+			new CustomTimerHandler(0.2f, new ITimerCallback() {
+		@Override
+		public void onTimePassed(TimerHandler pTimerHandler) {
+			Log.d("Timer", "weaponIsEffectTimerHandler");
+			
+			attackEffect.animate(
+					new long[]{100, 100, 100}, 
+					new int[]{4, 3, 2}, 
+					false);
+			attackEffect.setPosition(playerAttack.getX(), playerAttack.getY() - 70);
+			attackEffect.setAlpha(1.0f);
+			
+			// 削除するSpriteを一旦格納する配列
+			List<AnimatedSprite> spToRemoveArray = new ArrayList<AnimatedSprite>();
+			
+			for (int i = 0; i < getChildCount(); i++) {
+				// 攻撃で倒せるのは敵と鷹のみ
+				if (getChildByIndex(i).getTag() == ObstacleTag.TAG_OBSTACLE_ENEMY.getValue() 
+						|| getChildByIndex(i).getTag() == ObstacleTag.TAG_OBSTACLE_EAGLE.getValue()) {
+					// 衝突判定
+					AnimatedSprite obj = (AnimatedSprite) getChildByIndex(i);
+					if (obj.collidesWith(weapon) || obj.collidesWith(attackEffect)) {
+						spToRemoveArray.add(obj);
+					}
+				}
+			}
+			// 削除
+			for (AnimatedSprite sp :spToRemoveArray) {
+				sp.detachSelf();
+			}
+			
+			unregisterCustomUpdateHandler(weaponIsEffectTimerHandler);
+		}
+	});
+			
+	/**
+	 * プレイヤージャンプ時ハンドラー.
+	 */
+	private CustomTimerHandler playerIsJumpTimerHandler = 
+			new CustomTimerHandler(0.5f, new ITimerCallback() {
+		@Override
+		public void onTimePassed(TimerHandler pTimerHandler) {
+			// 元に戻す
+			playerDefense.setAlpha(0.0f);
+			setPlayerToDefaultPosition();
+			isTouchEnabled = true;
+			isJumping = false;
+			
+			unregisterCustomUpdateHandler(playerIsJumpTimerHandler);
+		}
+	});
+	
+	private CustomTimerHandler playerIsSlideTimerHandler = 
+			new CustomTimerHandler(0.5f, new ITimerCallback() {
+		@Override
+		public void onTimePassed(TimerHandler pTimerHandler) {
+			// 元に戻す
+			playerDefense.setAlpha(0.0f);
+			setPlayerToDefaultPosition();
+			isTouchEnabled = true;
+			isSlideing = false;
+			
+			unregisterCustomUpdateHandler(playerIsSlideTimerHandler);
+		}
+	});
+	
+	/**
+	 * プレイヤー死亡時ハンドラー.
+	 */
+	private CustomTimerHandler playerIsDeadTimerHandler = 
+			new CustomTimerHandler(1.0f, new ITimerCallback() {
+		@Override
+		public void onTimePassed(TimerHandler pTimerHandler) {
+			// 回復後は一定時間無敵状態
+			isDeading = false;
+			isRecovering = true;
+			
+			playerDefense.setAlpha(0.0f);
+			setPlayerToDefaultPosition();
+			
+			// 4回ループでフェードアウトとフェードインを繰り返して点滅させる
+			player.registerEntityModifier(new LoopEntityModifier(
+						new SequenceEntityModifier(
+								new FadeOutModifier(0.25f),
+								new FadeInModifier(0.25f)
+						), 4));
+			
+			// 無敵状態を解除
+			registerCustomUpdateHandler(playerIsFadeClearTimerHandler);
+			
+			unregisterCustomUpdateHandler(playerIsDeadTimerHandler);
+		}
+	});
+	
+	/**
+	 * プレイヤー無敵状態の解除.
+	 */
+	private CustomTimerHandler playerIsFadeClearTimerHandler = 
+			new CustomTimerHandler(2.0f, new ITimerCallback() {
+		@Override
+		public void onTimePassed(TimerHandler pTimerHandler) {
+			isRecovering = false;
+			
+			unregisterCustomUpdateHandler(playerIsFadeClearTimerHandler);
+		}
+	});
 	// --------------------------------------------------
 	// プレイヤー関連メソッド
 	// --------------------------------------------------
-	
-	private static final int MENU_MENU = 1;
-	private static final int MENU_TWEET = 2;
-	private static final int MENU_RANKING = 3;
-	private static final int MENU_RETRY = 4;
-	
-	/**
-	 * ゲームオーバー表示.
-	 */
-	public void showGameOver() {
-	
-		// Sceneのタッチリスナーを解除
-		setOnSceneTouchListener(null);
 		
-		// ハイスコア更新時は保存
-		if (currentScore > SPUtil.getInstance(getBaseActivity()).getHighScore()) {
-			SPUtil.getInstance(getBaseActivity()).setHighScore(currentScore);
-		}
-		
-		// 透明な背景を作成
-		Rectangle resultBackground = new Rectangle(
-				getWindowWidth(), 0,
-				getWindowWidth(), getWindowHeight(), 
-				getBaseActivity().getVertexBufferObjectManager());
-		// 透明にする
-		resultBackground.setColor(Color.TRANSPARENT);
-		// 敵キャラクターより全面に表示
-		resultBackground.setZIndex(zIndexResult);
-		attachChild(resultBackground);
-		sortChildren();
-		
-		// ビットマップフォントを作成
-		BitmapFont bitmapFont = new BitmapFont(
-				getBaseActivity().getTextureManager(), 
-				getBaseActivity().getAssets(), 
-				"font/result.fnt");
-		bitmapFont.load();
-		
-		// ビットマップフォントを元にスコアを表示
-		Text resultText = new Text(0, 0, bitmapFont, 
-				"" + currentScore + " pts", 
-				getBaseActivity().getVertexBufferObjectManager());
-		resultText.setPosition(getWindowWidth() / 2.0f - resultText.getWidth() / 2.0f, 60);
-		resultBackground.attachChild(resultText);
-		
-		// 各ボタン
-		ButtonSprite btnRanking = getResourceButtonSprite("menu_btn_01.png", "menu_btn_01_p.png");
-		placeToCenterX(btnRanking, 145);
-		btnRanking.setTag(MENU_RANKING);
-		btnRanking.setOnClickListener(this);
-		resultBackground.attachChild(btnRanking);
-		registerTouchArea(btnRanking);
-		
-		ButtonSprite btnRetry = getResourceButtonSprite("menu_btn_02.png", "menu_btn_02_p.png");
-		placeToCenterX(btnRetry, 260);
-		btnRetry.setTag(MENU_RETRY);
-		btnRetry.setOnClickListener(this);
-		resultBackground.attachChild(btnRetry);
-		registerTouchArea(btnRetry);
-		
-		ButtonSprite btnTweet = getResourceButtonSprite("menu_btn_03.png", "menu_btn_03_p.png");
-		placeToCenterX(btnTweet, 330);
-		btnTweet.setTag(MENU_TWEET);
-		btnTweet.setOnClickListener(this);
-		resultBackground.attachChild(btnTweet);
-		registerTouchArea(btnTweet);
-		
-		ButtonSprite btnMenu = getResourceButtonSprite("menu_btn_04.png", "menu_btn_04_p.png");
-		placeToCenterX(btnMenu, 400);
-		btnMenu.setTag(MENU_MENU);
-		btnMenu.setOnClickListener(this);
-		resultBackground.attachChild(btnMenu);
-		registerTouchArea(btnMenu);
-		
-		resultBackground.registerEntityModifier(new SequenceEntityModifier(
-				new DelayModifier(1.0f), 
-				new MoveModifier(1.0f, 
-						resultBackground.getX(), 
-						resultBackground.getX() - getWindowWidth(), 
-						resultBackground.getY(),
-						resultBackground.getY(),
-						EaseQuadOut.getInstance())));
-	}
-	
 	/**
 	 * 敵攻撃.
 	 * @param enemyObstacleTag 敵オブジェクトTag
@@ -695,32 +975,7 @@ public class MainScene extends KeyListenScene
 			unregisterUpdateHandler(obstacleAppearHandler);
 		}
 		
-		registerUpdateHandler(new TimerHandler(1.0f, new ITimerCallback() {
-			@Override
-			public void onTimePassed(TimerHandler pTimerHandler) {
-				// 回復後は一定時間無敵状態
-				isDeading = false;
-				isRecovering = true;
-				
-				playerDefense.setAlpha(0.0f);
-				setPlayerToDefaultPosition();
-				
-				// 4回ループでフェードアウトとフェードインを繰り返して点滅させる
-				player.registerEntityModifier(new LoopEntityModifier(
-							new SequenceEntityModifier(
-									new FadeOutModifier(0.25f),
-									new FadeInModifier(0.25f)
-							), 4));
-				
-				// 無敵状態を解除
-				registerUpdateHandler(new TimerHandler(2.0f, new ITimerCallback() {
-					@Override
-					public void onTimePassed(TimerHandler pTimerHandler) {
-						isRecovering = false;
-					}
-				}));
-			}
-		}));
+		registerCustomUpdateHandler(playerIsDeadTimerHandler);
 	}
 	
 	public void addLifeSprite() {
@@ -746,20 +1001,10 @@ public class MainScene extends KeyListenScene
 		// 武器とエフェクト
 		setWeaponPosition();
 		
-		// ジャンプ終了時ハンドラー設定
-		registerUpdateHandler(new TimerHandler(0.5f, new ITimerCallback() {
-			@Override
-			public void onTimePassed(TimerHandler pTimerHandler) {
-				// 元に戻す
-				playerAttack.setAlpha(0.0f);
-				attackEffect.setAlpha(0.0f);
-				weapon.setAlpha(0.0f);
-				setPlayerToDefaultPosition();
-				isAttacking = false;
-				isTouchEnabled = true;
-			}
-		}));
+		// 攻撃終了時ハンドラー設定
+		registerCustomUpdateHandler(playerIsAttackTimerHandler);
 	}
+	
 	/**
 	 * プレイヤージャンプ.
 	 */
@@ -774,16 +1019,7 @@ public class MainScene extends KeyListenScene
 		// ジャンプ
 		setPlayerToJumpPositon();
 		// ジャンプ終了時ハンドラー設定
-		registerUpdateHandler(new TimerHandler(0.5f, new ITimerCallback() {
-			@Override
-			public void onTimePassed(TimerHandler pTimerHandler) {
-				// 元に戻す
-				playerDefense.setAlpha(0.0f);
-				setPlayerToDefaultPosition();
-				isTouchEnabled = true;
-				isJumping = false;
-			}
-		}));
+		registerCustomUpdateHandler(playerIsJumpTimerHandler);
 	}
 	
 	/**
@@ -799,17 +1035,8 @@ public class MainScene extends KeyListenScene
 		player.setAlpha(0.0f);
 		// スライディングポジションへ
 		setPlayerToSlidePositon();
-		// ジャンプ終了時ハンドラー設定
-		registerUpdateHandler(new TimerHandler(0.5f, new ITimerCallback() {
-			@Override
-			public void onTimePassed(TimerHandler pTimerHandler) {
-				// 元に戻す
-				playerDefense.setAlpha(0.0f);
-				setPlayerToDefaultPosition();
-				isTouchEnabled = true;
-				isSlideing = false;
-			}
-		}));
+		// スライディング終了時ハンドラー設定
+		registerCustomUpdateHandler(playerIsSlideTimerHandler);
 	}
 	
 	/**
@@ -838,48 +1065,9 @@ public class MainScene extends KeyListenScene
 		weapon.setAlpha(1.0f);
 		
 		// 武器
-		registerUpdateHandler(new TimerHandler(0.3f, new ITimerCallback() {
-			@Override
-			public void onTimePassed(TimerHandler pTimerHandler) {
-				weapon.setZIndex(playerAttack.getZIndex() - 1);
-				sortChildren();// Z-indexを反映
-				
-				weapon.setRotation(100f);
-				weapon.setPosition(playerAttack.getX() + 50, playerAttack.getY() - 10);
-			}
-		}));
-		
+		registerCustomUpdateHandler(weaponIsTimerHandler);
 		// エフェクト
-		registerUpdateHandler(new TimerHandler(0.2f, new ITimerCallback() {
-			@Override
-			public void onTimePassed(TimerHandler pTimerHandler) {
-				attackEffect.animate(
-						new long[]{100, 100, 100}, 
-						new int[]{4, 3, 2}, 
-						false);
-				attackEffect.setPosition(playerAttack.getX(), playerAttack.getY() - 70);
-				attackEffect.setAlpha(1.0f);
-				
-				// 削除するSpriteを一旦格納する配列
-				List<AnimatedSprite> spToRemoveArray = new ArrayList<AnimatedSprite>();
-				
-				for (int i = 0; i < getChildCount(); i++) {
-					// 攻撃で倒せるのは敵と鷹のみ
-					if (getChildByIndex(i).getTag() == ObstacleTag.TAG_OBSTACLE_ENEMY.getValue() 
-							|| getChildByIndex(i).getTag() == ObstacleTag.TAG_OBSTACLE_EAGLE.getValue()) {
-						// 衝突判定
-						AnimatedSprite obj = (AnimatedSprite) getChildByIndex(i);
-						if (obj.collidesWith(weapon) || obj.collidesWith(attackEffect)) {
-							spToRemoveArray.add(obj);
-						}
-					}
-				}
-				// 削除
-				for (AnimatedSprite sp :spToRemoveArray) {
-					sp.detachSelf();
-				}
-			}
-		}));
+		registerCustomUpdateHandler(weaponIsEffectTimerHandler);
 	}
 	
 	/**
@@ -904,36 +1092,92 @@ public class MainScene extends KeyListenScene
 				true);
 		playerDefense.setPosition(player.getX(), player.getY());
 		playerDefense.setAlpha(1.0f);
+		
 		// 上に飛ぶ感じのアニメーション
-		registerUpdateHandler(new TimerHandler(0.2f, new ITimerCallback() {
-			@Override
-			public void onTimePassed(TimerHandler pTimerHandler) {
-				playerDefense.setPosition(player.getX(), player.getY() - 100);
-			}
-		}));
+		playerDefense.registerEntityModifier(new MoveModifier(0.2f, 
+				playerDefense.getX(), playerDefense.getX(), 
+				playerDefense.getY(), playerDefense.getY() - 100));
 	}
-	
+				
 	/**
 	 * プレイヤースライディングポジション設定.
 	 */
 	public void setPlayerToSlidePositon() {
 		playerDefense.animate(
-				new long[]{200, 300}, 
+				new long[]{200, 100}, 
 				new int[]{0, 11}, 
 				false);
 		playerDefense.setPosition(player.getX(), player.getY());
 		playerDefense.setAlpha(1.0f);
 		// 前に倒れこむ感じのアニメーション
-		registerUpdateHandler(new TimerHandler(0.2f, new ITimerCallback() {
-			@Override
-			public void onTimePassed(TimerHandler pTimerHandler) {
-				playerDefense.setPosition(player.getX() + 70, player.getY());
-			}
-		}));
+		playerDefense.registerEntityModifier(new MoveModifier(0.3f, 
+				playerDefense.getX(), playerDefense.getX() + 70, 
+				playerDefense.getY(), playerDefense.getY()));
 	}
 	
 	// --------------------------------------------------
 	// 汎用メソッド
 	// --------------------------------------------------
-			
+		
+	/**
+	 * メニューボタンの配置.
+	 * @param baseEntity   配置先
+	 * @param tag          押下時のメニュー判断用のタグ
+	 * @param buttonSprite 配置するボタン
+	 * @param y            配置するY座標
+	 * @param listener     押下時のイベントリスナー
+	 */
+	private void attachMenuButton(final IEntity baseEntity, int tag, 
+			ButtonSprite buttonSprite, int y, final OnClickListener listener) {
+		placeToCenterX(buttonSprite, y);
+		buttonSprite.setTag(tag);
+		buttonSprite.setOnClickListener(listener);
+		baseEntity.attachChild(buttonSprite);
+		registerTouchArea(buttonSprite);
+	}
+	
+	/**
+	 * 障害物Sprite生成.
+	 * @param obstacleType 障害物タイプ
+	 * @return 障害物Sprite
+	 */
+	private Sprite makeObstacleSprite(ObstacleTag obstacleType) {
+		
+		// 縦横が設定されていない場合は通常Spriteとする
+		if (obstacleType.getColumn() == 0 && obstacleType.getRow() == 0) {
+			Sprite obstacle = getResourceSprite(obstacleType.getFileName());
+			obstacle.setPosition(
+					getWindowWidth() + obstacle.getWidth() + obstacleType.getX(), 
+					obstacleType.getY());
+			obstacle.setTag(obstacleType.getValue());
+			return obstacle;
+		} else {
+			AnimatedSprite animatedObstacle = getResourceAnimatedSprite(obstacleType.getFileName(), 
+					obstacleType.getColumn(), obstacleType.getRow());
+			animatedObstacle.setPosition(
+					getWindowWidth() + animatedObstacle.getWidth() + obstacleType.getX(), 
+					obstacleType.getY());
+			animatedObstacle.setTag(obstacleType.getValue());
+			animatedObstacle.animate(obstacleType.getDuration());
+			return animatedObstacle;
+		}
+	}
+	
+	/**
+	 * カスタムハンドラー登録.
+	 * @param customTimerHandler
+	 */
+	public void registerCustomUpdateHandler(CustomTimerHandler customTimerHandler) {
+		super.registerUpdateHandler(customTimerHandler);
+		updateHandlerList.add(customTimerHandler);
+	}
+	/**
+	 * カスタムハンドラー削除.
+	 * @param customTimerHandler
+	 */
+	public void unregisterCustomUpdateHandler(CustomTimerHandler customTimerHandler) {
+		customTimerHandler.reset();
+		super.unregisterUpdateHandler(customTimerHandler);
+		updateHandlerList.remove(customTimerHandler);
+	}
 }

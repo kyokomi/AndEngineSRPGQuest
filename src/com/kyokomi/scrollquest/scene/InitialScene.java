@@ -128,6 +128,7 @@ public class InitialScene extends KeyListenScene implements ButtonSprite.OnClick
 		return false;
 	}
 
+	
 	@Override
 	public void onClick(ButtonSprite pButtonSprite, float pTouchAreaLocalX,
 			float pTouchAreaLocalY) {

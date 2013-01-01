@@ -80,17 +80,25 @@ public class MainActivity extends MultiSceneActivity {
 
 	@Override
 	public void appendScene(KeyListenScene scene) {
-		
+		getSceneArray().add(scene);
 	}
 
 	@Override
 	public void backToInitial() {
-		
+		// 遷移管理用配列をクリア
+		getSceneArray().clear();
+		// 新たにInitialSceneからスタート
+		KeyListenScene scene = new InitialScene(this);
+		getSceneArray().add(scene);
+		getEngine().setScene(scene);
 	}
 
 	@Override
 	public void refreshRunningScene(KeyListenScene scene) {
-		
+		// 配列の最後の要素を削除し、新しいものに入れる
+		getSceneArray().remove(getSceneArray().size() - 1);
+		getSceneArray().add(scene);
+		getEngine().setScene(scene);
 	}
 	
 	@Override

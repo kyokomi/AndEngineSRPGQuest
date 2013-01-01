@@ -1,5 +1,6 @@
 package com.kyokomi.core.scene;
 
+import org.andengine.entity.Entity;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.sprite.AnimatedSprite;
 import org.andengine.entity.sprite.ButtonSprite;
@@ -7,6 +8,7 @@ import org.andengine.entity.sprite.Sprite;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
 
+import android.content.Intent;
 import android.view.KeyEvent;
 
 /**
@@ -82,7 +84,7 @@ public abstract class KeyListenScene extends Scene {
 	}
 	
 	// -------------------
-	// 汎用
+	// 汎用追加メソッド
 	// -------------------
 	/**
 	 * リソースファイルからSpriteを取得.
@@ -128,5 +130,34 @@ public abstract class KeyListenScene extends Scene {
 	 */
 	public float getWindowHeight() {
 		return getBaseActivity().getEngine().getCamera().getHeight();
+	}
+	
+	/**
+	 * 画面破棄.
+	 * detachChildrenとdetachSelfを呼ぶときは別スレッドで行う。
+	 */
+	protected void detachEntity(final Entity entity) {
+		getBaseActivity().runOnUpdateThread(new Runnable() {
+			@Override
+			public void run() {
+				for (int i = 0; i < entity.getChildCount(); i++) {
+					// タッチの検知も無効にする
+					unregisterTouchArea((ButtonSprite) entity.getChildByIndex(i));
+				}
+				entity.detachChildren();
+				entity.detachSelf();
+			}
+		});
+	}
+	
+	/**
+	 * TWEET送信.
+	 * @param text 本文
+	 */
+	public void sendTweet(String text) {
+		Intent intent = new Intent(Intent.ACTION_SEND);
+		intent.setType("text/plain");
+		intent.putExtra(Intent.EXTRA_TEXT, text);
+		getBaseActivity().startActivity(intent);
 	}
 }
