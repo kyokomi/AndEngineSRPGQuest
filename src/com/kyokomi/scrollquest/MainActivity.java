@@ -1,5 +1,6 @@
 package com.kyokomi.scrollquest;
 
+import org.andengine.audio.sound.SoundFactory;
 import org.andengine.engine.camera.Camera;
 import org.andengine.engine.options.EngineOptions;
 import org.andengine.engine.options.ScreenOrientation;
@@ -49,9 +50,13 @@ public class MainActivity extends MultiSceneActivity {
 	 */
 	@Override
 	protected Scene onCreateScene() {
-		// MainSceneをインスタンス化し、エンジンにセット.
-		MainScene mainScene = new MainScene(this);
-		return mainScene;
+		// サウンドファイルの格納場所を指定
+		SoundFactory.setAssetBasePath("mfx/");
+		
+		InitialScene initialScene = new InitialScene(this);
+		// 遷移管理用配列に追加
+		getSceneArray().add(initialScene);
+		return initialScene;
 	}
 
 	/**
