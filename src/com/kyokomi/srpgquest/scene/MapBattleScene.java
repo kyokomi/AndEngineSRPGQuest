@@ -20,35 +20,58 @@ import org.andengine.util.color.Color;
 import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.core.sprite.PlayerSprite;
+import com.kyokomi.srpgquest.GameManager;
 
 import android.graphics.Typeface;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 
-public class SandboxScene extends KeyListenScene 
+public class MapBattleScene extends KeyListenScene 
 	implements IOnSceneTouchListener{
+	
+	private GameManager gameManager;
 	
 	private PlayerSprite player;
 	
-	public SandboxScene(MultiSceneActivity baseActivity) {
+	public MapBattleScene(MultiSceneActivity baseActivity) {
 		super(baseActivity);
 		init();
 	}
 	
 	@Override
 	public void init() {
-		testShowGrid();
-		testBtnCreate();
-		// プレイヤー配置
-		player = new PlayerSprite(this, 1, 0, 0);
-		player.setPlayerToAttackPosition();
-		attachChild(player.getLayer());
-		talkTextInit();
+//		testShowGrid();
+//		testBtnCreate();
+//		// プレイヤー配置
+//		player = new PlayerSprite(this, 1, 0, 0);
+//		player.setPlayerToAttackPosition();
+//		attachChild(player.getLayer());
+//		talkTextInit();
+		
+		// ゲーム開始
+		gameManager = new GameManager(this);
+		gameManager.mapInit(10, 10, 1f);
 		
 		// Sceneのタッチリスナーを登録
 		setOnSceneTouchListener(this);
 	}
 	
+	public void createPlayerSprite(int playerId) {
+		// キャラ
+	}
+	public void createEnemySprite(int enemyId) {
+		// 敵
+	}
+	public void createObstacleSprite() {
+		// 障害物
+	}
+	public void createCursorSprite() {
+		// 移動または攻撃可能範囲のカーソル
+	}
+	public void createSelectMenuSprite() {
+		// キャラ選択時の行動選択メニュー
+	}
+
 	@Override
 	public void prepareSoundAndMusic() {
 			

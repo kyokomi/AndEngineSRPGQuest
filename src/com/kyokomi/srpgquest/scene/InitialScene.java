@@ -141,7 +141,7 @@ public class InitialScene extends KeyListenScene implements ButtonSprite.OnClick
 			showScene(new SandboxScene(getBaseActivity()));
 			break;
 		case INITIAL_FEEDBACK:
-			getBaseActivity().showToast("未実装やで!");;
+			showScene(new MapBattleScene(getBaseActivity()));
 			break;
 		}
 	}
