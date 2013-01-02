@@ -57,7 +57,7 @@ public class PlayerSprite {
 	private final float windowWidth;
 	private final float windowHeight;
 	
-	public PlayerSprite(KeyListenScene baseScene, int x, int y) {
+	public PlayerSprite(KeyListenScene baseScene, int tag, int x, int y) {
 		windowWidth = baseScene.getWindowWidth();
 		windowHeight = baseScene.getWindowHeight();
 		
@@ -97,42 +97,43 @@ public class PlayerSprite {
 
 		// 顔
 		playerTalk = baseScene.getResourceTiledSprite("actor110_f.png", 4, 2);
+		playerTalk.setTag(tag);
 //		playerTalk.setAlpha(0.0f);
 		
-		// 会話ウィンドウ
-		talkTextLayer = new Rectangle(
-				0, 0,
-				baseScene.getWindowWidth(), 
-				playerTalk.getHeight(), 
-				baseScene.getBaseActivity().getVertexBufferObjectManager());
-		talkTextLayer.setColor(Color.TRANSPARENT);
-		layer.attachChild(talkTextLayer);
-		
-		Texture texture = new BitmapTextureAtlas(
-				baseScene.getBaseActivity().getTextureManager(), 512, 512, 
-				TextureOptions.BILINEAR_PREMULTIPLYALPHA);
-		Font font = new Font(baseScene.getBaseActivity().getFontManager(), 
-				texture, Typeface.DEFAULT_BOLD, 22, true, Color.WHITE);
-		// EngineのTextureManagerにフォントTextureを読み込み
-		baseScene.getBaseActivity().getTextureManager().loadTexture(texture);
-		baseScene.getBaseActivity().getFontManager().loadFont(font);
-		
-		talkText = new Text(20, 20, font, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", 
-				new TextOptions(HorizontalAlign.LEFT), 
-				baseScene.getBaseActivity().getVertexBufferObjectManager());
-		talkText.setColor(Color.TRANSPARENT);
-		talkTextLayer.setAlpha(0.0f);
-		playerTalk.setAlpha(0.0f);
-		
-		talkTextLayer.setZIndex(1);
-		playerTalk.setZIndex(2);
-		talkTextLayer.attachChild(talkText);
-		talkTextLayer.attachChild(playerTalk);
-		talkTextLayer.sortChildren();
+//		// 会話ウィンドウ
+//		talkTextLayer = new Rectangle(
+//				0, 0,
+//				baseScene.getWindowWidth(), 
+//				playerTalk.getHeight(), 
+//				baseScene.getBaseActivity().getVertexBufferObjectManager());
+//		talkTextLayer.setColor(Color.TRANSPARENT);
+//		layer.attachChild(talkTextLayer);
+//		
+//		Texture texture = new BitmapTextureAtlas(
+//				baseScene.getBaseActivity().getTextureManager(), 512, 512, 
+//				TextureOptions.BILINEAR_PREMULTIPLYALPHA);
+//		Font font = new Font(baseScene.getBaseActivity().getFontManager(), 
+//				texture, Typeface.DEFAULT_BOLD, 22, true, Color.WHITE);
+//		// EngineのTextureManagerにフォントTextureを読み込み
+//		baseScene.getBaseActivity().getTextureManager().loadTexture(texture);
+//		baseScene.getBaseActivity().getFontManager().loadFont(font);
+//		
+//		talkText = new Text(20, 20, font, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", 
+//				new TextOptions(HorizontalAlign.LEFT), 
+//				baseScene.getBaseActivity().getVertexBufferObjectManager());
+//		talkText.setColor(Color.TRANSPARENT);
+//		talkTextLayer.setAlpha(0.0f);
+//		playerTalk.setAlpha(0.0f);
+//		
+//		talkTextLayer.setZIndex(1);
+//		playerTalk.setZIndex(2);
+//		talkTextLayer.attachChild(talkText);
+//		talkTextLayer.attachChild(playerTalk);
+//		talkTextLayer.sortChildren();
 		
 		showPlayer(PlayerSpriteType.PLAYER_TYPE_DEFENSE);
 		setPlayerScale(2f);
-		setPlayerPosition(80, 400);
+		setPlayerPosition(80, 200);
 		playerDefense.setCurrentTileIndex(0);
 	}
 
@@ -192,22 +193,26 @@ public class PlayerSprite {
 		showPlayer(PlayerSpriteType.PLAYER_TYPE_NORMAL);
 	}
 	
-	public void talk(float y, String text) {
-		playerTalk.setCurrentTileIndex(0);
-		playerTalk.setAlpha(1.0f);
-		playerTalk.setPosition(0, 0);
-		talkTextLayer.setPosition(0, y);
-		talkTextLayer.setAlpha(1.0f);
-		
-		// TODO: text作成
-		talkText.setColor(Color.WHITE);
-		talkText.setPosition(playerTalk.getWidth(), 0);
-		talkText.setText(text);
+//	public void talk(float y, String text) {
+//		playerTalk.setCurrentTileIndex(0);
+//		playerTalk.setAlpha(1.0f);
+//		playerTalk.setPosition(0, 0);
+//		talkTextLayer.setPosition(0, y);
+//		talkTextLayer.setAlpha(1.0f);
+//		
+//		// TODO: text作成
+//		talkText.setColor(Color.WHITE);
+//		talkText.setPosition(playerTalk.getWidth(), 0);
+//		talkText.setText(text);
+//	}
+//	
+//	public Rectangle getTalkTextLayer() {
+//		return talkTextLayer;
+//	}
+	public TiledSprite getPlayerTalk() {
+		return playerTalk;
 	}
 	
-	public Rectangle getTalkTextLayer() {
-		return talkTextLayer;
-	}
 	
 	/**
 	 * 攻撃モーション再生.
