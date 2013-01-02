@@ -2,11 +2,21 @@ package com.kyokomi.srpgquest.scene;
 
 import org.andengine.entity.sprite.ButtonSprite;
 import org.andengine.entity.sprite.Sprite;
+import org.andengine.entity.text.Text;
+import org.andengine.entity.text.TextOptions;
+import org.andengine.opengl.font.Font;
+import org.andengine.opengl.texture.Texture;
+import org.andengine.opengl.texture.TextureOptions;
+import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
+import org.andengine.util.HorizontalAlign;
+import org.andengine.util.color.Color;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.core.sprite.PlayerSprite;
+import com.kyokomi.core.utils.SPUtil;
 
+import android.graphics.Typeface;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 
@@ -21,22 +31,6 @@ public class SandboxScene extends KeyListenScene implements ButtonSprite.OnClick
 		init();
 	}
 	
-//	public enum MenuType {
-//		MENU_TYPE_ATTACK(1),
-//		MENU_TYPE_JUMP(2),
-//		MENU_TYPE_SLIDEING(3),
-//		;
-//		private Integer value;
-//		
-//		private MenuType(Integer value) {
-//			this.value = value;
-//		}
-//		
-//		public Integer getValue() {
-//			return value;
-//		}
-//	}
-
 	@Override
 	public void init() {
 		
@@ -112,10 +106,10 @@ public class SandboxScene extends KeyListenScene implements ButtonSprite.OnClick
 				player.attack();
 				break;
 			case 5:
-				player.setPlayerToAttackPosition();
+				player.talk(500, "日本語でOK?");
 				break;
 			case 6:
-				player.setPlayerToAttackPosition();
+				player.talk(500, "タッチできません");
 				break;
 			case 7:
 				player.setPlayerToAttackPosition();

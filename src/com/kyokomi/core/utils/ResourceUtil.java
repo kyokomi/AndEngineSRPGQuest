@@ -65,7 +65,7 @@ public class ResourceUtil {
 		
 		return self;
 	}
-	
+
 	/**
 	 * 指定ファイルのSpriteを取得.
 	 * 再生性しないようにプールしている。
@@ -73,15 +73,6 @@ public class ResourceUtil {
 	 * @return Sprite
 	 */
 	public Sprite getSprite(String fileName) {
-		return getSprite(fileName, 0, 0);
-	}
-	/**
-	 * 指定ファイルのSpriteを取得.
-	 * 再生性しないようにプールしている。
-	 * @param fileName ファイル名
-	 * @return Sprite
-	 */
-	public Sprite getSprite(String fileName, int column, int row) {
 		// 同名のファイルからITextureRegionが生成済みであれば再利用
 		if (textureRegionPool.containsKey(fileName)) {
 			Sprite s = new Sprite(0, 0, textureRegionPool.get(fileName), 

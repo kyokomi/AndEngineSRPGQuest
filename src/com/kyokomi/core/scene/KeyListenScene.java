@@ -9,6 +9,7 @@ import org.andengine.entity.scene.Scene;
 import org.andengine.entity.sprite.AnimatedSprite;
 import org.andengine.entity.sprite.ButtonSprite;
 import org.andengine.entity.sprite.Sprite;
+import org.andengine.entity.sprite.TiledSprite;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
 
@@ -97,6 +98,15 @@ public abstract class KeyListenScene extends Scene {
 	 */
 	public Sprite getResourceSprite(String fileName) {
 		return getBaseActivity().getResourceUtil().getSprite(fileName);
+	}
+	
+	/**
+	 * リソースファイルからSpriteを取得.
+	 * @param fileName ファイル名
+	 * @return TiledSprite
+	 */
+	public TiledSprite getResourceTiledSprite(String fileName, int column, int row) {
+		return getBaseActivity().getResourceUtil().getTiledSprite(fileName, column, row);
 	}
 	
 	/**
