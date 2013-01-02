@@ -1,4 +1,4 @@
-package com.kyokomi.scrollquest.constant;
+package com.kyokomi.srpgquest.constant;
 
 public enum ObstacleType {
 

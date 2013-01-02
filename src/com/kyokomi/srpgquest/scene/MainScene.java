@@ -1,4 +1,4 @@
-package com.kyokomi.scrollquest.scene;
+package com.kyokomi.srpgquest.scene;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -41,7 +41,7 @@ import com.kyokomi.core.handler.CustomTimerHandler;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.core.utils.CollidesUtil;
 import com.kyokomi.core.utils.SPUtil;
-import com.kyokomi.scrollquest.constant.ObstacleType;
+import com.kyokomi.srpgquest.constant.ObstacleType;
 
 import android.graphics.Typeface;
 import android.util.Log;

@@ -10,6 +10,7 @@ import javax.microedition.khronos.opengles.GL10;
 import org.andengine.entity.sprite.AnimatedSprite;
 import org.andengine.entity.sprite.ButtonSprite;
 import org.andengine.entity.sprite.Sprite;
+import org.andengine.entity.sprite.TiledSprite;
 import org.andengine.opengl.texture.TextureOptions;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
@@ -35,13 +36,13 @@ import android.graphics.BitmapFactory;
 public class ResourceUtil {
 
 	/** 自身のインスタンス. */
-	private static ResourceUtil mSelf;
+	private static ResourceUtil self;
 	/** Context. */
-	private static BaseGameActivity mGameActivity;
+	private static BaseGameActivity gameActivity;
 	/** TextureRegionの無駄な生成を防ぎ、再利用する為の一時的な格納場所. */
-	private static Map<String, ITextureRegion> mTextureRegionPool;
+	private static Map<String, ITextureRegion> textureRegionPool;
 	/** TiledTextureRegionの無駄な生成を防ぎ、再利用する為の一時的な格納場所. */
-	private static Map<String, TiledTextureRegion> mTiledTextureRegionPool;
+	private static Map<String, TiledTextureRegion> tiledTextureRegionPool;
 	
 	private ResourceUtil() {
 		
@@ -53,16 +54,16 @@ public class ResourceUtil {
 	 * @return
 	 */
 	public static ResourceUtil getInstance(BaseGameActivity gameActivity) {
-		if (mSelf == null) {
-			mSelf = new ResourceUtil();
-			ResourceUtil.mGameActivity = gameActivity;
+		if (self == null) {
+			self = new ResourceUtil();
+			ResourceUtil.gameActivity = gameActivity;
 			BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
 			
-			mTextureRegionPool = new HashMap<String, ITextureRegion>();
-			mTiledTextureRegionPool = new HashMap<String, TiledTextureRegion>();
+			textureRegionPool = new HashMap<String, ITextureRegion>();
+			tiledTextureRegionPool = new HashMap<String, TiledTextureRegion>();
 		}
 		
-		return mSelf;
+		return self;
 	}
 	
 	/**
@@ -72,43 +73,86 @@ public class ResourceUtil {
 	 * @return Sprite
 	 */
 	public Sprite getSprite(String fileName) {
+		return getSprite(fileName, 0, 0);
+	}
+	/**
+	 * 指定ファイルのSpriteを取得.
+	 * 再生性しないようにプールしている。
+	 * @param fileName ファイル名
+	 * @return Sprite
+	 */
+	public Sprite getSprite(String fileName, int column, int row) {
 		// 同名のファイルからITextureRegionが生成済みであれば再利用
-		if (mTextureRegionPool.containsKey(fileName)) {
-			Sprite s = new Sprite(0, 0, mTextureRegionPool.get(fileName), 
-					mGameActivity.getVertexBufferObjectManager());
+		if (textureRegionPool.containsKey(fileName)) {
+			Sprite s = new Sprite(0, 0, textureRegionPool.get(fileName), 
+					gameActivity.getVertexBufferObjectManager());
 			s.setBlendFunction(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
 			return s;
 		}
 		// サイズを自動的に取得する為にBitmapとして読み込み
 		InputStream is = null;
 		try {
-			is = mGameActivity.getResources().getAssets().open("gfx/" + fileName);
+			is = gameActivity.getResources().getAssets().open("gfx/" + fileName);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		Bitmap bm = BitmapFactory.decodeStream(is);
 		// Bitmapのサイズを基に2のべき乗の値を取得、BitmapTextureAtlasの生成
-		BitmapTextureAtlas bta = new BitmapTextureAtlas(mGameActivity.getTextureManager(), 
+		BitmapTextureAtlas bta = new BitmapTextureAtlas(gameActivity.getTextureManager(), 
 				getTwoPowerSize(bm.getWidth()), getTwoPowerSize(bm.getHeight()),
 				TextureOptions.BILINEAR_PREMULTIPLYALPHA);
-		mGameActivity.getEngine().getTextureManager().loadTexture(bta);
+		gameActivity.getEngine().getTextureManager().loadTexture(bta);
 		
 		ITextureRegion btr = BitmapTextureAtlasTextureRegionFactory.createFromAsset(
-				bta, mGameActivity, fileName, 0, 0);
-		Sprite s = new Sprite(0, 0, btr, mGameActivity.getVertexBufferObjectManager());
+				bta, gameActivity, fileName, 0, 0);
+		Sprite s = new Sprite(0, 0, btr, gameActivity.getVertexBufferObjectManager());
 		s.setBlendFunction(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
 		
 		// 再生性を防ぐ為、プールの登録
-		mTextureRegionPool.put(fileName, btr);
+		textureRegionPool.put(fileName, btr);
+		
+		return s;
+	}
+	
+	public TiledSprite getTiledSprite(String fileName, int column, int row) {
+		if (tiledTextureRegionPool.containsKey(fileName)) {
+			TiledSprite s = new TiledSprite(0, 0, 
+					tiledTextureRegionPool.get(fileName), 
+					gameActivity.getVertexBufferObjectManager());
+			s.setBlendFunction(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
+			return s;
+		}
+		
+		// サイズを自動的に取得する為にBitmapとして読み込み
+		InputStream is = null;
+		try {
+			is = gameActivity.getResources().getAssets().open("gfx/" + fileName);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		Bitmap bm = BitmapFactory.decodeStream(is);
+		// Bitmapのサイズを基に2のべき乗の値を取得、BitmapTextureAtlasの生成
+		BitmapTextureAtlas bta = new BitmapTextureAtlas(gameActivity.getTextureManager(), 
+				getTwoPowerSize(bm.getWidth()), getTwoPowerSize(bm.getHeight()),
+				TextureOptions.BILINEAR_PREMULTIPLYALPHA);
+		gameActivity.getEngine().getTextureManager().loadTexture(bta);
+		
+		TiledTextureRegion ttr = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(
+				bta, gameActivity, fileName, 0, 0, column, row);
+		TiledSprite s = new TiledSprite(0, 0, ttr, gameActivity.getVertexBufferObjectManager());
+		s.setBlendFunction(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
+		
+		// 再生性を防ぐ為、プールの登録
+		tiledTextureRegionPool.put(fileName, ttr);
 		
 		return s;
 	}
 	
 	public AnimatedSprite getAnimatedSprite(String fileName, int column, int row) {
-		if (mTiledTextureRegionPool.containsKey(fileName)) {
+		if (tiledTextureRegionPool.containsKey(fileName)) {
 			AnimatedSprite s = new AnimatedSprite(0, 0, 
-					mTiledTextureRegionPool.get(fileName), 
-					mGameActivity.getVertexBufferObjectManager());
+					tiledTextureRegionPool.get(fileName), 
+					gameActivity.getVertexBufferObjectManager());
 			s.setBlendFunction(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
 			return s;
 		}
@@ -116,24 +160,24 @@ public class ResourceUtil {
 		// サイズを自動的に取得する為にBitmapとして読み込み
 		InputStream is = null;
 		try {
-			is = mGameActivity.getResources().getAssets().open("gfx/" + fileName);
+			is = gameActivity.getResources().getAssets().open("gfx/" + fileName);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		Bitmap bm = BitmapFactory.decodeStream(is);
 		// Bitmapのサイズを基に2のべき乗の値を取得、BitmapTextureAtlasの生成
-		BitmapTextureAtlas bta = new BitmapTextureAtlas(mGameActivity.getTextureManager(), 
+		BitmapTextureAtlas bta = new BitmapTextureAtlas(gameActivity.getTextureManager(), 
 				getTwoPowerSize(bm.getWidth()), getTwoPowerSize(bm.getHeight()),
 				TextureOptions.BILINEAR_PREMULTIPLYALPHA);
-		mGameActivity.getEngine().getTextureManager().loadTexture(bta);
+		gameActivity.getEngine().getTextureManager().loadTexture(bta);
 		
 		TiledTextureRegion ttr = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(
-				bta, mGameActivity, fileName, 0, 0, column, row);
-		AnimatedSprite s = new AnimatedSprite(0, 0, ttr, mGameActivity.getVertexBufferObjectManager());
+				bta, gameActivity, fileName, 0, 0, column, row);
+		AnimatedSprite s = new AnimatedSprite(0, 0, ttr, gameActivity.getVertexBufferObjectManager());
 		s.setBlendFunction(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
 		
 		// 再生性を防ぐ為、プールの登録
-		mTiledTextureRegionPool.put(fileName, ttr);
+		tiledTextureRegionPool.put(fileName, ttr);
 		
 		return s;
 	}
@@ -144,11 +188,12 @@ public class ResourceUtil {
 	 * @param pressed
 	 * @return
 	 */
-	public ButtonSprite getButtonSprite(String normal, String pressed) {
-		if (mTextureRegionPool.containsKey(normal) && mTextureRegionPool.containsKey(pressed)) {
+	public ButtonSprite getButtonSprite(String normal ,String pressed) {
+		
+		if (textureRegionPool.containsKey(normal) && textureRegionPool.containsKey(pressed)) {
 			ButtonSprite s = new ButtonSprite(0, 0, 
-					mTextureRegionPool.get(normal), mTextureRegionPool.get(pressed),
-					mGameActivity.getVertexBufferObjectManager());
+					textureRegionPool.get(normal), textureRegionPool.get(pressed),
+					gameActivity.getVertexBufferObjectManager());
 			s.setBlendFunction(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
 			return s;
 		}
@@ -156,21 +201,22 @@ public class ResourceUtil {
 		// サイズを自動的に取得する為にBitmapとして読み込み
 		InputStream is = null;
 		try {
-			is = mGameActivity.getResources().getAssets().open("gfx/" + normal);
+			is = gameActivity.getResources().getAssets().open("gfx/" + normal);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		Bitmap bm = BitmapFactory.decodeStream(is);
+		
 		// Bitmapのサイズを基に2のべき乗の値を取得、BitmapTextureAtlasの生成
 		BuildableBitmapTextureAtlas bta = new BuildableBitmapTextureAtlas(
-				mGameActivity.getTextureManager(), 
+				gameActivity.getTextureManager(), 
 				getTwoPowerSize(bm.getWidth() * 2), 
 				getTwoPowerSize(bm.getHeight()));
 		
 		ITextureRegion trNormal = BitmapTextureAtlasTextureRegionFactory.createFromAsset(
-				bta, mGameActivity, normal);
+				bta, gameActivity, normal);
 		ITextureRegion trPressed = BitmapTextureAtlasTextureRegionFactory.createFromAsset(
-				bta, mGameActivity, pressed);
+				bta, gameActivity, pressed);
 		
 		try {
 			bta.build(new BlackPawnTextureAtlasBuilder<IBitmapTextureAtlasSource, BitmapTextureAtlas>(0, 0, 0));
@@ -179,11 +225,11 @@ public class ResourceUtil {
 			e.printStackTrace();
 		}
 
-		mTextureRegionPool.put(normal, trNormal);
-		mTextureRegionPool.put(pressed, trPressed);
+		textureRegionPool.put(normal, trNormal);
+		textureRegionPool.put(pressed, trPressed);
 		
 		ButtonSprite s = new ButtonSprite(0, 0, trNormal, trPressed, 
-				mGameActivity.getVertexBufferObjectManager());
+				gameActivity.getVertexBufferObjectManager());
 		s.setBlendFunction(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
 		
 		return s;
@@ -196,9 +242,9 @@ public class ResourceUtil {
 		/*
 		 * Activity.finish()だけだとシングルトンなクラスがnullにならない為、明示的にnullを代入
 		 */
-		mSelf = null;
-		mTextureRegionPool.clear();
-		mTiledTextureRegionPool.clear();
+		self = null;
+		textureRegionPool.clear();
+		tiledTextureRegionPool.clear();
 	}
 	
 	/**

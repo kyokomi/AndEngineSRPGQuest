@@ -1,4 +1,4 @@
-package com.kyokomi.scrollquest.scene;
+package com.kyokomi.srpgquest.scene;
 
 import java.io.IOException;
 
@@ -33,10 +33,10 @@ public class InitialScene extends KeyListenScene implements ButtonSprite.OnClick
 
 	@Override
 	public void init() {
-		Sprite bg = getBaseActivity().getResourceUtil().getSprite(
-				"initial_bg.png");
-		bg.setPosition(0, 0);
-		attachChild(bg);
+//		Sprite bg = getBaseActivity().getResourceUtil().getSprite(
+//				"initial_bg.png");
+//		bg.setPosition(0, 0);
+//		attachChild(bg);
 		
 		Sprite titleSprite = getBaseActivity().getResourceUtil().getSprite(
 				"initial_title.png");
@@ -52,8 +52,6 @@ public class InitialScene extends KeyListenScene implements ButtonSprite.OnClick
 						titleSprite.getY(),
 						titleSprite.getY() + 200,
 						EaseBackInOut.getInstance())));
-		
-		// TODO: 竹
 		
 		// ボタンの追加
 		ButtonSprite btnStart = getBaseActivity().getResourceUtil().getButtonSprite(
@@ -137,16 +135,10 @@ public class InitialScene extends KeyListenScene implements ButtonSprite.OnClick
 		
 		switch (pButtonSprite.getTag()) {
 		case INITIAL_START:
-			// リソースの開放
-			ResourceUtil.getInstance(getBaseActivity()).resetAllTexture();
-			KeyListenScene scene = new MainScene(getBaseActivity());
-			// MainSceneへ移動
-			getBaseActivity().getEngine().setScene(scene);
-			// 遷移管理用配列に追加
-			getBaseActivity().appendScene(scene);
+			showScene(new MainScene(getBaseActivity()));
 			break;
 		case INITIAL_RANKING:
-			getBaseActivity().showToast("ランキング未実装");;
+			showScene(new SandboxScene(getBaseActivity()));
 			break;
 		case INITIAL_FEEDBACK:
 			getBaseActivity().showToast("未実装やで!");;
@@ -154,4 +146,9 @@ public class InitialScene extends KeyListenScene implements ButtonSprite.OnClick
 		}
 	}
 
+	private void showScene(KeyListenScene scene) {
+		ResourceUtil.getInstance(getBaseActivity()).resetAllTexture();
+		getBaseActivity().getEngine().setScene(scene);
+		getBaseActivity().appendScene(scene);
+	}
 }
