@@ -1,5 +1,10 @@
 package com.kyokomi.srpgquest.scene;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.microedition.khronos.opengles.GL10;
+
 import org.andengine.entity.IEntity;
 import org.andengine.entity.modifier.IEntityModifier;
 import org.andengine.entity.primitive.Line;
@@ -37,6 +42,7 @@ public class MapBattleScene extends KeyListenScene
 	
 	private SparseArray<PlayerSprite> players;
 	private SparseArray<PlayerSprite> enemys;
+	private List<Rectangle> cursorList;
 	
 	public MapBattleScene(MultiSceneActivity baseActivity) {
 		super(baseActivity);
@@ -48,6 +54,8 @@ public class MapBattleScene extends KeyListenScene
 		// 初期化
 		players = new SparseArray<PlayerSprite>();
 		enemys = new SparseArray<PlayerSprite>();
+		cursorList = new ArrayList<Rectangle>();
+		
 		// グリッド線表示
 		testShowGrid();
 		
@@ -57,6 +65,9 @@ public class MapBattleScene extends KeyListenScene
 		
 		// Sceneのタッチリスナーを登録
 		setOnSceneTouchListener(this);
+		
+		// メニューを作っておく
+		createSelectMenuSprite();
 	}
 	
 	/**
@@ -113,11 +124,78 @@ public class MapBattleScene extends KeyListenScene
 		cursor.setColor(Color.GREEN);
 		cursor.setAlpha(0.4f);
 		attachChild(cursor);
+		cursorList.add(cursor);
 	}
+	
+	public void hideCursorSprite() {
+		for (Rectangle cursor : cursorList) {
+			cursor.detachChildren();
+			cursor.detachSelf();
+		}
+	}
+	
+	private Rectangle selectMenuBackground;
+	
+	public void showSelectMenu() {
+		selectMenuBackground.setY(0);
+	}
+	
 	public void createSelectMenuSprite() {
 		// キャラ選択時の行動選択メニュー
+		selectMenuBackground = new Rectangle(
+				0, 0,
+				getWindowWidth(), getWindowHeight(), 
+				getBaseActivity().getVertexBufferObjectManager());
+		selectMenuBackground.setBlendFunction(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
+		selectMenuBackground.setColor(0, 0, 0);
+		selectMenuBackground.setAlpha(0.7f);
+		selectMenuBackground.setZIndex(10);
+		attachChild(selectMenuBackground);
+		selectMenuBackground.setY(getWindowHeight() * 2);
+		
+		sortChildren();
+		
+		// 各ボタン配置
+		ButtonSprite btnRanking = getResourceButtonSprite("attack_btn.gif", "attack_btn_p.gif");
+		attachButtonSprite(selectMenuBackground, 1, btnRanking, 100, selectMenuOnClickListener);
+		
+		ButtonSprite btnRetry = getResourceButtonSprite("move_btn.gif", "move_btn_p.gif");
+		attachButtonSprite(selectMenuBackground, 2, btnRetry, 150, selectMenuOnClickListener);
+		
+		ButtonSprite btnTweet = getResourceButtonSprite("wait_btn.gif", "wait_btn_p.gif");
+		attachButtonSprite(selectMenuBackground, 3, btnTweet, 200, selectMenuOnClickListener);
+		
+		ButtonSprite btnCancel = getResourceButtonSprite("cancel_btn.gif", "cancel_btn_p.gif");
+		attachButtonSprite(selectMenuBackground, 4, btnCancel, 250, selectMenuOnClickListener);
 	}
-
+	/**
+	 * キャラ選択画面のボタン押下時.
+	 */
+	private ButtonSprite.OnClickListener selectMenuOnClickListener = new ButtonSprite.OnClickListener() {
+		@Override
+		public void onClick(ButtonSprite pButtonSprite, float pTouchAreaLocalX,
+				float pTouchAreaLocalY) {
+			switch (pButtonSprite.getTag()) {
+			case 1:
+				players.get(selectPlayerId).attack2(null);
+				break;
+			case 2:
+				gameManager.showMoveDistCursor(selectMapPoint.getX(), selectMapPoint.getY());
+				break;
+			case 3:
+				hideCursorSprite();
+				break;
+			case 4:
+				break;
+			default:
+				break;
+			}
+			
+			// Hide
+			selectMenuBackground.setY(getWindowHeight() * 2);
+		}
+	};
+	
 	@Override
 	public void prepareSoundAndMusic() {
 			
@@ -129,6 +207,8 @@ public class MapBattleScene extends KeyListenScene
 	}
 
 	private boolean isPlayerTouch;
+	private int selectPlayerId;
+	private MapPoint selectMapPoint;
 	
 	@Override
 	public boolean onSceneTouchEvent(Scene pScene, TouchEvent pSceneTouchEvent) {
@@ -141,10 +221,14 @@ public class MapBattleScene extends KeyListenScene
 			if (!isPlayerTouch) {
 				int playerId = gameManager.getTouchPositionToPlayerId(x, y);
 				if (playerId != 0 && players.indexOfKey(playerId) >= 0) {
-					// TODO: 行動可能なプレイヤーなら行動メニューを表示
+					selectPlayerId = playerId;
+					selectMapPoint = gameManager.getTouchPositionToMapPoint(x, y);
 					
-					// 移動範囲表示
-					gameManager.showMoveDistCursor(x, y);
+					// TODO: 行動可能なプレイヤーなら行動メニューを表示
+					showSelectMenu();
+					
+//					// 移動範囲表示
+//					gameManager.showMoveDistCursor(x, y);
 //					// プレイヤータッチ判定
 //					touchPlayer(playerId);
 				}
@@ -243,6 +327,7 @@ public class MapBattleScene extends KeyListenScene
 					getBaseActivity().getVertexBufferObjectManager());
 			line.setLineWidth(1);
 			line.setColor(Color.WHITE);
+			line.setAlpha(0.5f);
 			attachChild(line);
 		}
 		
@@ -251,6 +336,7 @@ public class MapBattleScene extends KeyListenScene
 					getBaseActivity().getVertexBufferObjectManager());
 			line.setLineWidth(1);
 			line.setColor(Color.WHITE);
+			line.setAlpha(0.5f);
 			attachChild(line);
 		}
 	}

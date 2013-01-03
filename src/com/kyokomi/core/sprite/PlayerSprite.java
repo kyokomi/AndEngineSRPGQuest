@@ -172,6 +172,13 @@ public class PlayerSprite {
 	 * 攻撃モーション再生(Ver.2).
 	 * スケールとか解像度関係なくやれるようにする
 	 */
+	public void attack2() {
+		attack2(null);
+	}
+	/**
+	 * 攻撃モーション再生(Ver.2).
+	 * スケールとか解像度関係なくやれるようにする
+	 */
 	public void attack2(IEntityModifier.IEntityModifierListener callBack) {
 		
 		showPlayer(PlayerSpriteType.PLAYER_TYPE_ATTACK);

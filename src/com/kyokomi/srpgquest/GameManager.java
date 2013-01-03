@@ -88,6 +88,8 @@ public class GameManager {
 		mGameState = GameStateType.PLAYER_TURN;
 		
 		mMapManager.debugShowMapItems();
+		
+		mBaseScene.sortChildren();
 	}
 	// -----------------------------------------------------
 	// 座標計算とか
@@ -112,6 +114,16 @@ public class GameManager {
 	public int getTouchPositionToPlayerId(float x, float y) {
 		MapPoint mapPoint = calcGridDecodePosition(x, y);
 		return mMapManager.getMapPointToActorPlayerId(mapPoint);
+	}
+	/**
+	 * タッチした画面のx,y座標からマップ上のプレイヤーIDを取得.
+	 * 何もいない場合などは0を返却
+	 * @param x
+	 * @param y
+	 * @return playerId
+	 */
+	public MapPoint getTouchPositionToMapPoint(float x, float y) {
+		return calcGridDecodePosition(x, y);
 	}
 	
 	//---------------------------------------------------------
@@ -156,6 +168,9 @@ public class GameManager {
 	//---------------------------------------------------------
 	// Sceneから呼ばれる
 	//---------------------------------------------------------
+	public void showMoveDistCursor(int playerId) {
+		
+	}
 	public void showMoveDistCursor(float x, float y) {
 		MapPoint mapPoint = calcGridDecodePosition(x, y);
 		List<MapItem> mapItems = mMapManager.actorPlayerFindDist(mapPoint);
@@ -163,18 +178,8 @@ public class GameManager {
 			MapPoint mapItemPoint = calcGridPosition(mapItem.getMapPointX(), mapItem.getMapPointY());
 			mBaseScene.createCursorSprite(mapItemPoint);
 		}
+		mBaseScene.sortChildren();
 	}
-//	public void createSelectMenu() {
-//		mSelectMenuList = new ListView(mMainActivity);
-//		List<String> buttonText = new ArrayList<String>();
-//		buttonText.add("移動");
-//		buttonText.add("攻撃");
-//		buttonText.add("待機");
-//		buttonText.add("キャンセル");
-//		mSelectMenuList.setAdapter(new ArrayAdapter<String>(
-//				mMainActivity, android.R.layout.simple_list_item_1, buttonText));
-//	}
-//	
 //    /**
 //	 * @return the mMainActivity
 //	 */

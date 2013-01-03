@@ -5,11 +5,13 @@ import java.io.IOException;
 import org.andengine.audio.sound.Sound;
 import org.andengine.audio.sound.SoundFactory;
 import org.andengine.entity.Entity;
+import org.andengine.entity.IEntity;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.sprite.AnimatedSprite;
 import org.andengine.entity.sprite.ButtonSprite;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.sprite.TiledSprite;
+import org.andengine.entity.sprite.ButtonSprite.OnClickListener;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
 
@@ -91,6 +93,23 @@ public abstract class KeyListenScene extends Scene {
 	// -------------------
 	// 汎用追加メソッド
 	// -------------------
+	/**
+	 * ボタンの配置.
+	 * @param baseEntity   配置先
+	 * @param tag          押下時のメニュー判断用のタグ
+	 * @param buttonSprite 配置するボタン
+	 * @param y            配置するY座標
+	 * @param listener     押下時のイベントリスナー
+	 */
+	public void attachButtonSprite(final IEntity baseEntity, int tag, 
+			ButtonSprite buttonSprite, int y, final OnClickListener listener) {
+		placeToCenterX(buttonSprite, y);
+		buttonSprite.setTag(tag);
+		buttonSprite.setOnClickListener(listener);
+		baseEntity.attachChild(buttonSprite);
+		registerTouchArea(buttonSprite);
+	}
+	
 	/**
 	 * リソースファイルからSpriteを取得.
 	 * @param fileName ファイル名
