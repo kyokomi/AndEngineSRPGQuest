@@ -40,7 +40,7 @@ public class SandboxScene extends KeyListenScene
 		testShowGrid();
 		testBtnCreate();
 		// プレイヤー配置
-		player = new PlayerSprite(this, 1, 0, 0);
+		player = new PlayerSprite(this, 110, 1, 0, 0, 2f);
 		player.setPlayerToAttackPosition();
 		attachChild(player.getLayer());
 		talkTextInit();

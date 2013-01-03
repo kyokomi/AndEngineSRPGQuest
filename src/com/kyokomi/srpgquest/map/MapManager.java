@@ -5,15 +5,12 @@ import java.util.List;
 
 import com.kyokomi.srpgquest.GameManager;
 import com.kyokomi.srpgquest.actor.ActorPlayer;
-import com.kyokomi.srpgquest.actor.CharacterStatus;
+import com.kyokomi.srpgquest.constant.MapDataType;
 import com.kyokomi.srpgquest.constant.MoveDirectionType;
 import com.kyokomi.srpgquest.map.common.MapData;
-import com.kyokomi.srpgquest.map.common.MapData.MapDataType;
 import com.kyokomi.srpgquest.map.common.MapPoint;
 import com.kyokomi.srpgquest.map.item.ActorPlayerMapItem;
-import com.kyokomi.srpgquest.map.item.CharacterSpriteView;
 import com.kyokomi.srpgquest.map.item.MapItem;
-import com.kyokomi.srpgquest.map.item.MapSpriteView;
 
 import android.animation.Animator.AnimatorListener;
 import android.animation.Animator;
@@ -21,6 +18,7 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.provider.CalendarContract.Instances;
 import android.util.Log;
+import android.util.StringBuilderPrinter;
 import android.view.View;
 import android.view.View.OnClickListener;
 
@@ -33,8 +31,8 @@ import android.view.View.OnClickListener;
  *
  */
 public class MapManager {
+	private static final String TAG = "MapManager";
 	
-	private static final int GRID_SIZE = 40;
 	private static final int TOP    = 0;
 	private static final int LEFT   = 0;
 	private final int RIGHT;
@@ -47,7 +45,7 @@ public class MapManager {
 	private float mapScale;
 	
 	/** マップ位置情報(各ListのIndexId). */
-	private MapItem[][] mapItems;
+	private MapItem[][] mapItems; // TODO: もしかしてイラン子？MapDataあるし
 	private MapData[][] mapDatas;
 	
 	/** マップ移動情報. */
@@ -62,6 +60,17 @@ public class MapManager {
 	/** カーソルリスト. */
 	private List<MapItem> cursorList;
 	
+	public void debugShowMapItems() {
+		StringBuffer buffer = null;
+		for (MapData[] mapItemX : mapDatas) {
+			buffer = new StringBuffer();
+			for (MapData mapItem : mapItemX) {
+				buffer.append(mapItem.getType().getValue());
+				buffer.append(".");
+			}
+			Log.d(TAG, buffer.toString());
+		}
+	}
 	/**
 	 * コンストラクタ.
 	 * @param activity
@@ -507,7 +516,7 @@ public class MapManager {
 	    // 移動情報作成
 		createMovePointList(mapPointX, mapPointY, mapDatas[mapPointX][mapPointY].getDist(), moveToActorMapItem);	
 		// 目的地を最後の移動箇所に指定(方向は直前のマスと同じ) TODO: おかしい？
-		movePointList.add(new MapPoint(mapPointX, mapPointY, movePointList.get(movePointList.size()-1).getDirection()));
+		movePointList.add(new MapPoint(0, 0, mapPointX, mapPointY, movePointList.get(movePointList.size()-1).getDirection()));
 
 		// 移動アニメーション
 		// TODO: GameManager側に通知
@@ -615,25 +624,25 @@ public class MapManager {
 			if (y > TOP && mapDatas[x][y - 1].getDist() == dist 
 					&& mapDatas[x][y - 1].getType() != ignoreDataType) {
 				createMovePointList(x, y-1, dist, moveMapItem);
-				movePointList.add(new MapPoint(x, y-1, MoveDirectionType.MOVE_DOWN));
+				movePointList.add(new MapPoint(0, 0, x, y-1, MoveDirectionType.MOVE_DOWN));
 			}
 			// 下か？
 			else if (y < (BOTTOM -1) && mapDatas[x][y + 1].getDist() == dist
 					&& mapDatas[x][y + 1].getType() != ignoreDataType) {
 				createMovePointList(x, y+1, dist, moveMapItem);
-				movePointList.add(new MapPoint(x, y+1, MoveDirectionType.MOVE_UP));
+				movePointList.add(new MapPoint(0, 0, x, y+1, MoveDirectionType.MOVE_UP));
 			}	
 			// 右か?
 			else if (x > LEFT && mapDatas[x - 1][y].getDist() == dist
 					&& mapDatas[x - 1][y].getType() != ignoreDataType) {
 				createMovePointList(x-1, y, dist, moveMapItem);
-				movePointList.add(new MapPoint(x-1, y, MoveDirectionType.MOVE_RIGHT));
+				movePointList.add(new MapPoint(0, 0, x-1, y, MoveDirectionType.MOVE_RIGHT));
 			}
 			// 左にいけるか?
 			else if (x < (RIGHT - 1) && mapDatas[x + 1][y].getDist() == dist
 					&& mapDatas[x + 1][y].getType() != ignoreDataType) {
 				createMovePointList(x+1, y, dist, moveMapItem);
-				movePointList.add(new MapPoint(x+1, y, MoveDirectionType.MOVE_LEFT));
+				movePointList.add(new MapPoint(0, 0, x+1, y, MoveDirectionType.MOVE_LEFT));
 			}
 		}
 	}
@@ -755,4 +764,12 @@ public class MapManager {
 //			}
 //		});
 //	}
+	
+	public int getMapPointToActorPlayerId(MapPoint mapPoint) {
+		MapItem mapItem = mapItems[mapPoint.getMapPointX()][mapPoint.getMapPointY()];
+		if (mapItem.getMapDataType() == MapDataType.PLAYER || mapItem.getMapDataType() == MapDataType.ENEMY) {
+			return ((ActorPlayerMapItem) mapItem).getPlayerId();
+		}
+		return 0;
+	}
 }

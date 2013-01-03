@@ -1,20 +1,13 @@
 package com.kyokomi.srpgquest.map.common;
 
+import com.kyokomi.srpgquest.constant.MapDataType;
+
 /**
  * マップ情報.
  * @author kyokomi
  *
  */
 public class MapData {
-	
-	public enum MapDataType {
-		NONE,
-		MOVE_DIST,
-		ATTACK_DIST,
-		MAP_ITEM,
-		PLAYER,
-		ENEMY
-	}
 	
 	/**
 	 * コンストラクタ.

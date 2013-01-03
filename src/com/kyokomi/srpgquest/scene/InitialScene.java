@@ -38,26 +38,26 @@ public class InitialScene extends KeyListenScene implements ButtonSprite.OnClick
 //		bg.setPosition(0, 0);
 //		attachChild(bg);
 		
-		Sprite titleSprite = getBaseActivity().getResourceUtil().getSprite(
-				"initial_title.png");
-		placeToCenterX(titleSprite, 40);
-		titleSprite.setY(titleSprite.getY() - 200);
-		attachChild(titleSprite);
-		
-		titleSprite.registerEntityModifier(new SequenceEntityModifier(
-				new DelayModifier(0.5f), 
-				new MoveModifier(1.0f, 
-						titleSprite.getX(), 
-						titleSprite.getX(), 
-						titleSprite.getY(),
-						titleSprite.getY() + 200,
-						EaseBackInOut.getInstance())));
+//		Sprite titleSprite = getBaseActivity().getResourceUtil().getSprite(
+//				"initial_title.png");
+//		placeToCenterX(titleSprite, 40);
+//		titleSprite.setY(titleSprite.getY() - 200);
+//		attachChild(titleSprite);
+//		
+//		titleSprite.registerEntityModifier(new SequenceEntityModifier(
+//				new DelayModifier(0.5f), 
+//				new MoveModifier(1.0f, 
+//						titleSprite.getX(), 
+//						titleSprite.getX(), 
+//						titleSprite.getY(),
+//						titleSprite.getY() + 200,
+//						EaseBackInOut.getInstance())));
 		
 		// ボタンの追加
 		ButtonSprite btnStart = getBaseActivity().getResourceUtil().getButtonSprite(
 				"initial_btn_01.png", 
 				"initial_btn_01_p.png");
-		placeToCenterX(btnStart, 240);
+		placeToCenterX(btnStart, 40);
 		btnStart.setY(btnStart.getY() + 400);
 		btnStart.setTag(INITIAL_START);
 		btnStart.setOnClickListener(this);
@@ -76,7 +76,7 @@ public class InitialScene extends KeyListenScene implements ButtonSprite.OnClick
 		ButtonSprite btnRanking = getBaseActivity().getResourceUtil().getButtonSprite(
 				"initial_btn_02.png", 
 				"initial_btn_02_p.png");
-		placeToCenterX(btnRanking, 310);
+		placeToCenterX(btnRanking, 110);
 		btnRanking.setY(btnRanking.getY() + 400);
 		btnRanking.setTag(INITIAL_RANKING);
 		btnRanking.setOnClickListener(this);
@@ -94,7 +94,7 @@ public class InitialScene extends KeyListenScene implements ButtonSprite.OnClick
 		ButtonSprite btnRecommend = getBaseActivity().getResourceUtil().getButtonSprite(
 				"initial_btn_03.png", 
 				"initial_btn_03_p.png");
-		placeToCenterX(btnRecommend, 380);
+		placeToCenterX(btnRecommend, 180);
 		btnRecommend.setY(btnRecommend.getY() + 400);
 		btnRecommend.setTag(INITIAL_FEEDBACK);
 		btnRecommend.setOnClickListener(this);

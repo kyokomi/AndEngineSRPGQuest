@@ -1,29 +1,16 @@
 package com.kyokomi.srpgquest;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.srpgquest.actor.ActorPlayer;
 import com.kyokomi.srpgquest.constant.GameStateType;
+import com.kyokomi.srpgquest.constant.MoveDirectionType;
 import com.kyokomi.srpgquest.logic.BattleLogic;
 import com.kyokomi.srpgquest.map.MapManager;
-import com.kyokomi.srpgquest.map.common.MapData.MapDataType;
+import com.kyokomi.srpgquest.map.common.MapPoint;
 import com.kyokomi.srpgquest.map.item.ActorPlayerMapItem;
-import com.kyokomi.srpgquest.map.item.CharacterSpriteView;
 import com.kyokomi.srpgquest.scene.MapBattleScene;
 
-import android.animation.Animator;
-import android.animation.ObjectAnimator;
-import android.app.Activity;
-import android.graphics.Point;
 import android.util.Log;
 import android.util.SparseArray;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ImageView;
-import android.widget.ListView;
 
 /**
  * ゲーム全体を管理するクラス.
@@ -32,6 +19,8 @@ import android.widget.ListView;
  */
 public class GameManager {
 	private final static String TAG = "GameManager";
+	
+	private final static float GRID_SIZE = 40;
 	
 	private MapBattleScene mBaseScene;
 	
@@ -71,11 +60,14 @@ public class GameManager {
 		// 初期データ設定(mapX * mapYのグリッドを作成)
 		mMapManager = new MapManager(this, mapX, mapY, scale);
 		
+		// TODO: test用
 		int playerId = 1;
-		addPlayer(3, 3, playerId);
+		int playerImageId = 110;
+		addPlayer(3, 3, playerId, playerImageId);
 		
 		int enemyId = 2;
-		addEnemy(5, 5, enemyId);
+		int enemyImageId = 34;
+		addEnemy(5, 5, enemyId, enemyImageId);
 		
 		// 障害物配置
 		mMapManager.addObstacle(3, 5);
@@ -92,9 +84,24 @@ public class GameManager {
 		mMapManager.addObstacle(5, 2);
 		
 		mGameState = GameStateType.PLAYER_TURN;
+		
+		mMapManager.debugShowMapItems();
 	}
-	
-	private void addPlayer(int mapPointX, int mapPointY, int playerId) {
+	private MapPoint calcGridPosition(int mapPointX, int mapPointY) {
+		float x = GRID_SIZE * mapPointX;
+		float y = GRID_SIZE * mapPointY;
+		return new MapPoint(x, y, mapPointX, mapPointY, GRID_SIZE, MoveDirectionType.MOVE_DOWN);
+	}
+	private MapPoint calcGridDecodePosition(float x, float y) {
+		int mapPointX = (int)(x / GRID_SIZE);
+		int mapPointY = (int)(y / GRID_SIZE);
+		return new MapPoint(x, y, mapPointX, mapPointY, GRID_SIZE, MoveDirectionType.MOVE_DOWN);
+	}
+	public int getTouchPositionToPlayerId(float x, float y) {
+		MapPoint mapPoint = calcGridDecodePosition(x, y);
+		return mMapManager.getMapPointToActorPlayerId(mapPoint);
+	}
+	private void addPlayer(int mapPointX, int mapPointY, int playerId, int playerImageId) {
 		if (playerList.indexOfKey(playerId) >= 0) {
 			// すでに追加済み
 			return;
@@ -103,9 +110,10 @@ public class GameManager {
 		playerList.put(playerId, player);
 		mMapManager.addPlayer(mapPointX, mapPointY, player);
 		// Scene側でSpriteを生成
-		mBaseScene.createPlayerSprite(playerId); // TODO: X,Y軸とか渡す感じ?
+		mBaseScene.createPlayerSprite(playerId, playerImageId,
+				calcGridPosition(mapPointX, mapPointY));
 	}
-	private void addEnemy(int mapPointX, int mapPointY, int enemyId) {
+	private void addEnemy(int mapPointX, int mapPointY, int enemyId, int enemyImageId) {
 		if (enemyList.indexOfKey(enemyId) >= 0) {
 			// すでに追加済み
 			return;
@@ -114,7 +122,8 @@ public class GameManager {
 		enemyList.put(enemyId, enemy);
 		mMapManager.addEnemy(mapPointX, mapPointY, enemy);
 		// Scene側でSpriteを生成
-		mBaseScene.createEnemySprite(enemyId); // TODO: X,Y軸とか渡す感じ?
+		mBaseScene.createEnemySprite(enemyId, enemyImageId,
+				calcGridPosition(mapPointX, mapPointY));
 	}
 	private ActorPlayer createActorPlayer(int playerId) {
 		ActorPlayer actorPlayer = new ActorPlayer();

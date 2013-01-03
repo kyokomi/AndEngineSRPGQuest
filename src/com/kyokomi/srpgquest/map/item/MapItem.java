@@ -1,6 +1,6 @@
 package com.kyokomi.srpgquest.map.item;
 
-import com.kyokomi.srpgquest.map.common.MapData.MapDataType;
+import com.kyokomi.srpgquest.constant.MapDataType;
 
 public class MapItem {
 

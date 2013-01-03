@@ -1,5 +1,9 @@
 package com.kyokomi.srpgquest.scene;
 
+import java.security.spec.MGF1ParameterSpec;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.andengine.entity.primitive.Line;
 import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.scene.IOnSceneTouchListener;
@@ -17,21 +21,23 @@ import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.util.HorizontalAlign;
 import org.andengine.util.color.Color;
 
+import android.graphics.Typeface;
+import android.util.SparseArray;
+import android.view.KeyEvent;
+
 import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.core.sprite.PlayerSprite;
 import com.kyokomi.srpgquest.GameManager;
-
-import android.graphics.Typeface;
-import android.util.SparseArray;
-import android.view.KeyEvent;
+import com.kyokomi.srpgquest.map.common.MapPoint;
 
 public class MapBattleScene extends KeyListenScene 
 	implements IOnSceneTouchListener{
 	
 	private GameManager gameManager;
 	
-	private PlayerSprite player;
+	private SparseArray<PlayerSprite> players;
+	private SparseArray<PlayerSprite> enemys;
 	
 	public MapBattleScene(MultiSceneActivity baseActivity) {
 		super(baseActivity);
@@ -40,7 +46,11 @@ public class MapBattleScene extends KeyListenScene
 	
 	@Override
 	public void init() {
-//		testShowGrid();
+		// 初期化
+		players = new SparseArray<PlayerSprite>();
+		enemys = new SparseArray<PlayerSprite>();
+		
+		testShowGrid();
 //		testBtnCreate();
 //		// プレイヤー配置
 //		player = new PlayerSprite(this, 1, 0, 0);
@@ -56,11 +66,21 @@ public class MapBattleScene extends KeyListenScene
 		setOnSceneTouchListener(this);
 	}
 	
-	public void createPlayerSprite(int playerId) {
-		// キャラ
+	public void createPlayerSprite(int playerId, int imageId, MapPoint mapPoint) {
+		PlayerSprite player = new PlayerSprite(this, imageId, playerId);
+		player.setPlayerToDefaultPosition();
+		player.setPlayerPosition(mapPoint.getX(), mapPoint.getY());
+		player.setPlayerSize(mapPoint.getGridSize(), mapPoint.getGridSize());
+		attachChild(player.getLayer());
+		players.put(playerId, player);
 	}
-	public void createEnemySprite(int enemyId) {
-		// 敵
+	public void createEnemySprite(int enemyId, int imageId, MapPoint mapPoint) {
+		PlayerSprite enemy = new PlayerSprite(this, imageId, enemyId);
+		enemy.setPlayerToDefaultPosition();
+		enemy.setPlayerPosition(mapPoint.getX(), mapPoint.getY());
+		enemy.setPlayerSize(mapPoint.getGridSize(), mapPoint.getGridSize());
+		attachChild(enemy.getLayer());
+		enemys.put(enemyId, enemy);
 	}
 	public void createObstacleSprite() {
 		// 障害物
@@ -90,7 +110,13 @@ public class MapBattleScene extends KeyListenScene
 		float y = pSceneTouchEvent.getY();
 		
 		if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
-			if (talkTextLayer.contains(x, y)) {
+			int playerId = gameManager.getTouchPositionToPlayerId(x, y);
+			if (playerId != 0 && players.indexOfKey(playerId) >= 0) {
+				PlayerSprite playerSprite = players.get(playerId);
+				playerSprite.attack2();
+			}
+			
+			if (talkTextLayer != null && talkTextLayer.contains(x, y)) {
 				// 次のテキストを表示して最後までいけば閉じる
 				talkClose();
 				return true;
@@ -159,18 +185,20 @@ public class MapBattleScene extends KeyListenScene
 	// ---- グリッド表示 ----
 	
 	private void testShowGrid() {
-		int base = 42;
-		int baseGrid = 400;
+		int base = 40;
+		int baseGrid = 0;
 		
 		for (int x = -10 ; x < 20; x++) {
-			final Line line = new Line(base * x, 0, (x * base) + baseGrid, getWindowHeight(), getBaseActivity().getVertexBufferObjectManager());
+			final Line line = new Line(base * x, 0, (x * base) + baseGrid, getWindowHeight(), 
+					getBaseActivity().getVertexBufferObjectManager());
 			line.setLineWidth(1);
 			line.setColor(255, 255, 255);
 			attachChild(line);
 		}
 		
 		for (int y = -10 ; y < 20; y++) {
-			final Line line = new Line(0, (base * y), getWindowWidth(), (y * base) - (baseGrid / 2), getBaseActivity().getVertexBufferObjectManager());
+			final Line line = new Line(0, (base * y), getWindowWidth(), (y * base) - (baseGrid / 2), 
+					getBaseActivity().getVertexBufferObjectManager());
 			line.setLineWidth(1);
 			line.setColor(255, 255, 255);
 			attachChild(line);
@@ -221,31 +249,22 @@ public class MapBattleScene extends KeyListenScene
 					
 					switch (sprite.getTag()) {
 					case 1:
-						player.setPlayerToAttackPosition();
 						break;
 					case 2:
-						player.setPlayerToJumpPositon();
 						break;
 					case 3:
-						player.setPlayerToSlidePositon();
 						break;
 					case 4:
-						player.attack();
 						break;
 					case 5:
-						talk(player.getPlayerTalk(), "テストです");
 						break;
 					case 6:
-						talk(player.getPlayerTalk(), "これ以上の会話はできません");
 						break;
 					case 7:
-						player.setPlayerToAttackPosition();
 						break;
 					case 8:
-						player.setPlayerToAttackPosition();
 						break;
 					case 9:
-						player.setPlayerToAttackPosition();
 						break;
 					default:
 						break;
