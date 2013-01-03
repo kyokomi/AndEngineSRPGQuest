@@ -1,9 +1,7 @@
 package com.kyokomi.srpgquest.scene;
 
-import java.security.spec.MGF1ParameterSpec;
-import java.util.ArrayList;
-import java.util.List;
-
+import org.andengine.entity.IEntity;
+import org.andengine.entity.modifier.IEntityModifier;
 import org.andengine.entity.primitive.Line;
 import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.scene.IOnSceneTouchListener;
@@ -20,6 +18,7 @@ import org.andengine.opengl.texture.TextureOptions;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.util.HorizontalAlign;
 import org.andengine.util.color.Color;
+import org.andengine.util.modifier.IModifier;
 
 import android.graphics.Typeface;
 import android.util.SparseArray;
@@ -49,14 +48,8 @@ public class MapBattleScene extends KeyListenScene
 		// 初期化
 		players = new SparseArray<PlayerSprite>();
 		enemys = new SparseArray<PlayerSprite>();
-		
+		// グリッド線表示
 		testShowGrid();
-//		testBtnCreate();
-//		// プレイヤー配置
-//		player = new PlayerSprite(this, 1, 0, 0);
-//		player.setPlayerToAttackPosition();
-//		attachChild(player.getLayer());
-//		talkTextInit();
 		
 		// ゲーム開始
 		gameManager = new GameManager(this);
@@ -66,6 +59,12 @@ public class MapBattleScene extends KeyListenScene
 		setOnSceneTouchListener(this);
 	}
 	
+	/**
+	 * プレイヤーキャラ描画.
+	 * @param playerId
+	 * @param imageId
+	 * @param mapPoint
+	 */
 	public void createPlayerSprite(int playerId, int imageId, MapPoint mapPoint) {
 		PlayerSprite player = new PlayerSprite(this, imageId, playerId);
 		player.setPlayerToDefaultPosition();
@@ -74,6 +73,12 @@ public class MapBattleScene extends KeyListenScene
 		attachChild(player.getLayer());
 		players.put(playerId, player);
 	}
+	/**
+	 * 敵キャラ描画.
+	 * @param enemyId
+	 * @param imageId
+	 * @param mapPoint
+	 */
 	public void createEnemySprite(int enemyId, int imageId, MapPoint mapPoint) {
 		PlayerSprite enemy = new PlayerSprite(this, imageId, enemyId);
 		enemy.setPlayerToDefaultPosition();
@@ -82,11 +87,32 @@ public class MapBattleScene extends KeyListenScene
 		attachChild(enemy.getLayer());
 		enemys.put(enemyId, enemy);
 	}
-	public void createObstacleSprite() {
-		// 障害物
+	
+	/**
+	 * 障害物描画.
+	 * @param mapPoint
+	 */
+	public void createObstacleSprite(MapPoint mapPoint, int currentTileIndex) {
+		TiledSprite obstacle = getResourceTiledSprite("icon_set.png", 16, 48);
+		obstacle.setPosition(mapPoint.getX(), mapPoint.getY());
+		obstacle.setCurrentTileIndex(currentTileIndex);
+		obstacle.setSize(mapPoint.getGridSize(), mapPoint.getGridSize());
+		attachChild(obstacle);
 	}
-	public void createCursorSprite() {
+	/**
+	 * カーソル描画.
+	 * @param mapPoint
+	 */
+	public void createCursorSprite(MapPoint mapPoint) {
 		// 移動または攻撃可能範囲のカーソル
+		Rectangle cursor = new Rectangle(
+				mapPoint.getX(), mapPoint.getY(),
+				mapPoint.getGridSize(), 
+				mapPoint.getGridSize(), 
+				getBaseActivity().getVertexBufferObjectManager());
+		cursor.setColor(Color.GREEN);
+		cursor.setAlpha(0.4f);
+		attachChild(cursor);
 	}
 	public void createSelectMenuSprite() {
 		// キャラ選択時の行動選択メニュー
@@ -102,6 +128,8 @@ public class MapBattleScene extends KeyListenScene
 		return false;
 	}
 
+	private boolean isPlayerTouch;
+	
 	@Override
 	public boolean onSceneTouchEvent(Scene pScene, TouchEvent pSceneTouchEvent) {
 		
@@ -110,10 +138,16 @@ public class MapBattleScene extends KeyListenScene
 		float y = pSceneTouchEvent.getY();
 		
 		if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
-			int playerId = gameManager.getTouchPositionToPlayerId(x, y);
-			if (playerId != 0 && players.indexOfKey(playerId) >= 0) {
-				PlayerSprite playerSprite = players.get(playerId);
-				playerSprite.attack2();
+			if (!isPlayerTouch) {
+				int playerId = gameManager.getTouchPositionToPlayerId(x, y);
+				if (playerId != 0 && players.indexOfKey(playerId) >= 0) {
+					// TODO: 行動可能なプレイヤーなら行動メニューを表示
+					
+					// 移動範囲表示
+					gameManager.showMoveDistCursor(x, y);
+//					// プレイヤータッチ判定
+//					touchPlayer(playerId);
+				}
 			}
 			
 			if (talkTextLayer != null && talkTextLayer.contains(x, y)) {
@@ -123,6 +157,22 @@ public class MapBattleScene extends KeyListenScene
 			}
 		}
 		return false;
+	}
+	
+	private void touchPlayer(int playerId) {
+		
+		isPlayerTouch = true;
+
+		PlayerSprite playerSprite = players.get(playerId);
+		playerSprite.attack2(new IEntityModifier.IEntityModifierListener() {
+			@Override
+			public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
+			}
+			@Override
+			public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+				isPlayerTouch = false;
+			}
+		});
 	}
 
 	// ----- 会話用 -------
@@ -192,7 +242,7 @@ public class MapBattleScene extends KeyListenScene
 			final Line line = new Line(base * x, 0, (x * base) + baseGrid, getWindowHeight(), 
 					getBaseActivity().getVertexBufferObjectManager());
 			line.setLineWidth(1);
-			line.setColor(255, 255, 255);
+			line.setColor(Color.WHITE);
 			attachChild(line);
 		}
 		
@@ -200,7 +250,7 @@ public class MapBattleScene extends KeyListenScene
 			final Line line = new Line(0, (base * y), getWindowWidth(), (y * base) - (baseGrid / 2), 
 					getBaseActivity().getVertexBufferObjectManager());
 			line.setLineWidth(1);
-			line.setColor(255, 255, 255);
+			line.setColor(Color.WHITE);
 			attachChild(line);
 		}
 	}

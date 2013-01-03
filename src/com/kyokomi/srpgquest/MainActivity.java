@@ -28,8 +28,8 @@ import android.view.KeyEvent;
 public class MainActivity extends MultiSceneActivity {
 
 	// 画面サイズ
-	private int CAMERA_WIDTH = 800 / 2;
-	private int CAMERA_HEIGHT = 480 / 2;
+	private int CAMERA_WIDTH = (int)(800 / 1.5);
+	private int CAMERA_HEIGHT = (int)(480 / 1.5);
 	
 	@Override
 	public EngineOptions onCreateEngineOptions() {

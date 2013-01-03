@@ -172,7 +172,7 @@ public class PlayerSprite {
 	 * 攻撃モーション再生(Ver.2).
 	 * スケールとか解像度関係なくやれるようにする
 	 */
-	public void attack2() {
+	public void attack2(IEntityModifier.IEntityModifierListener callBack) {
 		
 		showPlayer(PlayerSpriteType.PLAYER_TYPE_ATTACK);
 		
@@ -215,18 +215,22 @@ public class PlayerSprite {
 							playerAttack.getY() - (attackEffect.getHeight() / 3));
 				}
 			}),
-			// 全体
-			new DelayModifier(0.5f, new IEntityModifier.IEntityModifierListener() {
-				@Override public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {}
-				@Override
-				public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
-					weapon.setAlpha(0.0f);
-					attackEffect.setAlpha(0.0f);
-					// デフォルトに戻す
-					showPlayer(PlayerSpriteType.PLAYER_TYPE_DEFENSE);
-					playerDefense.setCurrentTileIndex(0);
-				}
-			})
+			new SequenceEntityModifier(
+				// 全体
+				new DelayModifier(0.5f, new IEntityModifier.IEntityModifierListener() {
+					@Override public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {}
+					@Override
+					public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+						weapon.setAlpha(0.0f);
+						attackEffect.setAlpha(0.0f);
+						// デフォルトに戻す
+						showPlayer(PlayerSpriteType.PLAYER_TYPE_DEFENSE);
+						playerDefense.setCurrentTileIndex(0);
+						
+					}
+				}),
+				// CallBack
+				new DelayModifier(0.0f, callBack))
 		));
 	}
 	/**

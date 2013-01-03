@@ -312,6 +312,16 @@ public class MapManager {
 		if (mapDatas[mapPointX][mapPointY].getType() != MapDataType.NONE) {
 			return;
 		}
+		// リストに入れたやつだけあとで描画する
+		MapItem cursorItem = new MapItem();
+		cursorItem.setMapDataType(MapDataType.MOVE_DIST);
+		cursorItem.setMapPointX(mapPointX);
+		cursorItem.setMapPointY(mapPointY);
+		cursorItem.setMoveDist(dist);
+		cursorItem.setAttackDist(0);
+		
+		cursorList.add(cursorItem);
+		
 //		addCursor(R.drawable.window_b_00, MapDataType.MOVE_DIST, 
 //				mapPointX, mapPointY, dist, new View.OnClickListener() {
 //			@Override
@@ -373,33 +383,47 @@ public class MapManager {
 //		cursorList.add(mapSpriteView);
 //	}
 //	
-//	/**
-//	 * キャラクター移動範囲検索.
-//	 * @param characterView キャラクタービュー
-//	 */
-//	private void charcterFindDist(CharacterSpriteView characterView) {
-//		// キャラクターの現在位置を取得
-//		int mapX = characterView.getMapPointX();
-//		int mapY = characterView.getMapPointY();
-//		int dist = characterView.getMoveDist();
-//		MapDataType mapDataType = characterView.getMapDataType();
-//		
-//		// 移動検索
-//		mapDatas[mapX][mapY].setDist(dist);
-//		mapDatas[mapX][mapY].setType(mapDataType);
-//		// 検索開始(再帰呼び出し)
-//		findDist(mapX, mapY, dist, true);
-//		
-//		// デバッグ用（端末を横にした時のイメージ）----------------
-//		for (int i = 0; i < mapDatas.length; i++) {
-//			String str = "";
-//			for (int j = 0; j < mapDatas[i].length; j++) {
-//				str += " " + this.mapDatas[i][j].getDist();  
-//			}
-//			Log.d("TEST", str);
-//		}
-//		// -----------------------------------------------
-//	}
+	/**
+	 * キャラクター移動範囲検索.
+	 * @param actorItem キャラクタービュー
+	 */
+	public List<MapItem> actorPlayerFindDist(MapPoint mapPoint) {
+		ActorPlayerMapItem actorPlayerMapItem = getMapPointToActorPlayer(mapPoint);
+		if (actorPlayerMapItem != null) {
+			return actorPlayerFindDist(actorPlayerMapItem);
+		}
+		return null;
+	}
+	/**
+	 * キャラクター移動範囲検索.
+	 * @param actorItem キャラクタービュー
+	 */
+	public List<MapItem> actorPlayerFindDist(ActorPlayerMapItem actorItem) {
+		// キャラクターの現在位置を取得
+		int mapX = actorItem.getMapPointX();
+		int mapY = actorItem.getMapPointY();
+		int dist = actorItem.getMoveDist();
+		MapDataType mapDataType = actorItem.getMapDataType();
+		
+		// 移動検索
+		mapDatas[mapX][mapY].setDist(dist);
+		mapDatas[mapX][mapY].setType(mapDataType);
+		// 検索開始(再帰呼び出し)
+		findDist(mapX, mapY, dist, true);
+		
+		// デバッグ用（端末を横にした時のイメージ）----------------
+		for (int i = 0; i < mapDatas.length; i++) {
+			String str = "";
+			for (int j = 0; j < mapDatas[i].length; j++) {
+				str += " " + this.mapDatas[i][j].getDist();  
+			}
+			Log.d("TEST", str);
+		}
+		// -----------------------------------------------
+		
+		// findDistで更新したcursorListを描画してもらう
+		return cursorList;
+	}
 //	
 //	/**
 //	 * キャラクター攻撃範囲検索.
@@ -765,10 +789,19 @@ public class MapManager {
 //		});
 //	}
 	
-	public int getMapPointToActorPlayerId(MapPoint mapPoint) {
+	public ActorPlayerMapItem getMapPointToActorPlayer(MapPoint mapPoint) {
 		MapItem mapItem = mapItems[mapPoint.getMapPointX()][mapPoint.getMapPointY()];
-		if (mapItem.getMapDataType() == MapDataType.PLAYER || mapItem.getMapDataType() == MapDataType.ENEMY) {
-			return ((ActorPlayerMapItem) mapItem).getPlayerId();
+		if (mapItem != null && 
+				(mapItem.getMapDataType() == MapDataType.PLAYER || mapItem.getMapDataType() == MapDataType.ENEMY)) {
+			return ((ActorPlayerMapItem) mapItem);
+		}
+		return null;
+	}
+	
+	public int getMapPointToActorPlayerId(MapPoint mapPoint) {
+		ActorPlayerMapItem actorPlayerMapItem = getMapPointToActorPlayer(mapPoint);
+		if (actorPlayerMapItem != null) {
+			return actorPlayerMapItem.getPlayerId();
 		}
 		return 0;
 	}
