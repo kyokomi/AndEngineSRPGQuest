@@ -60,6 +60,9 @@ public class MapManager {
 	/** カーソルリスト. */
 	private List<MapItem> cursorList;
 	
+	/**
+	 * TODO: test用
+	 */
 	public void debugShowMapItems() {
 		StringBuffer buffer = null;
 		for (MapData[] mapItemX : mapDatas) {
@@ -226,29 +229,6 @@ public class MapManager {
 				mapDatas[mapPointX][mapPointY].getType() != MapDataType.ENEMY ) {
 			return;
 		}
-		// TODO: カーソル・アイコン追加
-//		addCursor(R.drawable.window_c_00, MapDataType.ATTACK_DIST,
-//				mapPointX, mapPointY, dist, new View.OnClickListener() {
-//			@Override
-//			public void onClick(View v) {
-////				if (mGameManager.touchedAttackCursor(v)) {
-//					// タップしたマップ情報を取得
-//					final int x = ((MapSpriteView) v).getMapPointX();
-//					final int y = ((MapSpriteView) v).getMapPointY();
-//					
-//					// 攻撃位置に攻撃対象が存在する場合
-//					if (mapDatas[x][y].getType() == MapDataType.ENEMY) {
-//						// TODO: デュエルスタート
-//						
-//					} else {
-//						// TODO: 攻撃対象がいない
-//					}
-//					
-//					// カーソル情報クリア
-//					cursorInit(selectMapItem);
-////				}
-//			}
-//		});
 	}
 	
 //	TODO: バトルはあとで
@@ -320,69 +300,10 @@ public class MapManager {
 		cursorItem.setMoveDist(dist);
 		cursorItem.setAttackDist(0);
 		
+		mapItems[mapPointX][mapPointY] = cursorItem;
 		cursorList.add(cursorItem);
-		
-//		addCursor(R.drawable.window_b_00, MapDataType.MOVE_DIST, 
-//				mapPointX, mapPointY, dist, new View.OnClickListener() {
-//			@Override
-//			public void onClick(View v) {
-//				if (mGameManager.touchedMoveCursor(v)) {
-//					moveMapItem((MapSpriteView)v, selectMapItem);
-//				}
-//			}
-//		});
 	}
 	
-	
-//	public boolean showCharcterDist() {
-//		boolean isAction = false;
-//		if (!selectMapItem.isMoveDone()) {
-//			charcterFindDist(selectMapItem);
-//			isAction = true;
-//		}
-//		return isAction;
-//	}
-//	public boolean showCharcterAttack() {
-//		boolean isAction = false;
-//		if (!selectMapItem.isAttackDone()) {
-//			charcterFindAttack(selectMapItem);	
-//			isAction = true;
-//		}
-//		return isAction;
-//	}
-//	public void characterEnd() {
-//		selectMapItem.setAttackDone(true);
-//		selectMapItem.setMoveDone(true);
-//		mGameManager.actionWait(selectMapItem.getMapDataType());
-//	}
-//	public void selectCancel() {
-//		this.selectMapItem = null;
-//		mGameManager.actionCancel();
-//	}
-//	
-//	/**
-//	 * カーソル追加.
-//	 * @param mapPointX
-//	 * @param mapPointY
-//	 * @param dist
-//	 */
-//	private void addCursor(int resId, MapDataType mapDataType, int mapPointX, int mapPointY, int dist, OnClickListener clickListener) {
-//
-//		// 画像読み込み
-//		MapSpriteView mapSpriteView  = new MapSpriteView(mGameManager.getActivity(), mapDataType, 
-//				resId, 4, 4, mapPointX, mapPointY, getGridSize(), mapScale);
-//		mapSpriteView.setSprite(2, 2);
-//		mapSpriteView.setAlpha(0.8f);
-//		
-//		// clickイベント登録
-//		mapSpriteView.setOnClickListener(clickListener);
-//		
-//		// 描画設定
-//		mGameManager.addMapItem(mapSpriteView);
-//		// リストに追加
-//		cursorList.add(mapSpriteView);
-//	}
-//	
 	/**
 	 * キャラクター移動範囲検索.
 	 * @param actorItem キャラクタービュー
@@ -410,19 +331,60 @@ public class MapManager {
 		mapDatas[mapX][mapY].setType(mapDataType);
 		// 検索開始(再帰呼び出し)
 		findDist(mapX, mapY, dist, true);
-		
-		// デバッグ用（端末を横にした時のイメージ）----------------
-		for (int i = 0; i < mapDatas.length; i++) {
-			String str = "";
-			for (int j = 0; j < mapDatas[i].length; j++) {
-				str += " " + this.mapDatas[i][j].getDist();  
-			}
-			Log.d("TEST", str);
-		}
-		// -----------------------------------------------
-		
+				
 		// findDistで更新したcursorListを描画してもらう
 		return cursorList;
+	}
+	
+	/**
+	 * 指定したプレイヤーの最短距離移動情報作成.
+	 * @param moveToActorPlayer 移動対象プレイヤー
+	 * @param moveFromMapPoint 移動先マップ情報
+	 * @return 移動情報
+	 */
+	public List<MapPoint> actorPlayerCreateMovePointList(
+			ActorPlayerMapItem moveToActorPlayer, MapPoint moveFromMapPoint) {
+		
+		MapItem mapItem = getMapPointToMapItem(moveFromMapPoint);
+		
+	    // 移動情報作成
+		createMovePointList(moveFromMapPoint.getMapPointX(), moveFromMapPoint.getMapPointY(), 
+				mapItem.getMoveDist(), moveToActorPlayer);	
+		
+		// 目的地を最後の移動箇所に指定
+		movePointList.add(moveFromMapPoint);
+
+		return movePointList;
+	}
+	
+	/**
+	 * 移動後マップ情報変更.
+	 * @param mapPointX
+	 * @param mapPointY
+	 * @param moveToView
+	 */
+	public void moveEndChangeMapItem(
+			ActorPlayerMapItem moveToActorPlayer, MapPoint moveFromMapPoint) {
+		// 移動済みに更新（TODO: 参照されてる？）
+		moveToActorPlayer.setMoveDone(true);
+		
+		// リストとかカーソルまわりの情報を全部クリア
+		movePointList = new ArrayList<MapPoint>();
+		cursorInit();
+		
+		// 移動後のマップ情報を更新
+		int oldMapPointX = moveToActorPlayer.getMapPointX();
+		int oldMapPointY = moveToActorPlayer.getMapPointY();
+		mapItems[oldMapPointX][oldMapPointY] = null;
+		mapDatas[oldMapPointX][oldMapPointY] = new MapData();
+		
+		int moveMapPointX = moveFromMapPoint.getMapPointX();
+		int moveMapPointY = moveFromMapPoint.getMapPointY();
+		mapItems[moveMapPointX][moveMapPointY] = moveToActorPlayer;
+		mapDatas[moveMapPointX][moveMapPointY].setType(moveToActorPlayer.getMapDataType());
+		mapDatas[moveMapPointX][moveMapPointY].setDist(moveToActorPlayer.getMoveDist());
+		moveToActorPlayer.setMapPointX(moveMapPointX);
+		moveToActorPlayer.setMapPointY(moveMapPointY);
 	}
 //	
 //	/**
@@ -532,95 +494,6 @@ public class MapManager {
 	}
 	
 	/**
-	 * マップアイテムの移動.
-	 * @param moveToMapItem 移動先
-	 * @param player 移動対象
-	 */
-	private void moveMapItem(int mapPointX, int mapPointY, ActorPlayerMapItem moveToActorMapItem) {
-	    // 移動情報作成
-		createMovePointList(mapPointX, mapPointY, mapDatas[mapPointX][mapPointY].getDist(), moveToActorMapItem);	
-		// 目的地を最後の移動箇所に指定(方向は直前のマスと同じ) TODO: おかしい？
-		movePointList.add(new MapPoint(0, 0, mapPointX, mapPointY, movePointList.get(movePointList.size()-1).getDirection()));
-
-		// 移動アニメーション
-		// TODO: GameManager側に通知
-	}
-	/**
-	 * マップアイテム移動後の処理.
-	 * @param moveToMapItem
-	 * @param moveToView
-	 */
-	private void moveMapItemEnd(int mapPointX, int mapPointY, ActorPlayerMapItem moveToActorMapItem) {
-		// 移動完了後のマップ情報更新
-		moveEndChangeMapItem(mapPointX, mapPointY, moveToActorMapItem);
-		// 移動済みにする
-		moveToActorMapItem.setMoveDone(true);
-		// 移動完了呼び出し
-		// TODO: GameManager側？
-	}
-	
-	/**
-	 * 移動後マップ情報変更.
-	 * @param mapPointX
-	 * @param mapPointY
-	 * @param moveToView
-	 */
-	private void moveEndChangeMapItem(int mapPointX, int mapPointY, MapItem moveToMapItem) {
-		// リストとかカーソルまわりの情報を全部クリア
-		movePointList = new ArrayList<MapPoint>();
-		cursorInit();
-		
-		// 移動後のマップ情報を更新
-		int oldX = moveToMapItem.getMapPointX();
-		int oldY = moveToMapItem.getMapPointY();
-		mapItems[oldX][oldY] = null;
-		mapDatas[oldX][oldY] = new MapData();
-		
-		mapItems[mapPointX][mapPointY] = moveToMapItem;
-		mapDatas[mapPointX][mapPointY].setType(moveToMapItem.getMapDataType());
-		mapDatas[mapPointX][mapPointY].setDist(moveToMapItem.getMoveDist());
-		moveToMapItem.setMapPointX(mapPointX);
-		moveToMapItem.setMapPointY(mapPointY);
-	}
-//	
-//	/**
-//	 * 移動アニメーション.
-//	 * @param mapView
-//	 */
-//	private Animator moveAnimation(MapSpriteView mapView, AnimatorListener animatorListener) {
-//		
-//		// 移動先の座標を逆算して求める
-//		int size = movePointList.size();
-//		float moveX[] = new float[size];
-//		float moveY[] = new float[size];
-//		int moveD[] = new int[size];
-//		for (int i = 0; i < size; i++) {
-//			MapPoint point = movePointList.get(i);
-//			moveX[i] = point.getX() * getGridSize();
-//			moveY[i] = point.getY() * getGridSize();
-//			moveD[i] = point.getDirection().getValue();
-//		}
-//		
-//		// 事前処理で移動方向を向いておく
-//		mapView.setDirection(moveD[0]);
-//		
-//		// アニメーション
-//		ObjectAnimator animX = ObjectAnimator.ofFloat(mapView, "x", moveX);
-//		ObjectAnimator animY = ObjectAnimator.ofFloat(mapView, "y", moveY);
-//		ObjectAnimator animD = ObjectAnimator.ofInt(mapView, "direction", moveD);
-//		AnimatorSet animatorSet = new AnimatorSet();
-//		animatorSet.setDuration(500);
-//		if (animatorListener != null) {
-//			animatorSet.addListener(animatorListener);
-//		}
-//		// 開始
-//		animatorSet.play(animY).with(animX).with(animD);
-//		animatorSet.start();
-//		
-//		return animatorSet;
-//	}
-//	
-	/**
 	 * 移動ルート情報を作成.
 	 * movePointListに追加していきます.
 	 * 
@@ -648,25 +521,29 @@ public class MapManager {
 			if (y > TOP && mapDatas[x][y - 1].getDist() == dist 
 					&& mapDatas[x][y - 1].getType() != ignoreDataType) {
 				createMovePointList(x, y-1, dist, moveMapItem);
-				movePointList.add(new MapPoint(0, 0, x, y-1, MoveDirectionType.MOVE_DOWN));
+				movePointList.add(mGameManager.getTouchMapPointToMapPoint(x, y-1));
+//				movePointList.add(new MapPoint(0, 0, x, y-1, MoveDirectionType.MOVE_DOWN));
 			}
 			// 下か？
 			else if (y < (BOTTOM -1) && mapDatas[x][y + 1].getDist() == dist
 					&& mapDatas[x][y + 1].getType() != ignoreDataType) {
 				createMovePointList(x, y+1, dist, moveMapItem);
-				movePointList.add(new MapPoint(0, 0, x, y+1, MoveDirectionType.MOVE_UP));
+				movePointList.add(mGameManager.getTouchMapPointToMapPoint(x, y+1));
+//				movePointList.add(new MapPoint(0, 0, x, y+1, MoveDirectionType.MOVE_UP));
 			}	
 			// 右か?
 			else if (x > LEFT && mapDatas[x - 1][y].getDist() == dist
 					&& mapDatas[x - 1][y].getType() != ignoreDataType) {
 				createMovePointList(x-1, y, dist, moveMapItem);
-				movePointList.add(new MapPoint(0, 0, x-1, y, MoveDirectionType.MOVE_RIGHT));
+				movePointList.add(mGameManager.getTouchMapPointToMapPoint(x-1, y));
+//				movePointList.add(new MapPoint(0, 0, x-1, y, MoveDirectionType.MOVE_RIGHT));
 			}
 			// 左にいけるか?
 			else if (x < (RIGHT - 1) && mapDatas[x + 1][y].getDist() == dist
 					&& mapDatas[x + 1][y].getType() != ignoreDataType) {
 				createMovePointList(x+1, y, dist, moveMapItem);
-				movePointList.add(new MapPoint(0, 0, x+1, y, MoveDirectionType.MOVE_LEFT));
+				movePointList.add(mGameManager.getTouchMapPointToMapPoint(x+1, y));
+//				movePointList.add(new MapPoint(0, 0, x+1, y, MoveDirectionType.MOVE_LEFT));
 			}
 		}
 	}
@@ -789,8 +666,16 @@ public class MapManager {
 //		});
 //	}
 	
-	public ActorPlayerMapItem getMapPointToActorPlayer(MapPoint mapPoint) {
+	public MapItem getMapPointToMapItem(MapPoint mapPoint) {
 		MapItem mapItem = mapItems[mapPoint.getMapPointX()][mapPoint.getMapPointY()];
+		if (mapItem != null) {
+			return mapItem;
+		}
+		return null;
+	}
+	
+	public ActorPlayerMapItem getMapPointToActorPlayer(MapPoint mapPoint) {
+		MapItem mapItem = getMapPointToMapItem(mapPoint);
 		if (mapItem != null && 
 				(mapItem.getMapDataType() == MapDataType.PLAYER || mapItem.getMapDataType() == MapDataType.ENEMY)) {
 			return ((ActorPlayerMapItem) mapItem);

@@ -1,5 +1,8 @@
 package com.kyokomi.core.sprite;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.andengine.entity.IEntity;
 import org.andengine.entity.modifier.DelayModifier;
 import org.andengine.entity.modifier.IEntityModifier;
@@ -12,9 +15,11 @@ import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.sprite.TiledSprite;
 import org.andengine.util.color.Color;
 import org.andengine.util.modifier.IModifier;
+import org.andengine.util.modifier.SequenceModifier;
 
 import com.kyokomi.core.constants.PlayerSpriteType;
 import com.kyokomi.core.scene.KeyListenScene;
+import com.kyokomi.srpgquest.map.common.MapPoint;
 
 public class PlayerSprite {
 	
@@ -293,6 +298,28 @@ public class PlayerSprite {
 				}
 			})
 		));
+	}
+
+	/**
+	 * プレイヤー移動.
+	 * @param duration 移動時間
+	 * @param moveMapPointList 移動経路リスト
+	 */
+	public void move(float duration, List<MapPoint> moveMapPointList) {
+		setPlayerToDefaultPosition();
+		List<IEntityModifier> modifierList = new ArrayList<IEntityModifier>();
+		// TODO: durationをlistの件数で割るべきか？
+		float moveStartX = player.getX();
+		float moveStartY = player.getY();
+		for (MapPoint mapPoint : moveMapPointList) {
+			modifierList.add(new MoveModifier(duration, moveStartX, mapPoint.getX(), moveStartY, mapPoint.getY()));
+			moveStartX = mapPoint.getX();
+			moveStartY = mapPoint.getY();
+		}
+		SequenceEntityModifier sequenceEntityModifier  = new SequenceEntityModifier(
+				modifierList.toArray(new IEntityModifier[0]));
+		// 移動
+		player.registerEntityModifier(sequenceEntityModifier);
 	}
 	
 	/**

@@ -4,13 +4,18 @@ import java.util.List;
 
 import com.kyokomi.srpgquest.actor.ActorPlayer;
 import com.kyokomi.srpgquest.constant.GameStateType;
+import com.kyokomi.srpgquest.constant.MapDataType;
 import com.kyokomi.srpgquest.constant.MoveDirectionType;
+import com.kyokomi.srpgquest.constant.SelectMenuType;
 import com.kyokomi.srpgquest.logic.BattleLogic;
 import com.kyokomi.srpgquest.map.MapManager;
+import com.kyokomi.srpgquest.map.common.MapData;
 import com.kyokomi.srpgquest.map.common.MapPoint;
+import com.kyokomi.srpgquest.map.item.ActorPlayerMapItem;
 import com.kyokomi.srpgquest.map.item.MapItem;
 import com.kyokomi.srpgquest.scene.MapBattleScene;
 
+import android.text.method.HideReturnsTransformationMethod;
 import android.util.Log;
 import android.util.SparseArray;
 
@@ -24,32 +29,32 @@ public class GameManager {
 	
 	private final static float GRID_SIZE = 40;
 	
-	private MapBattleScene mBaseScene;
+	private MapBattleScene baseScene;
 	
-	private GameStateType mGameState;
+	private GameStateType gameState;
 	
 	private SparseArray<ActorPlayer> playerList;
 	private SparseArray<ActorPlayer> enemyList;
 	
 	/** マップ管理. */
-	private MapManager mMapManager;
+	private MapManager mapManager;
 	
 	/** バトル汎用. */
-	private BattleLogic mBattleLogic;
+	private BattleLogic battleLogic;
 	
 	/**
 	 * コンストラクタ.
 	 * @param mainActivity
 	 */
 	public GameManager(MapBattleScene baseScene) {
-		this.mBaseScene = baseScene;
+		this.baseScene = baseScene;
 
 		// 初期化
-		mBattleLogic = new BattleLogic();
+		battleLogic = new BattleLogic();
 		playerList = new SparseArray<ActorPlayer>();
 		enemyList = new SparseArray<ActorPlayer>();
 		
-		mGameState = GameStateType.INIT;
+		gameState = GameStateType.INIT;
 	}
 	
 	/**
@@ -60,7 +65,7 @@ public class GameManager {
 	 */
 	public void mapInit(int mapX, int mapY, float scale) {
 		// 初期データ設定(mapX * mapYのグリッドを作成)
-		mMapManager = new MapManager(this, mapX, mapY, scale);
+		mapManager = new MapManager(this, mapX, mapY, scale);
 		
 		// TODO: test用
 		int playerId = 1;
@@ -85,11 +90,11 @@ public class GameManager {
 		addObstacle(4, 2);
 		addObstacle(5, 2);
 		
-		mGameState = GameStateType.PLAYER_TURN;
+		gameState = GameStateType.PLAYER_TURN;
 		
-		mMapManager.debugShowMapItems();
+		mapManager.debugShowMapItems();
 		
-		mBaseScene.sortChildren();
+		baseScene.sortChildren();
 	}
 	// -----------------------------------------------------
 	// 座標計算とか
@@ -102,7 +107,7 @@ public class GameManager {
 	private MapPoint calcGridDecodePosition(float x, float y) {
 		int mapPointX = (int)(x / GRID_SIZE);
 		int mapPointY = (int)(y / GRID_SIZE);
-		return new MapPoint(x, y, mapPointX, mapPointY, GRID_SIZE, MoveDirectionType.MOVE_DOWN);
+		return calcGridPosition(mapPointX, mapPointY);
 	}
 	/**
 	 * タッチした画面のx,y座標からマップ上のプレイヤーIDを取得.
@@ -113,17 +118,133 @@ public class GameManager {
 	 */
 	public int getTouchPositionToPlayerId(float x, float y) {
 		MapPoint mapPoint = calcGridDecodePosition(x, y);
-		return mMapManager.getMapPointToActorPlayerId(mapPoint);
+		return mapManager.getMapPointToActorPlayerId(mapPoint);
 	}
 	/**
-	 * タッチした画面のx,y座標からマップ上のプレイヤーIDを取得.
-	 * 何もいない場合などは0を返却
+	 * タッチした画面のx,y座標からマップ座標情報を取得.
 	 * @param x
 	 * @param y
-	 * @return playerId
+	 * @return マップ座標情報
 	 */
 	public MapPoint getTouchPositionToMapPoint(float x, float y) {
 		return calcGridDecodePosition(x, y);
+	}
+	/**
+	 * タッチした画面のx,y座標からマップ座標情報を取得.
+	 * @param x
+	 * @param y
+	 * @return マップ座標情報
+	 */
+	public MapPoint getTouchMapPointToMapPoint(int mapPointX, int mapPointY) {
+		return calcGridPosition(mapPointX, mapPointY);
+	}
+	
+	/**
+	 * マップアイテムからマップ座標情報を取得.
+	 * @param mapItem
+	 * @return マップ座標情報
+	 */
+	public MapPoint getMapItemToMapPoint(MapItem mapItem) {
+		return calcGridPosition(mapItem.getMapPointX(), mapItem.getMapPointY());
+	}
+	
+	/** 選択したプレイヤーテンポラリ. */
+	private ActorPlayerMapItem selectActorPlayer;
+	
+	public ActorPlayerMapItem getSelectActorPlayer() {
+		return selectActorPlayer;
+	}
+	
+	/**
+	 * TODO: タッチするタイミングは色々あるのでその辺理解して振り分けないといけない
+	 * 行動キャラ選択のタッチ
+	 * 移動時のタッチ
+	 * 攻撃時のタッチ
+	 * 敵のターン時のタッチ
+	 * 
+	 * @param x
+	 * @param y
+	 * @return
+	 */
+	public MapDataType onTouchMapItemEvent(float x, float y) {
+		MapPoint mapPoint = calcGridDecodePosition(x, y);
+		MapItem mapItem = mapManager.getMapPointToMapItem(mapPoint);
+		if (mapItem == null) {
+			// TODO: エラー
+			return null;
+		}
+		MapDataType touchMapDataType = mapItem.getMapDataType();
+		
+		/* 現在のゲームステータスに応じて処理を行う */
+		switch (gameState) {
+		case INIT:
+			break;
+			
+		case PLAYER_TURN:
+			// プレイヤーキャラ選択が可能なので行動可能であればウィンドウ表示
+			if (touchMapDataType == MapDataType.PLAYER) {
+				ActorPlayerMapItem actorPlayerMapItem = (ActorPlayerMapItem) mapItem;
+		
+				// 攻撃もしくは移動が完了していなければ行動可能とする
+				if (!actorPlayerMapItem.isMoveDone() || !actorPlayerMapItem.isAttackDone()) {
+					gameState = GameStateType.PLAYER_SELECT;
+					selectActorPlayer = actorPlayerMapItem;
+					// 行動ウィンドウを表示
+					baseScene.showSelectMenu();
+				}
+			}
+			break;
+		
+		case PLAYER_SELECT:
+			gameState = GameStateType.PLAYER_TURN;
+			selectActorPlayer = null;
+			// 行動ウィンドウ以外を押したら行動ウィンドウを閉じる
+			baseScene.hideSelectMenu();
+			break;
+			
+		case PLAYER_ATTACK:
+			// 攻撃を選択したときは敵しかタップイベントに反応しない
+			if (touchMapDataType == MapDataType.ENEMY) {
+				// TODO: [将来対応]攻撃確認ウィンドウ表示
+				
+				// TODO: 攻撃処理
+			}
+			break;
+			
+		case PLAYER_MOVE:
+			// 移動を選択したときは移動可能カーソルにしか反応しない
+			if (touchMapDataType == MapDataType.MOVE_DIST) {
+				if (selectActorPlayer != null) {
+					
+					// 移動List作成
+					List<MapPoint> moveMapPointList = mapManager.actorPlayerCreateMovePointList(
+							selectActorPlayer, mapPoint);
+					
+					// TODO: 移動リストを引数にScene側の移動アニメーションを呼び出す
+					baseScene.movePlayerAnimation(selectActorPlayer.getPlayerId(), moveMapPointList);
+					
+					// 移動結果をマップ情報に反映
+					// TODO: プレイヤーのステータスを移動済みにする
+					mapManager.moveEndChangeMapItem(selectActorPlayer, mapPoint);
+					
+					// TODO: このあと行動選択ウィンドウの移動が押せくなる
+					
+					gameState = GameStateType.PLAYER_TURN;
+					// カーソルを消す
+					baseScene.hideCursorSprite();
+				}
+			}
+			break;
+		
+		case ENEMY_TURN:
+			// 敵のターンは何もできない
+			break;
+			
+		default:
+			break;
+		}
+		
+		return touchMapDataType;
 	}
 	
 	//---------------------------------------------------------
@@ -136,9 +257,9 @@ public class GameManager {
 		}
  		ActorPlayer player = createActorPlayer(playerId);
 		playerList.put(playerId, player);
-		mMapManager.addPlayer(mapPointX, mapPointY, player);
+		mapManager.addPlayer(mapPointX, mapPointY, player);
 		// Scene側でSpriteを生成
-		mBaseScene.createPlayerSprite(playerId, playerImageId,
+		baseScene.createPlayerSprite(playerId, playerImageId,
 				calcGridPosition(mapPointX, mapPointY));
 	}
 	private void addEnemy(int mapPointX, int mapPointY, int enemyId, int enemyImageId) {
@@ -148,9 +269,9 @@ public class GameManager {
 		}
  		ActorPlayer enemy = createActorPlayer(enemyId);
 		enemyList.put(enemyId, enemy);
-		mMapManager.addEnemy(mapPointX, mapPointY, enemy);
+		mapManager.addEnemy(mapPointX, mapPointY, enemy);
 		// Scene側でSpriteを生成
-		mBaseScene.createEnemySprite(enemyId, enemyImageId,
+		baseScene.createEnemySprite(enemyId, enemyImageId,
 				calcGridPosition(mapPointX, mapPointY));
 	}
 	private ActorPlayer createActorPlayer(int playerId) {
@@ -162,23 +283,51 @@ public class GameManager {
 		return actorPlayer;
 	}
 	private void addObstacle(int mapPointX, int mapPointY) {
-		mMapManager.addObstacle(mapPointX, mapPointY);
-		mBaseScene.createObstacleSprite(calcGridPosition(mapPointX, mapPointY), 16 * 12 + 0);
+		mapManager.addObstacle(mapPointX, mapPointY);
+		baseScene.createObstacleSprite(calcGridPosition(mapPointX, mapPointY), 16 * 12 + 0);
 	}
 	//---------------------------------------------------------
 	// Sceneから呼ばれる
 	//---------------------------------------------------------
-	public void showMoveDistCursor(int playerId) {
-		
+	public void showMoveDistCursor(MapItem mapItem) {
+		MapPoint mapPoint = calcGridPosition(mapItem.getMapPointX(), mapItem.getMapPointY());
+		showMoveDistCursor(mapPoint.getX(), mapPoint.getY());
 	}
 	public void showMoveDistCursor(float x, float y) {
 		MapPoint mapPoint = calcGridDecodePosition(x, y);
-		List<MapItem> mapItems = mMapManager.actorPlayerFindDist(mapPoint);
+		List<MapItem> mapItems = mapManager.actorPlayerFindDist(mapPoint);
 		for (MapItem mapItem : mapItems) {
 			MapPoint mapItemPoint = calcGridPosition(mapItem.getMapPointX(), mapItem.getMapPointY());
-			mBaseScene.createCursorSprite(mapItemPoint);
+			baseScene.createCursorSprite(mapItemPoint);
 		}
-		mBaseScene.sortChildren();
+		baseScene.sortChildren();
+	}
+	
+	public void touchMenuBtnEvent(int pressedBtnTag) {
+		
+		if (selectActorPlayer != null) {
+			switch (SelectMenuType.findTag(pressedBtnTag)) {
+			case MENU_ATTACK: // 攻撃
+				gameState = GameStateType.PLAYER_ATTACK;
+				// TODO: あとで
+//				players.get(selectActorPlayer.getPlayerId()).attack2(null);
+				break;
+			case MENU_MOVE: // 移動
+				gameState = GameStateType.PLAYER_MOVE;
+				showMoveDistCursor(selectActorPlayer);
+				break;
+			case MENU_WAIT: // 待機
+				gameState = GameStateType.PLAYER_TURN;
+				baseScene.hideCursorSprite();
+				break;
+			case MENU_CANCEL: // キャンセル
+				break;
+			default:
+				break;
+			}
+		}
+		
+		baseScene.hideSelectMenu();
 	}
 //    /**
 //	 * @return the mMainActivity

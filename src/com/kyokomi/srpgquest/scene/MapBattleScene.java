@@ -34,6 +34,7 @@ import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.core.sprite.PlayerSprite;
 import com.kyokomi.srpgquest.GameManager;
 import com.kyokomi.srpgquest.map.common.MapPoint;
+import com.kyokomi.srpgquest.map.item.ActorPlayerMapItem;
 
 public class MapBattleScene extends KeyListenScene 
 	implements IOnSceneTouchListener{
@@ -134,10 +135,23 @@ public class MapBattleScene extends KeyListenScene
 		}
 	}
 	
+	/**
+	 * プレイヤー移動アニメーション.
+	 * @param playerId
+	 * @param moveMapPointList
+	 */
+	public void movePlayerAnimation(int playerId, List<MapPoint> moveMapPointList) {
+		PlayerSprite playerSprite = players.get(playerId);
+		playerSprite.move(0.5f, moveMapPointList);
+	}
+	
 	private Rectangle selectMenuBackground;
 	
 	public void showSelectMenu() {
 		selectMenuBackground.setY(0);
+	}
+	public void hideSelectMenu() {
+		selectMenuBackground.setY(getWindowHeight() * 2);
 	}
 	
 	public void createSelectMenuSprite() {
@@ -151,7 +165,6 @@ public class MapBattleScene extends KeyListenScene
 		selectMenuBackground.setAlpha(0.7f);
 		selectMenuBackground.setZIndex(10);
 		attachChild(selectMenuBackground);
-		selectMenuBackground.setY(getWindowHeight() * 2);
 		
 		sortChildren();
 		
@@ -167,6 +180,9 @@ public class MapBattleScene extends KeyListenScene
 		
 		ButtonSprite btnCancel = getResourceButtonSprite("cancel_btn.gif", "cancel_btn_p.gif");
 		attachButtonSprite(selectMenuBackground, 4, btnCancel, 250, selectMenuOnClickListener);
+		
+		// 非表示にする
+		hideSelectMenu();
 	}
 	/**
 	 * キャラ選択画面のボタン押下時.
@@ -175,24 +191,7 @@ public class MapBattleScene extends KeyListenScene
 		@Override
 		public void onClick(ButtonSprite pButtonSprite, float pTouchAreaLocalX,
 				float pTouchAreaLocalY) {
-			switch (pButtonSprite.getTag()) {
-			case 1:
-				players.get(selectPlayerId).attack2(null);
-				break;
-			case 2:
-				gameManager.showMoveDistCursor(selectMapPoint.getX(), selectMapPoint.getY());
-				break;
-			case 3:
-				hideCursorSprite();
-				break;
-			case 4:
-				break;
-			default:
-				break;
-			}
-			
-			// Hide
-			selectMenuBackground.setY(getWindowHeight() * 2);
+			gameManager.touchMenuBtnEvent(pButtonSprite.getTag());
 		}
 	};
 	
@@ -207,8 +206,6 @@ public class MapBattleScene extends KeyListenScene
 	}
 
 	private boolean isPlayerTouch;
-	private int selectPlayerId;
-	private MapPoint selectMapPoint;
 	
 	@Override
 	public boolean onSceneTouchEvent(Scene pScene, TouchEvent pSceneTouchEvent) {
@@ -218,20 +215,24 @@ public class MapBattleScene extends KeyListenScene
 		float y = pSceneTouchEvent.getY();
 		
 		if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
+			
 			if (!isPlayerTouch) {
-				int playerId = gameManager.getTouchPositionToPlayerId(x, y);
-				if (playerId != 0 && players.indexOfKey(playerId) >= 0) {
-					selectPlayerId = playerId;
-					selectMapPoint = gameManager.getTouchPositionToMapPoint(x, y);
-					
-					// TODO: 行動可能なプレイヤーなら行動メニューを表示
-					showSelectMenu();
-					
-//					// 移動範囲表示
-//					gameManager.showMoveDistCursor(x, y);
-//					// プレイヤータッチ判定
-//					touchPlayer(playerId);
-				}
+				// タッチイベント振り分け処理を呼ぶ
+				gameManager.onTouchMapItemEvent(x, y);
+				
+//				int playerId = gameManager.getTouchPositionToPlayerId(x, y);
+//				if (playerId != 0 && players.indexOfKey(playerId) >= 0) {
+//					selectPlayerId = playerId;
+//					selectMapPoint = gameManager.getTouchPositionToMapPoint(x, y);
+//					
+//					// TODO: 行動可能なプレイヤーなら行動メニューを表示
+//					showSelectMenu();
+//					
+////					// 移動範囲表示
+////					gameManager.showMoveDistCursor(x, y);
+////					// プレイヤータッチ判定
+////					touchPlayer(playerId);
+//				}
 			}
 			
 			if (talkTextLayer != null && talkTextLayer.contains(x, y)) {
