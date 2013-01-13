@@ -13,19 +13,27 @@ import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.sprite.AnimatedSprite;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.sprite.TiledSprite;
+import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import org.andengine.util.color.Color;
 import org.andengine.util.modifier.IModifier;
-import org.andengine.util.modifier.SequenceModifier;
 
 import com.kyokomi.core.constants.PlayerSpriteType;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.srpgquest.map.common.MapPoint;
 
-public class PlayerSprite {
+public class PlayerSprite extends Rectangle {
 	
-	/** ベースレイヤー. */
-	private Rectangle layer;
-	
+	public PlayerSprite(KeyListenScene baseScene, 
+			float pX, float pY, float pWidth, float pHeight,
+			int imageId, int tag, float scale,
+			VertexBufferObjectManager pVertexBufferObjectManager) {
+		super(pX, pY, pWidth, pHeight, pVertexBufferObjectManager);
+		
+		setColor(Color.TRANSPARENT);
+		
+		playerSpriteInit(baseScene, imageId, tag, pX, pY, scale);
+	}
+
 	/** 武器（アイコンセット）. */
 	private AnimatedSprite weapon;
 	/** 攻撃エフェクト. */
@@ -43,21 +51,7 @@ public class PlayerSprite {
 	/** プレイヤー会話. */
 	private TiledSprite playerFace;
 	
-	public PlayerSprite(KeyListenScene baseScene, int imageId, int tag) {
-		playerSpriteInit(baseScene, imageId, tag, 0, 0, 1.0f);
-	}
-	public PlayerSprite(KeyListenScene baseScene, int imageId, int tag, float x, float y, float scale) {
-		playerSpriteInit(baseScene, imageId, tag, x, y, scale);
-	}
 	private void playerSpriteInit(KeyListenScene baseScene, int imageId, int tag, float x, float y, float scale) {
-		
-		// 透明な背景を作成
-		layer = new Rectangle(
-				x, y,
-				baseScene.getWindowWidth(), baseScene.getWindowHeight(), 
-				baseScene.getBaseActivity().getVertexBufferObjectManager());
-		// 透明にする
-		layer.setColor(Color.TRANSPARENT);
 		
 		// playerキャラを追加 攻撃と防御のスプライトもセットで読み込んでおく
 		String baseFileName = "actor" + imageId;
@@ -67,17 +61,17 @@ public class PlayerSprite {
 		playerCutIn   = baseScene.getResourceSprite(baseFileName + "_cutin_l.jpg");
 		playerFace    = baseScene.getResourceTiledSprite(baseFileName + "_f.png", 4, 2);
 		
-		layer.attachChild(player);
-		layer.attachChild(playerDefense);
-		layer.attachChild(playerAttack);
+		attachChild(player);
+		attachChild(playerDefense);
+		attachChild(playerAttack);
 
 		// カットイン
 		playerCutIn.setAlpha(0.0f);
-		layer.attachChild(playerCutIn);
+		attachChild(playerCutIn);
 
 		// 顔
 		playerFace.setTag(tag);
-		playerFace.setAlpha(0.0f);
+//		playerFace.setAlpha(0.0f);
 		
 		// デフォルト表示
 		showPlayer(PlayerSpriteType.PLAYER_TYPE_DEFENSE);
@@ -99,17 +93,13 @@ public class PlayerSprite {
 		weapon = baseScene.getResourceAnimatedSprite("icon_set.png", 16, 48);
 		weapon.setScale(scale);
 		weapon.setAlpha(0.0f);
-		layer.attachChild(weapon);
+		attachChild(weapon);
 		
 		// エフェクトオブジェクトを追加（武器の上に表示）
 		attackEffect = baseScene.getResourceAnimatedSprite("effect002_b2.png", 5, 1);
 		attackEffect.setAlpha(0.0f);
 		attackEffect.setScale(scale / 4);
-		layer.attachChild(attackEffect);
-	}
-
-	public Rectangle getLayer() {
-		return layer;
+		attachChild(attackEffect);
 	}
 	
 	public void setPlayerScale(float scale) {
@@ -308,7 +298,7 @@ public class PlayerSprite {
 	public void move(float duration, List<MapPoint> moveMapPointList) {
 		setPlayerToDefaultPosition();
 		List<IEntityModifier> modifierList = new ArrayList<IEntityModifier>();
-		// TODO: durationをlistの件数で割るべきか？
+		// TODO: durationをlistの件数で割るべきか？トータルの移動時間を一定にするか？
 		float moveStartX = player.getX();
 		float moveStartY = player.getY();
 		for (MapPoint mapPoint : moveMapPointList) {

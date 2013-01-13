@@ -1,5 +1,8 @@
 package com.kyokomi.srpgquest.scene;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.andengine.entity.primitive.Line;
 import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.scene.IOnSceneTouchListener;
@@ -20,8 +23,10 @@ import org.andengine.util.color.Color;
 import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.core.sprite.PlayerSprite;
+import com.kyokomi.core.sprite.TalkLayer;
 
 import android.graphics.Typeface;
+import android.text.method.HideReturnsTransformationMethod;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 
@@ -29,6 +34,7 @@ public class SandboxScene extends KeyListenScene
 	implements IOnSceneTouchListener{
 	
 	private PlayerSprite player;
+	private TalkLayer talkLayer;
 	
 	public SandboxScene(MultiSceneActivity baseActivity) {
 		super(baseActivity);
@@ -40,10 +46,22 @@ public class SandboxScene extends KeyListenScene
 		testShowGrid();
 		testBtnCreate();
 		// プレイヤー配置
-		player = new PlayerSprite(this, 110, 1, 0, 0, 2f);
+		player = new PlayerSprite(this, 
+				0, 0, getWindowWidth(), getWindowHeight(), 
+				110, 1, 2.0f,
+				getBaseActivity().getVertexBufferObjectManager());
+		
 		player.setPlayerToAttackPosition();
-		attachChild(player.getLayer());
-		talkTextInit();
+		attachChild(player);
+
+		SparseArray<TiledSprite> playerSprite = new SparseArray<TiledSprite>();
+		playerSprite.put(1, player.getPlayerTalk());
+		
+		talkLayer = new TalkLayer(this);
+		talkLayer.initTalk(playerSprite, null);
+		attachChild(talkLayer);
+//		talkTextInit();
+		
 		
 		// Sceneのタッチリスナーを登録
 		setOnSceneTouchListener(this);
@@ -67,11 +85,19 @@ public class SandboxScene extends KeyListenScene
 		float y = pSceneTouchEvent.getY();
 		
 		if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
-			if (talkTextLayer.contains(x, y)) {
-				// 次のテキストを表示して最後までいけば閉じる
-				talkClose();
-				return true;
+			if (talkLayer.contains(x, y)) {
+				
+				if (talkLayer.nextTalk()) {
+					return true;
+				}
+				talkLayer.hide();
 			}
+			
+//			if (talkTextLayer.contains(x, y)) {
+//				// 次のテキストを表示して最後までいけば閉じる
+//				talkClose();
+//				return true;
+//			}
 		}
 		return false;
 	}
@@ -210,10 +236,10 @@ public class SandboxScene extends KeyListenScene
 						player.attack();
 						break;
 					case 5:
-						talk(player.getPlayerTalk(), "テストです");
+						player.setPlayerToAttackPosition();
 						break;
 					case 6:
-						talk(player.getPlayerTalk(), "これ以上の会話はできません");
+						player.setPlayerToAttackPosition();
 						break;
 					case 7:
 						player.setPlayerToAttackPosition();

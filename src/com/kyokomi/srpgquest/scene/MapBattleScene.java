@@ -34,7 +34,6 @@ import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.core.sprite.PlayerSprite;
 import com.kyokomi.srpgquest.GameManager;
 import com.kyokomi.srpgquest.map.common.MapPoint;
-import com.kyokomi.srpgquest.map.item.ActorPlayerMapItem;
 
 public class MapBattleScene extends KeyListenScene 
 	implements IOnSceneTouchListener{
@@ -78,11 +77,15 @@ public class MapBattleScene extends KeyListenScene
 	 * @param mapPoint
 	 */
 	public void createPlayerSprite(int playerId, int imageId, MapPoint mapPoint) {
-		PlayerSprite player = new PlayerSprite(this, imageId, playerId);
+		PlayerSprite player = new PlayerSprite(this, 
+				0, 0, getWindowWidth(), getWindowHeight(), 
+				imageId, playerId, 1.0f,
+				getBaseActivity().getVertexBufferObjectManager());
+		
 		player.setPlayerToDefaultPosition();
 		player.setPlayerPosition(mapPoint.getX(), mapPoint.getY());
 		player.setPlayerSize(mapPoint.getGridSize(), mapPoint.getGridSize());
-		attachChild(player.getLayer());
+		attachChild(player);
 		players.put(playerId, player);
 	}
 	/**
@@ -92,11 +95,15 @@ public class MapBattleScene extends KeyListenScene
 	 * @param mapPoint
 	 */
 	public void createEnemySprite(int enemyId, int imageId, MapPoint mapPoint) {
-		PlayerSprite enemy = new PlayerSprite(this, imageId, enemyId);
+		PlayerSprite enemy = new PlayerSprite(this, 
+				0, 0, getWindowWidth(), getWindowHeight(), 
+				imageId, enemyId, 1.0f,
+				getBaseActivity().getVertexBufferObjectManager());
+		
 		enemy.setPlayerToDefaultPosition();
 		enemy.setPlayerPosition(mapPoint.getX(), mapPoint.getY());
 		enemy.setPlayerSize(mapPoint.getGridSize(), mapPoint.getGridSize());
-		attachChild(enemy.getLayer());
+		attachChild(enemy);
 		enemys.put(enemyId, enemy);
 	}
 	
