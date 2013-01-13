@@ -4,29 +4,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.andengine.entity.primitive.Line;
-import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.sprite.ButtonSprite;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.sprite.TiledSprite;
-import org.andengine.entity.text.Text;
-import org.andengine.entity.text.TextOptions;
 import org.andengine.input.touch.TouchEvent;
-import org.andengine.opengl.font.Font;
-import org.andengine.opengl.texture.Texture;
-import org.andengine.opengl.texture.TextureOptions;
-import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
-import org.andengine.util.HorizontalAlign;
-import org.andengine.util.color.Color;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
+import com.kyokomi.core.dto.PlayerTalkDto;
+import com.kyokomi.core.dto.PlayerTalkDto.TalkDirection;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.core.sprite.PlayerSprite;
 import com.kyokomi.core.sprite.TalkLayer;
 
-import android.graphics.Typeface;
-import android.text.method.HideReturnsTransformationMethod;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 
@@ -34,6 +25,7 @@ public class SandboxScene extends KeyListenScene
 	implements IOnSceneTouchListener{
 	
 	private PlayerSprite player;
+	private PlayerSprite enemy;
 	private TalkLayer talkLayer;
 	
 	public SandboxScene(MultiSceneActivity baseActivity) {
@@ -45,23 +37,47 @@ public class SandboxScene extends KeyListenScene
 	public void init() {
 		testShowGrid();
 		testBtnCreate();
+		
 		// プレイヤー配置
 		player = new PlayerSprite(this, 
 				0, 0, getWindowWidth(), getWindowHeight(), 
 				110, 1, 2.0f,
 				getBaseActivity().getVertexBufferObjectManager());
-		
 		player.setPlayerToAttackPosition();
+		player.setPlayerFlippedHorizontal(true);
+		player.setPlayerPosition(130, 150);
 		attachChild(player);
+		
+		enemy = new PlayerSprite(this, 
+				0, 0, getWindowWidth(), getWindowHeight(), 
+				34, 2, 2.0f,
+				getBaseActivity().getVertexBufferObjectManager());
+		enemy.setPlayerToAttackPosition();
+		enemy.setPlayerPosition(getWindowWidth() - 100, 150);
+		attachChild(enemy);
 
+		// 会話プレイヤーリストを作成
 		SparseArray<TiledSprite> playerSprite = new SparseArray<TiledSprite>();
-		playerSprite.put(1, player.getPlayerTalk());
+		playerSprite.put(player.getPlayerId(), player.getPlayerTalk());
+		playerSprite.put(enemy.getPlayerId(), enemy.getPlayerTalk());
 		
+		// 会話内容を作成
+		List<PlayerTalkDto> talks = new ArrayList<PlayerTalkDto>();
+		talks.add(new PlayerTalkDto(player.getPlayerId(), 0, TalkDirection.TALK_DIRECT_LEFT,
+				"これは、ゲームであっても、遊びではない。"));
+		talks.add(new PlayerTalkDto(enemy.getPlayerId(), 0, TalkDirection.TALK_DIRECT_RIGHT,
+				"こんにちわ。"));
+		talks.add(new PlayerTalkDto(player.getPlayerId(), 3, TalkDirection.TALK_DIRECT_LEFT,
+				"言っとくが俺はソロだ。\n１日２日オレンジになるくらいどおって事ないぞ。"));
+		talks.add(new PlayerTalkDto(player.getPlayerId(), 2, TalkDirection.TALK_DIRECT_LEFT,
+				"レベルなんてタダの数字だよ。\nこの世界での強さは、単なる幻想に過ぎない。\nそんなものよりもっと大事なものがある。"));
+		talks.add(new PlayerTalkDto(enemy.getPlayerId(), 1, TalkDirection.TALK_DIRECT_RIGHT,
+				"なんでや！！\n何でディアベルハンを見殺しにしたんや！"));
+		
+		// 会話レイヤーを生成
 		talkLayer = new TalkLayer(this);
-		talkLayer.initTalk(playerSprite, null);
+		talkLayer.initTalk(playerSprite, talks);
 		attachChild(talkLayer);
-//		talkTextInit();
-		
 		
 		// Sceneのタッチリスナーを登録
 		setOnSceneTouchListener(this);
@@ -102,71 +118,15 @@ public class SandboxScene extends KeyListenScene
 		return false;
 	}
 
-	// ----- 会話用 -------
-	private Rectangle talkTextLayer;
-	private Text talkText;
-	private SparseArray<TiledSprite> talkFaceList;
-	
-	private void talkTextInit() {
-		
-		// 会話ウィンドウ
-		talkTextLayer = new Rectangle(
-				0, 0,
-				getWindowWidth(), 
-				96, 
-				getBaseActivity().getVertexBufferObjectManager());
-		talkTextLayer.setColor(Color.TRANSPARENT);
-		attachChild(talkTextLayer);
-		
-		Texture texture = new BitmapTextureAtlas(
-				getBaseActivity().getTextureManager(), 512, 512, 
-				TextureOptions.BILINEAR_PREMULTIPLYALPHA);
-		
-		Font font = new Font(getBaseActivity().getFontManager(), 
-				texture, Typeface.DEFAULT_BOLD, 22, true, Color.WHITE);
-		
-		// EngineのTextureManagerにフォントTextureを読み込み
-		getBaseActivity().getTextureManager().loadTexture(texture);
-		getBaseActivity().getFontManager().loadFont(font);
-		
-		talkText = new Text(20, 20, font, 
-				"******************************************************************", 
-				new TextOptions(HorizontalAlign.LEFT), 
-				getBaseActivity().getVertexBufferObjectManager());
-		talkText.setColor(Color.TRANSPARENT);
-		talkTextLayer.attachChild(talkText);
-		talkTextLayer.setAlpha(0.0f);
-		
-		talkFaceList = new SparseArray<TiledSprite>();
-	}
-	private void talk(TiledSprite faceSprite, String text) {
-		if (talkFaceList.indexOfKey(faceSprite.getTag())< 0) {
-			talkTextLayer.attachChild(faceSprite);
-			talkFaceList.put(faceSprite.getTag(), faceSprite);
-		}
-		faceSprite.setCurrentTileIndex(0);
-		faceSprite.setAlpha(1.0f);
-		faceSprite.setPosition(0, 0);
-		
-		talkTextLayer.setAlpha(1.0f);
-		talkTextLayer.setPosition(0, getWindowHeight() - talkTextLayer.getHeight());
-		
-		talkText.setColor(Color.WHITE);
-		talkText.setPosition(faceSprite.getWidth(), 0);
-		talkText.setText(text);
-	}
-	private void talkClose() {
-		talkTextLayer.setY(getWindowHeight());
-	}
-	
 	// ---- グリッド表示 ----
 	
 	private void testShowGrid() {
 		int base = 42;
+		int baseX = (int)(base * 1.5);
 		int baseGrid = 400;
 		
 		for (int x = -10 ; x < 20; x++) {
-			final Line line = new Line(base * x, 0, (x * base) + baseGrid, getWindowHeight(), getBaseActivity().getVertexBufferObjectManager());
+			final Line line = new Line(baseX * x, 0, (x * baseX) + baseGrid, getWindowHeight(), getBaseActivity().getVertexBufferObjectManager());
 			line.setLineWidth(1);
 			line.setColor(255, 255, 255);
 			attachChild(line);
@@ -214,6 +174,7 @@ public class SandboxScene extends KeyListenScene
 		attachChild(menuSprite);
 		btnSpriteMap.put(tag, menuSprite);
 		registerTouchArea(menuSprite);
+		
 		menuSprite.setOnClickListener(new ButtonSprite.OnClickListener() {
 			
 			@Override
@@ -233,13 +194,15 @@ public class SandboxScene extends KeyListenScene
 						player.setPlayerToSlidePositon();
 						break;
 					case 4:
-						player.attack();
+						player.attack2();
 						break;
 					case 5:
-						player.setPlayerToAttackPosition();
+//						player.setPlayerToAttackPosition();
+						talkLayer.resetTalk();
+						talkLayer.nextTalk();
 						break;
 					case 6:
-						player.setPlayerToAttackPosition();
+						enemy.attack2();
 						break;
 					case 7:
 						player.setPlayerToAttackPosition();

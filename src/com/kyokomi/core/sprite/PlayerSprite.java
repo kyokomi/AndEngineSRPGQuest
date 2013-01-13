@@ -23,6 +23,22 @@ import com.kyokomi.srpgquest.map.common.MapPoint;
 
 public class PlayerSprite extends Rectangle {
 	
+	private Integer playerId;
+	
+	/**
+	 * @return the playerId
+	 */
+	public Integer getPlayerId() {
+		return playerId;
+	}
+
+	/**
+	 * @param playerId the playerId to set
+	 */
+	public void setPlayerId(Integer playerId) {
+		this.playerId = playerId;
+	}
+
 	public PlayerSprite(KeyListenScene baseScene, 
 			float pX, float pY, float pWidth, float pHeight,
 			int imageId, int tag, float scale,
@@ -50,8 +66,13 @@ public class PlayerSprite extends Rectangle {
 	
 	/** プレイヤー会話. */
 	private TiledSprite playerFace;
+	public TiledSprite getPlayerTalk() {
+		return playerFace;
+	}
 	
-	private void playerSpriteInit(KeyListenScene baseScene, int imageId, int tag, float x, float y, float scale) {
+	private void playerSpriteInit(KeyListenScene baseScene, int imageId, int playerId, float x, float y, float scale) {
+
+		this.playerId = playerId;
 		
 		// playerキャラを追加 攻撃と防御のスプライトもセットで読み込んでおく
 		String baseFileName = "actor" + imageId;
@@ -69,10 +90,6 @@ public class PlayerSprite extends Rectangle {
 		playerCutIn.setAlpha(0.0f);
 		attachChild(playerCutIn);
 
-		// 顔
-		playerFace.setTag(tag);
-//		playerFace.setAlpha(0.0f);
-		
 		// デフォルト表示
 		showPlayer(PlayerSpriteType.PLAYER_TYPE_DEFENSE);
 		setPlayerScale(scale);
@@ -81,6 +98,10 @@ public class PlayerSprite extends Rectangle {
 		
 		// 武器設定
 		initWeaponAndEffect(baseScene, scale);
+		
+		// タグ設定
+		setTag(playerId);
+		playerFace.setTag(playerId);
 	}
 
 	/**
@@ -101,27 +122,69 @@ public class PlayerSprite extends Rectangle {
 		attackEffect.setScale(scale / 4);
 		attachChild(attackEffect);
 	}
-	
+	// ----------------------------------------------
+	// Sprite設定系
+	// ----------------------------------------------
+	@Override
+	public void setScale(float pScale) {
+		setPlayerScale(pScale);
+	}
 	public void setPlayerScale(float scale) {
 		player.setScale(scale);
 		playerDefense.setScale(scale);
 		playerAttack.setScale(scale);
 	}
-	public void setPlayerPosition(Sprite sprite) {
-		player.setPosition(sprite.getX(), sprite.getY());
-		playerDefense.setPosition(sprite.getX(), sprite.getY());
-		playerAttack.setPosition(sprite.getX(), sprite.getY());
+	@Override
+	public void setPosition(IEntity pOtherEntity) {
+		setPlayerPosition(pOtherEntity);
+	}
+	public void setPlayerPosition(IEntity pOtherEntity) {
+		player.setPosition(pOtherEntity.getX(), pOtherEntity.getY());
+		playerDefense.setPosition(pOtherEntity.getX(), pOtherEntity.getY());
+		playerAttack.setPosition(pOtherEntity.getX(), pOtherEntity.getY());
+	}
+	@Override
+	public void setPosition(float pX, float pY) {
+		setPlayerPosition(pX, pY);
 	}
 	public void setPlayerPosition(float x, float y) {
 		player.setPosition(x, y);
 		playerDefense.setPosition(x, y);
 		playerAttack.setPosition(x, y);
 	}
+	@Override
+	public void setSize(float pWidth, float pHeight) {
+		setPlayerSize(pWidth, pHeight);
+	}
 	public void setPlayerSize(float w, float h) {
 		player.setSize(w, h);
 		playerDefense.setSize(w, h);
 		playerAttack.setSize(w, h);
 	}
+	
+	/**
+	 * 水平方向反転.
+	 * @param pFlippedHorizontal
+	 */
+	public void setPlayerFlippedHorizontal(boolean pFlippedHorizontal) {
+		player.setFlippedHorizontal(pFlippedHorizontal);
+		playerDefense.setFlippedHorizontal(pFlippedHorizontal);
+		playerAttack.setFlippedHorizontal(pFlippedHorizontal);
+	}
+	
+//	@Override
+//	public void setRotationCenterX(float pRotationCenterX) {
+//		setPlayerRotationCenterX(pRotationCenterX);
+//	}
+//	public void setPlayerRotationCenterX(float pRotationCenterX) {
+//		player.setRotationCenterX(pRotationCenterX);
+//		playerDefense.setRotationCenterX(pRotationCenterX);
+//		playerAttack.setRotationCenterX(pRotationCenterX);
+//	}
+	
+	// ----------------------------------------------
+	// 表示とか
+	// ----------------------------------------------
 	
 	public void showPlayer(PlayerSpriteType playerType) {
 		float normal = 0.0f;
@@ -148,21 +211,9 @@ public class PlayerSprite extends Rectangle {
 		playerDefense.setAlpha(defense);
 	}
 	
-	/**
-	 * プレイヤーデフォルトポジション設定.
-	 */
-	public void setPlayerToDefaultPosition() {
-		player.animate(
-				new long[]{100, 100, 100}, 
-				new int[]{6, 7, 8}, 
-				true);
-		showPlayer(PlayerSpriteType.PLAYER_TYPE_NORMAL);
-	}
-	
-	public TiledSprite getPlayerTalk() {
-		return playerFace;
-	}
-
+	// ----------------------------------------------
+	// 汎用モーション系
+	// ----------------------------------------------
 	/**
 	 * 攻撃モーション再生(Ver.2).
 	 * スケールとか解像度関係なくやれるようにする
@@ -180,7 +231,6 @@ public class PlayerSprite extends Rectangle {
 		
 		// 攻撃
 		setPlayerToAttackPosition();
-		playerAttack.setFlippedHorizontal(true);
 		playerAttack.registerEntityModifier(new ParallelEntityModifier(
 			// 武器
 			new DelayModifier(0.3f, new IEntityModifier.IEntityModifierListener() {
@@ -237,6 +287,7 @@ public class PlayerSprite extends Rectangle {
 	}
 	/**
 	 * 攻撃モーション再生.
+	 * @deprecated scaleを変えたりするとずれるので廃止予定
 	 */
 	public void attack() {
 		
@@ -310,6 +361,20 @@ public class PlayerSprite extends Rectangle {
 				modifierList.toArray(new IEntityModifier[0]));
 		// 移動
 		player.registerEntityModifier(sequenceEntityModifier);
+	}
+	
+	// ----------------------------------------------
+	// 汎用ポジション設定
+	// ----------------------------------------------
+	/**
+	 * プレイヤーデフォルトポジション設定.
+	 */
+	public void setPlayerToDefaultPosition() {
+		player.animate(
+				new long[]{100, 100, 100}, 
+				new int[]{6, 7, 8}, 
+				true);
+		showPlayer(PlayerSpriteType.PLAYER_TYPE_NORMAL);
 	}
 	
 	/**

@@ -1,6 +1,5 @@
 package com.kyokomi.core.sprite;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.andengine.entity.primitive.Rectangle;
@@ -18,6 +17,8 @@ import org.andengine.util.color.Color;
 import android.graphics.Typeface;
 import android.util.SparseArray;
 
+import com.kyokomi.core.dto.PlayerTalkDto;
+import com.kyokomi.core.dto.PlayerTalkDto.TalkDirection;
 import com.kyokomi.core.scene.KeyListenScene;
 
 /**
@@ -42,7 +43,7 @@ public class TalkLayer extends Rectangle {
 	
 	// 会話関連
 	private SparseArray<TiledSprite> faces;
-	private List<PlayerTalk> talks;
+	private List<PlayerTalkDto> talks;
 	private Integer talkIndex;
 	
 	public TalkLayer(KeyListenScene baseScene) {
@@ -81,31 +82,23 @@ public class TalkLayer extends Rectangle {
 		baseScene.getBaseActivity().getFontManager().loadFont(font);
 	}
 	
-	public void initTalk(SparseArray<TiledSprite> faces, List<PlayerTalk> talks) {
+	public void initTalk(SparseArray<TiledSprite> faces, List<PlayerTalkDto> talks) {
 		// 初期化
-		talkIndex = 0;
-		textMaxLength = 0;
+		this.talkIndex = 0;
+		this.textMaxLength = 0;
 		
 		// 会話する顔を登録
-		setFaces(faces);
-		
-		// TODO: test用
-		if (talks == null) {
-			talks = new ArrayList<PlayerTalk>();
-			talks.add(new PlayerTalk(1, 
-					"これは、ゲームであっても、遊びではない。"));
-			talks.add(new PlayerTalk(1, 
-					"ああああああああああ\nああああああああああ\nあああああああああ\nあああああああああああああああ。"));
-			talks.add(new PlayerTalk(1, 
-					"言っとくが俺はソロだ。\n１日２日オレンジになるくらいどおって事ないぞ。"));
-			talks.add(new PlayerTalk(1, 
-					"レベルなんてタダの数字だよ。\nこの世界での強さは、単なる幻想に過ぎない。\nそんなものよりもっと大事なものがある。"));
-			talks.add(new PlayerTalk(1, 
-					"なんでや！！\n何でディアベルハンを見殺しにしたんや！"));
-		}
+		this.faces = faces;
 		
 		// 会話内容を登録
-		setTalks(talks);
+		this.talks = talks;
+		
+		// 設定された会話内容を元に最大テキストサイズで初期化してTextを用意する
+		textMaxLength = getMaxLength(talks);
+		talkText = new Text(16, 16, font, 
+				getSizeToStr("-", textMaxLength), 
+				new TextOptions(HorizontalAlign.LEFT), 
+				baseScene.getBaseActivity().getVertexBufferObjectManager());
 		
 		// 会話表示
 		nextTalk();
@@ -118,41 +111,29 @@ public class TalkLayer extends Rectangle {
 		setVisible(false);
 	}
 	
+	public void resetTalk() {
+		this.talkIndex = 0;
+	}
 	public boolean nextTalk() {
 		// これ以上会話がないときはfalseを返却
 		if (talks.size() <= talkIndex) {
 			return false;
 		}
 		
+		// とりあえず表示
 		show();
 		
 		// 表示対象の顔画像取得
-		PlayerTalk playerTalk = talks.get(talkIndex);
+		PlayerTalkDto playerTalk = talks.get(talkIndex);
 		talkIndex++;
 		TiledSprite nextFaceSprite = faces.get(playerTalk.getPlayerId());
 		
 		// 高さは顔の画像をベースに共通
 		float basePositionY = baseScene.getWindowHeight() - nextFaceSprite.getHeight();
 		
-		// 会話ウィンドウの顔とテキストの背景を作成
-		// 高さが変わってなければそのまま使う
-		if (textBackground != null && textBackground.getY() != basePositionY) {
-			// 前のやつを削除
-			textBackground.detachChildren();
-			textBackground.detachSelf();
-			textBackground = null;
-		}
-		
-		if (textBackground == null) {
-			// 作成
-			textBackground = new Rectangle(
-					0, basePositionY, 
-					baseScene.getWindowWidth(), nextFaceSprite.getHeight(), 
-					baseScene.getBaseActivity().getVertexBufferObjectManager());
-			textBackground.setColor(Color.BLACK);
-			textBackground.setAlpha(0.8f);
-			attachChild(textBackground);
-			
+		// 会話ウィンドウの背景を作成。すでに作成済みのものと同じサイズのものを作ろうとした場合は作らない
+		if (createTextBackground(nextFaceSprite.getHeight(), basePositionY)) {
+			// 新しく作ったので改めてテキストを追加する
 			textBackground.attachChild(talkText);
 		}
 		
@@ -163,21 +144,56 @@ public class TalkLayer extends Rectangle {
 				faceSprite = null;
 			}
 			faceSprite = nextFaceSprite;
-			textBackground.attachChild(faceSprite);			
+			textBackground.attachChild(faceSprite);
 		}
-		faceSprite.setPosition(0, 0);
 		
 		// テキストを表示
 		talkText.setText(playerTalk.getTalk());
-		talkText.setPosition(faceSprite.getWidth(), 0);
-
+		
+		// 顔の表示方向を設定
+		if (playerTalk.getTalkDirection() == TalkDirection.TALK_DIRECT_LEFT) {
+			faceSprite.setFlippedHorizontal(false);
+			faceSprite.setPosition(0, 0);
+			talkText.setPosition(faceSprite.getWidth(), 0);
+		} else if (playerTalk.getTalkDirection() == TalkDirection.TALK_DIRECT_RIGHT) {
+			faceSprite.setFlippedHorizontal(true);
+			faceSprite.setPosition(getWidth() - faceSprite.getWidth(), 0);
+			talkText.setPosition(0, 0);
+		}
+		
+		// 顔のスプライトを設定
+		faceSprite.setCurrentTileIndex(playerTalk.getCurrentTileIndex());
+		
 		// TODO: アニメーション効果入れる?
 		
 		return true;
 	}
 	
-	private void setFaces(SparseArray<TiledSprite> faces) {
-		this.faces = faces;
+	private boolean createTextBackground(float height, float y) {
+		boolean isCreated = false;
+		
+		// 会話ウィンドウの顔とテキストの背景を作成
+		// 高さが変わってなければそのまま使う
+		if (textBackground != null && (textBackground.getY() != y || textBackground.getHeight() != height)) {
+			// 前のやつを削除
+			textBackground.detachChildren();
+			textBackground.detachSelf();
+			textBackground = null;
+		}
+		
+		if (textBackground == null) {
+			// 作成
+			textBackground = new Rectangle(
+					0, y, 
+					baseScene.getWindowWidth(), height, 
+					baseScene.getBaseActivity().getVertexBufferObjectManager());
+			textBackground.setColor(Color.BLACK);
+			textBackground.setAlpha(0.8f);
+			attachChild(textBackground);
+			
+			isCreated = true;
+		}
+		return isCreated;
 	}
 	
 //	private void addFace(int id, TiledSprite faceSprite) {
@@ -189,29 +205,18 @@ public class TalkLayer extends Rectangle {
 //			faces.put(id, faceSprite);			
 //		}
 //	}
-	 
-	private void setTalks(List<PlayerTalk> talks) {
-		this.talks = talks;
-		
-		// 最大文字数でテキストウィンドウを作成
-		textMaxLength = getMaxLength(talks);
-		talkText = new Text(16, 16, font, 
-				getSizeToStr("-", textMaxLength), 
-				new TextOptions(HorizontalAlign.LEFT), 
-				baseScene.getBaseActivity().getVertexBufferObjectManager());
-	}
 	
 	/**
 	 * 引数のリスト内の文字列の最大文字数を取得.
 	 * @param strings 文字列リスト
 	 * @return 最大文字数
 	 */
-	private int getMaxLength(List<PlayerTalk> playerTalks) {
+	private int getMaxLength(List<PlayerTalkDto> PlayerTalkDtos) {
 		int maxLength = 0;
 		// 会話テキストに応じたTextサイズを作成
-		for (PlayerTalk playerTalk : playerTalks) {
-			if (maxLength < playerTalk.getTalk().length()) {
-				maxLength = playerTalk.getTalk().length();
+		for (PlayerTalkDto PlayerTalkDto : PlayerTalkDtos) {
+			if (maxLength < PlayerTalkDto.getTalk().length()) {
+				maxLength = PlayerTalkDto.getTalk().length();
 			}
 		}
 		return maxLength;
@@ -223,44 +228,5 @@ public class TalkLayer extends Rectangle {
 			buffer.append(str);
 		}
 		return buffer.toString();
-	}
-	
-	/**
-	 * プレイヤー会話内容クラス.
-	 * @author kyokomi
-	 *
-	 */
-	public class PlayerTalk {
-		private Integer playerId;
-		private String talk;
-		
-		public PlayerTalk(Integer playerId, String talk) {
-			this.playerId = playerId;
-			this.talk = talk;
-		}
-		/**
-		 * @return the playerId
-		 */
-		public Integer getPlayerId() {
-			return playerId;
-		}
-		/**
-		 * @param playerId the playerId to set
-		 */
-		public void setPlayerId(Integer playerId) {
-			this.playerId = playerId;
-		}
-		/**
-		 * @return the talk
-		 */
-		public String getTalk() {
-			return talk;
-		}
-		/**
-		 * @param talk the talk to set
-		 */
-		public void setTalk(String talk) {
-			this.talk = talk;
-		}
 	}
 }
