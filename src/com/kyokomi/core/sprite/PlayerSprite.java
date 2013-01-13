@@ -49,7 +49,7 @@ public class PlayerSprite extends Rectangle {
 		
 		playerSpriteInit(baseScene, imageId, tag, pX, pY, scale);
 	}
-
+	
 	/** 武器（アイコンセット）. */
 	private AnimatedSprite weapon;
 	/** 攻撃エフェクト. */
@@ -71,7 +71,6 @@ public class PlayerSprite extends Rectangle {
 	}
 	
 	private void playerSpriteInit(KeyListenScene baseScene, int imageId, int playerId, float x, float y, float scale) {
-
 		this.playerId = playerId;
 		
 		// playerキャラを追加 攻撃と防御のスプライトもセットで読み込んでおく
@@ -79,7 +78,7 @@ public class PlayerSprite extends Rectangle {
 		player        = baseScene.getResourceAnimatedSprite(baseFileName + "_0_s.png", 3, 4);
 		playerDefense = baseScene.getResourceAnimatedSprite(baseFileName + "_2_s.png", 3, 4);
 		playerAttack  = baseScene.getResourceAnimatedSprite(baseFileName + "_3_s.png", 3, 4);
-		playerCutIn   = baseScene.getResourceSprite(baseFileName + "_cutin_l.jpg");
+		playerCutIn   = baseScene.getResourceSprite(baseFileName + "_cutin_s.jpg");
 		playerFace    = baseScene.getResourceTiledSprite(baseFileName + "_f.png", 4, 2);
 		
 		attachChild(player);
@@ -87,6 +86,8 @@ public class PlayerSprite extends Rectangle {
 		attachChild(playerAttack);
 
 		// カットイン
+		playerCutIn.setPosition(baseScene.getWindowWidth() / 2, 
+				baseScene.getWindowHeight() / 2 - playerCutIn.getHeight() / 2);
 		playerCutIn.setAlpha(0.0f);
 		attachChild(playerCutIn);
 
@@ -117,9 +118,9 @@ public class PlayerSprite extends Rectangle {
 		attachChild(weapon);
 		
 		// エフェクトオブジェクトを追加（武器の上に表示）
-		attackEffect = baseScene.getResourceAnimatedSprite("effect002_b2.png", 5, 1);
+		attackEffect = baseScene.getResourceAnimatedSprite("effect002_b2_4.png", 5, 1);
 		attackEffect.setAlpha(0.0f);
-		attackEffect.setScale(scale / 4);
+		attackEffect.setScale(scale);
 		attachChild(attackEffect);
 	}
 	// ----------------------------------------------
@@ -221,6 +222,24 @@ public class PlayerSprite extends Rectangle {
 	public void attack2() {
 		attack2(null);
 	}
+	
+	private void attackWeaponLeft() {
+		weapon.setRotation(0f);
+		weapon.setPosition(
+				playerAttack.getX() - 
+					weapon.getWidthScaled() + (weapon.getWidthScaled() / 4) + (weapon.getWidthScaled() / 10),
+				playerAttack.getY() + 
+					(playerAttack.getHeightScaled() / 2) + (playerAttack.getHeightScaled() / 4) - 
+					weapon.getHeightScaled() 
+					);
+	}
+	
+	private void attackWeaponRight() {
+		weapon.setRotation(100f);
+		weapon.setPosition(
+				playerAttack.getX() + playerAttack.getWidthScaled() - (weapon.getWidthScaled() / 10),
+				playerAttack.getY() + (playerAttack.getHeightScaled() / 2) - (weapon.getHeightScaled()));
+	}
 	/**
 	 * 攻撃モーション再生(Ver.2).
 	 * スケールとか解像度関係なくやれるようにする
@@ -236,24 +255,21 @@ public class PlayerSprite extends Rectangle {
 			new DelayModifier(0.3f, new IEntityModifier.IEntityModifierListener() {
 				@Override public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
 					weapon.setCurrentTileIndex(16 * 16 + 5);
-					weapon.setRotation(0f);
-					weapon.setPosition(
-							playerAttack.getX() - (playerAttack.getWidth() / 2) + (weapon.getWidth() / 4), 
-							playerAttack.getY() + (playerAttack.getHeight() / 4));
+					attackWeaponLeft();					
 					weapon.setAlpha(1.0f);
 				}
 				@Override
 				public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
-					weapon.setRotation(100f);
-					weapon.setPosition(
-							playerAttack.getX() + (playerAttack.getWidth() / 2) + (int)(weapon.getWidth() / 1.25),
-							playerAttack.getY() - (playerAttack.getHeight() / 4) + (weapon.getHeight() / 4));
+					attackWeaponRight();
 				}
 			}),
 			// エフェクト
 			new DelayModifier(0.2f, new IEntityModifier.IEntityModifierListener() {
 				@Override public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
 					attackEffect.setCurrentTileIndex(0);
+					attackEffect.setPosition(
+							playerAttack.getX() + attackEffect.getWidthScaled(),
+							playerAttack.getY());
 					attackEffect.setAlpha(1.0f);
 				}
 				@Override
@@ -262,9 +278,6 @@ public class PlayerSprite extends Rectangle {
 							new long[]{100, 100, 100}, 
 							new int[]{4, 3, 2}, 
 							false);
-					attackEffect.setPosition(
-							playerAttack.getX() - (playerAttack.getWidth() / 2),
-							playerAttack.getY() - (attackEffect.getHeight() / 3));
 				}
 			}),
 			new SequenceEntityModifier(
@@ -362,7 +375,46 @@ public class PlayerSprite extends Rectangle {
 		// 移動
 		player.registerEntityModifier(sequenceEntityModifier);
 	}
+
+	boolean isCutInMoved;
 	
+	public void showCutIn(float duration, float x) {
+		if (isCutInMoved) {
+			return;
+		}
+		
+		playerCutIn.registerEntityModifier(new SequenceEntityModifier(
+				new MoveModifier(duration / 3, 
+					-x, 0, 
+					playerCutIn.getY(), playerCutIn.getY(),  
+					new IEntityModifier.IEntityModifierListener() {
+						@Override
+						public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
+							playerCutIn.setAlpha(1.0f);
+							isCutInMoved = true;
+						}
+						@Override
+						public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+						}
+					}
+				),
+				new DelayModifier(duration / 3), 
+				new MoveModifier(duration / 3, 
+					0, x, 
+					playerCutIn.getY(), playerCutIn.getY(),  
+					new IEntityModifier.IEntityModifierListener() {
+						@Override
+						public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
+						}
+						@Override
+						public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+							playerCutIn.setAlpha(0.0f);
+							isCutInMoved = false;
+						}
+					}
+				)
+			));
+	}
 	// ----------------------------------------------
 	// 汎用ポジション設定
 	// ----------------------------------------------

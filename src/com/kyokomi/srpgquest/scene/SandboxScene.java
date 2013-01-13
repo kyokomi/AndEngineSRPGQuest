@@ -38,10 +38,12 @@ public class SandboxScene extends KeyListenScene
 		testShowGrid();
 		testBtnCreate();
 		
+		float scale = 2.0f;
+		
 		// プレイヤー配置
 		player = new PlayerSprite(this, 
 				0, 0, getWindowWidth(), getWindowHeight(), 
-				110, 1, 2.0f,
+				110, 1, scale,
 				getBaseActivity().getVertexBufferObjectManager());
 		player.setPlayerToAttackPosition();
 		player.setPlayerFlippedHorizontal(true);
@@ -50,7 +52,7 @@ public class SandboxScene extends KeyListenScene
 		
 		enemy = new PlayerSprite(this, 
 				0, 0, getWindowWidth(), getWindowHeight(), 
-				34, 2, 2.0f,
+				34, 2, scale,
 				getBaseActivity().getVertexBufferObjectManager());
 		enemy.setPlayerToAttackPosition();
 		enemy.setPlayerPosition(getWindowWidth() - 100, 150);
@@ -205,10 +207,10 @@ public class SandboxScene extends KeyListenScene
 						enemy.attack2();
 						break;
 					case 7:
-						player.setPlayerToAttackPosition();
+						player.showCutIn(2.0f, getWindowWidth());
 						break;
 					case 8:
-						player.setPlayerToAttackPosition();
+						enemy.showCutIn(2.0f, getWindowWidth());
 						break;
 					case 9:
 						player.setPlayerToAttackPosition();
