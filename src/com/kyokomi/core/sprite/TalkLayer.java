@@ -39,6 +39,7 @@ public class TalkLayer extends Rectangle {
 	// テキスト関連
 	private Integer textMaxLength;
 	private Font font;
+	private Text nameText;
 	private Text talkText;
 	
 	// 会話関連
@@ -75,7 +76,7 @@ public class TalkLayer extends Rectangle {
 				TextureOptions.BILINEAR_PREMULTIPLYALPHA);
 		
 		font = new Font(baseScene.getBaseActivity().getFontManager(), 
-				texture, Typeface.DEFAULT_BOLD, 18, true, Color.WHITE);
+				texture, Typeface.DEFAULT, 16, true, Color.WHITE);
 		
 		// EngineのTextureManagerにフォントTextureを読み込み
 		baseScene.getBaseActivity().getTextureManager().loadTexture(texture);
@@ -99,6 +100,11 @@ public class TalkLayer extends Rectangle {
 				getSizeToStr("-", textMaxLength), 
 				new TextOptions(HorizontalAlign.LEFT), 
 				baseScene.getBaseActivity().getVertexBufferObjectManager());
+		nameText = new Text(16, 16, font, 
+				getSizeToStr("-", textMaxLength), 
+				new TextOptions(HorizontalAlign.LEFT), 
+				baseScene.getBaseActivity().getVertexBufferObjectManager());
+		nameText.setColor(Color.GREEN);
 		
 		// 会話表示
 		nextTalk();
@@ -135,6 +141,7 @@ public class TalkLayer extends Rectangle {
 		if (createTextBackground(nextFaceSprite.getHeight(), basePositionY)) {
 			// 新しく作ったので改めてテキストを追加する
 			textBackground.attachChild(talkText);
+			textBackground.attachChild(nameText);
 		}
 		
 		// 別の顔がセットされていたら削除して新しい顔に入れ替える
@@ -147,6 +154,8 @@ public class TalkLayer extends Rectangle {
 			textBackground.attachChild(faceSprite);
 		}
 		
+		// 名前の表示
+		nameText.setText("【" +playerTalk.getName() + "】");
 		// テキストを表示
 		talkText.setText(playerTalk.getTalk());
 		
@@ -154,11 +163,13 @@ public class TalkLayer extends Rectangle {
 		if (playerTalk.getTalkDirection() == TalkDirection.TALK_DIRECT_LEFT) {
 			faceSprite.setFlippedHorizontal(false);
 			faceSprite.setPosition(0, 0);
-			talkText.setPosition(faceSprite.getWidth(), 0);
+			nameText.setPosition(faceSprite.getWidth(), 0);
+			talkText.setPosition(faceSprite.getWidth(), nameText.getHeight());
 		} else if (playerTalk.getTalkDirection() == TalkDirection.TALK_DIRECT_RIGHT) {
 			faceSprite.setFlippedHorizontal(true);
 			faceSprite.setPosition(getWidth() - faceSprite.getWidth(), 0);
-			talkText.setPosition(0, 0);
+			nameText.setPosition(0, 0);
+			talkText.setPosition(0, nameText.getHeight());
 		}
 		
 		// 顔のスプライトを設定

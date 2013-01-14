@@ -65,15 +65,15 @@ public class SandboxScene extends KeyListenScene
 		
 		// 会話内容を作成
 		List<PlayerTalkDto> talks = new ArrayList<PlayerTalkDto>();
-		talks.add(new PlayerTalkDto(player.getPlayerId(), 0, TalkDirection.TALK_DIRECT_LEFT,
+		talks.add(new PlayerTalkDto(player.getPlayerId(), "アスリーン", 0, TalkDirection.TALK_DIRECT_LEFT,
 				"これは、ゲームであっても、遊びではない。"));
-		talks.add(new PlayerTalkDto(enemy.getPlayerId(), 0, TalkDirection.TALK_DIRECT_RIGHT,
+		talks.add(new PlayerTalkDto(enemy.getPlayerId(), "ラーティ・クルス", 0, TalkDirection.TALK_DIRECT_RIGHT,
 				"こんにちわ。"));
-		talks.add(new PlayerTalkDto(player.getPlayerId(), 3, TalkDirection.TALK_DIRECT_LEFT,
+		talks.add(new PlayerTalkDto(player.getPlayerId(), "アスリーン", 3, TalkDirection.TALK_DIRECT_LEFT,
 				"言っとくが俺はソロだ。\n１日２日オレンジになるくらいどおって事ないぞ。"));
-		talks.add(new PlayerTalkDto(player.getPlayerId(), 2, TalkDirection.TALK_DIRECT_LEFT,
+		talks.add(new PlayerTalkDto(player.getPlayerId(), "アスリーン", 2, TalkDirection.TALK_DIRECT_LEFT,
 				"レベルなんてタダの数字だよ。\nこの世界での強さは、単なる幻想に過ぎない。\nそんなものよりもっと大事なものがある。"));
-		talks.add(new PlayerTalkDto(enemy.getPlayerId(), 1, TalkDirection.TALK_DIRECT_RIGHT,
+		talks.add(new PlayerTalkDto(enemy.getPlayerId(), "ラーティ・クルス", 1, TalkDirection.TALK_DIRECT_RIGHT,
 				"なんでや！！\n何でディアベルハンを見殺しにしたんや！"));
 		
 		// 会話レイヤーを生成

@@ -13,12 +13,14 @@ public class PlayerTalkDto {
 	}
 	
 	private Integer playerId;
+	private String name;
 	private Integer currentTileIndex;
 	private TalkDirection talkDirection;
 	private String talk;
 	
-	public PlayerTalkDto(Integer playerId, Integer currentTileIndex, TalkDirection talkDirection, String talk) {
+	public PlayerTalkDto(Integer playerId, String name, Integer currentTileIndex, TalkDirection talkDirection, String talk) {
 		this.playerId = playerId;
+		this.name = name;
 		this.currentTileIndex = currentTileIndex;
 		this.talkDirection = talkDirection;
 		this.talk = talk;
@@ -34,6 +36,18 @@ public class PlayerTalkDto {
 	 */
 	public void setPlayerId(Integer playerId) {
 		this.playerId = playerId;
+	}
+	/**
+	 * @return the name
+	 */
+	public String getName() {
+		return name;
+	}
+	/**
+	 * @param name the name to set
+	 */
+	public void setName(String name) {
+		this.name = name;
 	}
 	/**
 	 * @return the currentTileIndex

@@ -356,17 +356,17 @@ public class PlayerSprite extends Rectangle {
 
 	/**
 	 * プレイヤー移動.
-	 * @param duration 移動時間
+	 * @param duration 移動時間（トータル）
 	 * @param moveMapPointList 移動経路リスト
 	 */
 	public void move(float duration, List<MapPoint> moveMapPointList) {
 		setPlayerToDefaultPosition();
 		List<IEntityModifier> modifierList = new ArrayList<IEntityModifier>();
-		// TODO: durationをlistの件数で割るべきか？トータルの移動時間を一定にするか？
 		float moveStartX = player.getX();
 		float moveStartY = player.getY();
+		float stepDuration = duration / moveMapPointList.size();
 		for (MapPoint mapPoint : moveMapPointList) {
-			modifierList.add(new MoveModifier(duration, moveStartX, mapPoint.getX(), moveStartY, mapPoint.getY()));
+			modifierList.add(new MoveModifier(stepDuration, moveStartX, mapPoint.getX(), moveStartY, mapPoint.getY()));
 			moveStartX = mapPoint.getX();
 			moveStartY = mapPoint.getY();
 		}
