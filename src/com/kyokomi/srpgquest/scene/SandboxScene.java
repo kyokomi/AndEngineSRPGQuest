@@ -25,6 +25,7 @@ import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.dto.PlayerTalkDto;
 import com.kyokomi.core.dto.PlayerTalkDto.TalkDirection;
 import com.kyokomi.core.scene.KeyListenScene;
+import com.kyokomi.core.sprite.MenuRectangle;
 import com.kyokomi.core.sprite.PlayerSprite;
 import com.kyokomi.core.sprite.TalkLayer;
 import com.kyokomi.core.sprite.TextButton;
@@ -45,13 +46,21 @@ public class SandboxScene extends KeyListenScene
 	private PlayerSprite enemy;
 	private TalkLayer talkLayer;
 	
+	private Font mFont;
+	
 	public SandboxScene(MultiSceneActivity baseActivity) {
 		super(baseActivity);
 		init();
 		
-		// test
+		// フォント作成
+		initFont();
 		
-		sampleMenuScene();
+		// --- test ---
+		
+//		sampleMenuScene();
+		
+		sampleMenuRectangle();
+		
 	}
 	
 	@Override
@@ -141,11 +150,8 @@ public class SandboxScene extends KeyListenScene
 	private TextButton textButtonSprite;
 	
 	private void sampleMenuScene() {
-		// フォント作成
-		Font font = initFont();
 		
-		
-		Text text = new Text(16, 16, font, 
+		Text text = new Text(16, 16, mFont, 
 				"-------------", 
 				new TextOptions(HorizontalAlign.CENTER), 
 				getBaseActivity().getVertexBufferObjectManager());
@@ -165,15 +171,62 @@ public class SandboxScene extends KeyListenScene
 		registerTouchArea(textButtonSprite);
 	}
 	
-	private Font initFont() {
+	private MenuRectangle mMenuRectangle;
+	
+	private void sampleMenuRectangle() {
+		
+		Font font = createFont(Typeface.DEFAULT_BOLD, 22, Color.WHITE);
+		
+		mMenuRectangle = new MenuRectangle(
+				getWindowWidth() / 2, getWindowHeight() / 2, 
+				getWindowWidth(), getWindowHeight(), 
+				getBaseActivity().getVertexBufferObjectManager());
+		
+		for (int i = 0; i < 4; i++) {
+			TextButton textButton = createTextButton(i+1, font);
+			mMenuRectangle.addMenuItem(textButton.getTag(), textButton);
+		}
+		mMenuRectangle.create(2);
+		attachChild(mMenuRectangle);
+		// 非表示
+		mMenuRectangle.setEnabled(false);
+		mMenuRectangle.setVisible(false);
+		registerTouchArea(mMenuRectangle);
+	}
+	
+	private TextButton createTextButton(int id, Font pFont) {
+		Text text = new Text(0, 0, pFont, 
+				"-------------", 
+				new TextOptions(HorizontalAlign.CENTER), 
+				getBaseActivity().getVertexBufferObjectManager());
+		TextButton textButton = new TextButton(text, 
+				getWindowWidth() / 2 - text.getWidth() / 2, getWindowHeight()/ 2 - text.getHeight() / 2,
+				5, 5, 
+				getBaseActivity().getVertexBufferObjectManager(), 
+				new TextButton.OnClickListener() {
+					@Override
+					public void onClick(TextButton pTextButtonSprite,
+							float pTouchAreaLocalX, float pTouchAreaLocalY) {
+						Log.d("TextButtonSprite", "Touch!!!!!!!");
+					}
+				});
+		textButton.setTag(id);
+		
+		return textButton;
+	}
+	
+	private void initFont() {
+		mFont = createFont(Typeface.DEFAULT, 16, Color.WHITE);
+	}
+	
+	private Font createFont(Typeface typeface, int fontSize, Color color) {
 		Texture texture = new BitmapTextureAtlas(
 				this.getBaseActivity().getTextureManager(), 512, 512, 
 				TextureOptions.BILINEAR_PREMULTIPLYALPHA);
 		
 		Font font = new Font(this.getBaseActivity().getFontManager(), 
-				texture, Typeface.DEFAULT, 16, true, Color.WHITE);
+				texture, typeface, fontSize, true, color);
 		
-		// EngineのTextureManagerにフォントTextureを読み込み
 		this.getBaseActivity().getTextureManager().loadTexture(texture);
 		this.getBaseActivity().getFontManager().loadFont(font);
 		
@@ -325,10 +378,21 @@ public class SandboxScene extends KeyListenScene
 						sampleStringInputDialogBuilder();
 						break;
 					case 10:
-						if (textButtonSprite.isEnabled()) {
-							textButtonSprite.setEnabled(false);
-						} else {
-							textButtonSprite.setEnabled(true);
+						if (textButtonSprite != null) { 
+							if (textButtonSprite.isEnabled()) {
+								textButtonSprite.setEnabled(false);
+							} else {
+								textButtonSprite.setEnabled(true);
+							}
+						}
+						if (mMenuRectangle != null) {
+							if (mMenuRectangle.isVisible()) {
+								mMenuRectangle.setEnabled(false);
+								mMenuRectangle.setVisible(false);
+							} else {
+								mMenuRectangle.setEnabled(true);
+								mMenuRectangle.setVisible(true);
+							}
 						}
 						break;
 					default:
