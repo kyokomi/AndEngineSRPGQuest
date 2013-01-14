@@ -3,6 +3,8 @@ package com.kyokomi.srpgquest.scene;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.andengine.entity.IEntity;
+import org.andengine.entity.modifier.IEntityModifier;
 import org.andengine.entity.primitive.Line;
 import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.Scene;
@@ -20,6 +22,7 @@ import org.andengine.ui.dialog.StringInputDialogBuilder;
 import org.andengine.util.HorizontalAlign;
 import org.andengine.util.call.Callback;
 import org.andengine.util.color.Color;
+import org.andengine.util.modifier.IModifier;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.dto.PlayerTalkDto;
@@ -369,10 +372,26 @@ public class SandboxScene extends KeyListenScene
 						enemy.attack2();
 						break;
 					case 7:
-						player.showCutIn(2.0f, getWindowWidth());
+						player.showCutIn(2.0f, getWindowWidth(), new IEntityModifier.IEntityModifierListener() {
+							@Override
+							public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
+							}
+							@Override
+							public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+								player.attack2();
+							}
+						});
 						break;
 					case 8:
-						enemy.showCutIn(2.0f, getWindowWidth());
+						enemy.showCutIn(2.0f, getWindowWidth(), new IEntityModifier.IEntityModifierListener() {
+							@Override
+							public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
+							}
+							@Override
+							public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+								enemy.attack2();
+							}
+						});
 						break;
 					case 9:
 						sampleStringInputDialogBuilder();

@@ -378,14 +378,14 @@ public class PlayerSprite extends Rectangle {
 
 	boolean isCutInMoved;
 	
-	public void showCutIn(float duration, float x) {
+	public void showCutIn(float duration, float x, IEntityModifier.IEntityModifierListener callBack) {
 		if (isCutInMoved) {
 			return;
 		}
 		
 		playerCutIn.registerEntityModifier(new SequenceEntityModifier(
 				new MoveModifier(duration / 3, 
-					-x, 0, 
+					-x, x / 2 - playerCutIn.getWidth() / 2, 
 					playerCutIn.getY(), playerCutIn.getY(),  
 					new IEntityModifier.IEntityModifierListener() {
 						@Override
@@ -400,7 +400,7 @@ public class PlayerSprite extends Rectangle {
 				),
 				new DelayModifier(duration / 3), 
 				new MoveModifier(duration / 3, 
-					0, x, 
+					x / 2 - playerCutIn.getWidth() / 2, x, 
 					playerCutIn.getY(), playerCutIn.getY(),  
 					new IEntityModifier.IEntityModifierListener() {
 						@Override
@@ -412,7 +412,8 @@ public class PlayerSprite extends Rectangle {
 							isCutInMoved = false;
 						}
 					}
-				)
+				),
+				new DelayModifier(0, callBack)
 			));
 	}
 	// ----------------------------------------------
