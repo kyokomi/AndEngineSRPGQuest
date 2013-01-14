@@ -3,15 +3,28 @@ package com.kyokomi.srpgquest.scene;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.andengine.engine.camera.Camera;
 import org.andengine.entity.primitive.Line;
+import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.Scene;
+import org.andengine.entity.scene.menu.MenuScene;
+import org.andengine.entity.scene.menu.item.IMenuItem;
+import org.andengine.entity.scene.menu.item.TextMenuItem;
 import org.andengine.entity.sprite.ButtonSprite;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.sprite.TiledSprite;
+import org.andengine.entity.text.Text;
+import org.andengine.entity.text.TextOptions;
 import org.andengine.input.touch.TouchEvent;
+import org.andengine.opengl.font.Font;
+import org.andengine.opengl.texture.Texture;
+import org.andengine.opengl.texture.TextureOptions;
+import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.ui.dialog.StringInputDialogBuilder;
+import org.andengine.util.HorizontalAlign;
 import org.andengine.util.call.Callback;
+import org.andengine.util.color.Color;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.dto.PlayerTalkDto;
@@ -19,10 +32,13 @@ import com.kyokomi.core.dto.PlayerTalkDto.TalkDirection;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.core.sprite.PlayerSprite;
 import com.kyokomi.core.sprite.TalkLayer;
+import com.kyokomi.core.sprite.TextButton;
 import com.kyokomi.srpgquest.R;
 
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.graphics.Typeface;
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 import android.widget.Toast;
@@ -123,6 +139,77 @@ public class SandboxScene extends KeyListenScene
 	// -----------------------------------------------------
 	// お試し系
 	
+	private void sampleMenuScene() {
+		// フォント作成
+		Font font = initFont();
+		
+		
+		Text text = new Text(16, 16, font, 
+				"-------------", 
+				new TextOptions(HorizontalAlign.CENTER), 
+				getBaseActivity().getVertexBufferObjectManager());
+		
+		TextButton textButtonSprite = new TextButton(text, 
+				getWindowWidth() / 2 - text.getWidth() / 2, getWindowHeight()/ 2 - text.getHeight() / 2,
+				20, 20, 
+				getBaseActivity().getVertexBufferObjectManager(), 
+				new TextButton.OnClickListener() {
+					@Override
+					public void onClick(TextButton pTextButtonSprite,
+							float pTouchAreaLocalX, float pTouchAreaLocalY) {
+						Log.d("TextButtonSprite", "Touch!!!!!!!");
+					}
+				});
+		attachChild(textButtonSprite);
+		registerTouchArea(textButtonSprite);
+		
+//		Rectangle background = new Rectangle(
+//				0, 0, 
+//				getWindowWidth(), getWindowHeight(), 
+//				getBaseActivity().getVertexBufferObjectManager());
+//		background.setColor(Color.BLACK);
+//		background.setAlpha(0.8f);
+//		attachChild(background);
+//		MenuScene menuScene = new MenuScene(camera,
+//				new MenuScene.IOnMenuItemClickListener() {
+//			@Override
+//			public boolean onMenuItemClicked(MenuScene pMenuScene, IMenuItem pMenuItem,
+//					float pMenuItemLocalX, float pMenuItemLocalY) {
+//				Log.d("Menu", "ID = " + pMenuItem.getID());
+//				return false;
+//			}
+//		});
+		
+//		TextMenuItem menuItem1 = new TextMenuItem(1, font, 
+//				getBaseActivity().getString(R.string.menu_attack), 
+//				getBaseActivity().getVertexBufferObjectManager());
+//		menuItem1.setPosition(0, 100);
+//		TextMenuItem menuItem2 = new TextMenuItem(2, font, 
+//				getBaseActivity().getString(R.string.menu_move), 
+//				getBaseActivity().getVertexBufferObjectManager());
+//		menuItem2.setPosition(0, 120);
+//		
+//		background.attachChild(menuItem1);
+//		background.attachChild(menuItem2);
+//		
+//		registerTouchArea(menuItem1);
+//		registerTouchArea(menuItem2);
+	}
+	
+	private Font initFont() {
+		Texture texture = new BitmapTextureAtlas(
+				this.getBaseActivity().getTextureManager(), 512, 512, 
+				TextureOptions.BILINEAR_PREMULTIPLYALPHA);
+		
+		Font font = new Font(this.getBaseActivity().getFontManager(), 
+				texture, Typeface.DEFAULT, 16, true, Color.WHITE);
+		
+		// EngineのTextureManagerにフォントTextureを読み込み
+		this.getBaseActivity().getTextureManager().loadTexture(texture);
+		this.getBaseActivity().getFontManager().loadFont(font);
+		
+		return font;
+	}
 	/**
 	 * 文字列入力ダイアログ生成サンプル.
 	 */
@@ -217,6 +304,8 @@ public class SandboxScene extends KeyListenScene
 		addMenu(btn8, 8, getLeftWidthToX(btn7));
 		ButtonSprite btn9 = getResourceButtonSprite("p_ms9_0.gif", "p_ms9_1.gif");
 		addMenu(btn9, 9, getLeftWidthToX(btn8));
+		ButtonSprite btn10 = getResourceButtonSprite("p_ms1_0.gif", "p_ms1_1.gif");
+		addMenu(btn10, 10, getLeftWidthToX(btn9));
 	}
 	private float getLeftWidthToX(Sprite sprite) {
 		return (0 + 2 + sprite.getX() + (sprite.getWidth()));
@@ -265,6 +354,9 @@ public class SandboxScene extends KeyListenScene
 						break;
 					case 9:
 						sampleStringInputDialogBuilder();
+						break;
+					case 10:
+						sampleMenuScene();
 						break;
 					default:
 						break;
