@@ -1,8 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">srpgquest</string>
+    <string name="app_name">SRPGQuest</string>
     <string name="hello_world">Hello world!</string>
     <string name="menu_settings">Settings</string>
-
+    
+    <string name="user_regist_title">ユーザー登録</string>
+    <string name="user_regist_detail">名前を入力してください</string>
+    <string name="user_regist_error">登録に失敗しました</string>
+    
+	<string name="menu_attack">攻撃</string>
+	<string name="menu_move">移動</string>
+	<string name="menu_wait">待機</string>
+	<string name="menu_cancel">キャンセル</string>
 </resources>

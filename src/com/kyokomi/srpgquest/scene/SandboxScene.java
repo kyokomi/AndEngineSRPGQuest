@@ -10,6 +10,8 @@ import org.andengine.entity.sprite.ButtonSprite;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.sprite.TiledSprite;
 import org.andengine.input.touch.TouchEvent;
+import org.andengine.ui.dialog.StringInputDialogBuilder;
+import org.andengine.util.call.Callback;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.dto.PlayerTalkDto;
@@ -17,9 +19,13 @@ import com.kyokomi.core.dto.PlayerTalkDto.TalkDirection;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.core.sprite.PlayerSprite;
 import com.kyokomi.core.sprite.TalkLayer;
+import com.kyokomi.srpgquest.R;
 
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.util.SparseArray;
 import android.view.KeyEvent;
+import android.widget.Toast;
 
 public class SandboxScene extends KeyListenScene 
 	implements IOnSceneTouchListener{
@@ -110,16 +116,61 @@ public class SandboxScene extends KeyListenScene
 				}
 				talkLayer.hide();
 			}
-			
-//			if (talkTextLayer.contains(x, y)) {
-//				// 次のテキストを表示して最後までいけば閉じる
-//				talkClose();
-//				return true;
-//			}
 		}
 		return false;
 	}
 
+	// -----------------------------------------------------
+	// お試し系
+	
+	/**
+	 * 文字列入力ダイアログ生成サンプル.
+	 */
+	private void sampleStringInputDialogBuilder() {
+		
+		// UIスレッド上でないと動きません
+		getBaseActivity().runOnUiThread(new Runnable() {
+		     @Override
+		     public void run() {
+		    	 // Dialogを生成 
+		 		 StringInputDialogBuilder builder = new StringInputDialogBuilder(getBaseActivity(), 
+						R.string.user_regist_title,  // タイトル文言のリソースID
+						R.string.user_regist_detail, // 本文のリソースID
+						R.string.user_regist_error,  // エラー時のToastで表示される文言のリソースID
+						R.drawable.ic_launcher,      // タイトル横のアイコン画像のリソースID
+						
+						/* 
+						 * OKボタンを押した時のコールバック.
+						 * 引数pCallbackValueに入力した文字列が入ってくる 
+						 */
+						new Callback<String>() {
+							@Override
+							public void onCallback(String pCallbackValue) {
+								Toast.makeText(getBaseActivity(), 
+										"「" + pCallbackValue + "」で登録しました。", 
+										Toast.LENGTH_SHORT).show();
+							}
+						},
+						
+						/*
+						 * Cancelボタンを押した時のコールバック. 
+						 */
+						new DialogInterface.OnCancelListener() {
+							@Override
+							public void onCancel(DialogInterface dialog) {
+								Toast.makeText(getBaseActivity(), "登録をやめました。", 
+										Toast.LENGTH_SHORT).show();
+							}
+						});
+		 		 // createで生成
+		 		 final Dialog dialog = builder.create();
+		 		
+		 		 dialog.show();
+		     }
+		});
+	}
+	
+	
 	// ---- グリッド表示 ----
 	
 	private void testShowGrid() {
@@ -213,7 +264,7 @@ public class SandboxScene extends KeyListenScene
 						enemy.showCutIn(2.0f, getWindowWidth());
 						break;
 					case 9:
-						player.setPlayerToAttackPosition();
+						sampleStringInputDialogBuilder();
 						break;
 					default:
 						break;
