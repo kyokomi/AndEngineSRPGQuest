@@ -115,8 +115,10 @@ public class TextButton extends Rectangle {
 			return;
 		}
 
+		// TODO: 色の変化、スケール変化、透明度変化、背景色変化など色々できるようにしたい
 		this.mState = pState;
 		this.mButtonText.setText(mState.getText());
+		this.setColor(mState.getColor());
 	}
 
 	// ===========================================================
@@ -140,9 +142,9 @@ public class TextButton extends Rectangle {
 		// Elements
 		// ===========================================================
 
-		NORMAL(0,   "NORMAL"),
-		PRESSED(1,  "PRESSED"),
-		DISABLED(2, "DISABLED");
+		NORMAL(0,   "NORMAL", Color.BLACK),
+		PRESSED(1,  "PRESSED", Color.BLUE),
+		DISABLED(2, "DISABLED", new Color(0.7f, 0.7f, 0.7f, 1));
 
 		// ===========================================================
 		// Constants
@@ -154,14 +156,16 @@ public class TextButton extends Rectangle {
 
 		private final int mTiledTextureRegionIndex;
 		private final String mText;
+		private final Color mColor;
 
 		// ===========================================================
 		// Constructors
 		// ===========================================================
 
-		private State(final int pTiledTextureRegionIndex, final String pText) {
+		private State(final int pTiledTextureRegionIndex, final String pText, final Color pColor) {
 			this.mTiledTextureRegionIndex = pTiledTextureRegionIndex;
 			this.mText = pText;
+			this.mColor = pColor;
 		}
 
 		// ===========================================================
@@ -177,6 +181,13 @@ public class TextButton extends Rectangle {
 		 */
 		public String getText() {
 			return mText;
+		}
+
+		/**
+		 * @return the mColor
+		 */
+		public Color getColor() {
+			return mColor;
 		}
 
 		// ===========================================================

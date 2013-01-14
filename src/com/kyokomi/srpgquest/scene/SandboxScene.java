@@ -3,14 +3,9 @@ package com.kyokomi.srpgquest.scene;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.andengine.engine.camera.Camera;
 import org.andengine.entity.primitive.Line;
-import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.Scene;
-import org.andengine.entity.scene.menu.MenuScene;
-import org.andengine.entity.scene.menu.item.IMenuItem;
-import org.andengine.entity.scene.menu.item.TextMenuItem;
 import org.andengine.entity.sprite.ButtonSprite;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.sprite.TiledSprite;
@@ -53,6 +48,10 @@ public class SandboxScene extends KeyListenScene
 	public SandboxScene(MultiSceneActivity baseActivity) {
 		super(baseActivity);
 		init();
+		
+		// test
+		
+		sampleMenuScene();
 	}
 	
 	@Override
@@ -139,6 +138,8 @@ public class SandboxScene extends KeyListenScene
 	// -----------------------------------------------------
 	// お試し系
 	
+	private TextButton textButtonSprite;
+	
 	private void sampleMenuScene() {
 		// フォント作成
 		Font font = initFont();
@@ -149,7 +150,7 @@ public class SandboxScene extends KeyListenScene
 				new TextOptions(HorizontalAlign.CENTER), 
 				getBaseActivity().getVertexBufferObjectManager());
 		
-		TextButton textButtonSprite = new TextButton(text, 
+		textButtonSprite = new TextButton(text, 
 				getWindowWidth() / 2 - text.getWidth() / 2, getWindowHeight()/ 2 - text.getHeight() / 2,
 				20, 20, 
 				getBaseActivity().getVertexBufferObjectManager(), 
@@ -162,38 +163,6 @@ public class SandboxScene extends KeyListenScene
 				});
 		attachChild(textButtonSprite);
 		registerTouchArea(textButtonSprite);
-		
-//		Rectangle background = new Rectangle(
-//				0, 0, 
-//				getWindowWidth(), getWindowHeight(), 
-//				getBaseActivity().getVertexBufferObjectManager());
-//		background.setColor(Color.BLACK);
-//		background.setAlpha(0.8f);
-//		attachChild(background);
-//		MenuScene menuScene = new MenuScene(camera,
-//				new MenuScene.IOnMenuItemClickListener() {
-//			@Override
-//			public boolean onMenuItemClicked(MenuScene pMenuScene, IMenuItem pMenuItem,
-//					float pMenuItemLocalX, float pMenuItemLocalY) {
-//				Log.d("Menu", "ID = " + pMenuItem.getID());
-//				return false;
-//			}
-//		});
-		
-//		TextMenuItem menuItem1 = new TextMenuItem(1, font, 
-//				getBaseActivity().getString(R.string.menu_attack), 
-//				getBaseActivity().getVertexBufferObjectManager());
-//		menuItem1.setPosition(0, 100);
-//		TextMenuItem menuItem2 = new TextMenuItem(2, font, 
-//				getBaseActivity().getString(R.string.menu_move), 
-//				getBaseActivity().getVertexBufferObjectManager());
-//		menuItem2.setPosition(0, 120);
-//		
-//		background.attachChild(menuItem1);
-//		background.attachChild(menuItem2);
-//		
-//		registerTouchArea(menuItem1);
-//		registerTouchArea(menuItem2);
 	}
 	
 	private Font initFont() {
@@ -356,7 +325,11 @@ public class SandboxScene extends KeyListenScene
 						sampleStringInputDialogBuilder();
 						break;
 					case 10:
-						sampleMenuScene();
+						if (textButtonSprite.isEnabled()) {
+							textButtonSprite.setEnabled(false);
+						} else {
+							textButtonSprite.setEnabled(true);
+						}
 						break;
 					default:
 						break;
