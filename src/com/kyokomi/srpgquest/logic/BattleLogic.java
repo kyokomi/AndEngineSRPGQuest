@@ -1,6 +1,6 @@
 package com.kyokomi.srpgquest.logic;
 
-import com.kyokomi.srpgquest.actor.CharacterStatus;
+import com.kyokomi.srpgquest.actor.ActorPlayer;
 
 import android.util.Log;
 
@@ -12,7 +12,7 @@ import android.util.Log;
 public class BattleLogic {
 	private final static String TAG = "BattleLogic";
 
-	public void attack(CharacterStatus from, CharacterStatus to) {
+	public void attack(ActorPlayer from, ActorPlayer to) {
 		Log.d(TAG, "-------------- FROM STATUS -------------- ");
 		Log.d(TAG, "attack  : " + from.getAttackPoint());
 		Log.d(TAG, "defence : " + from.getDefencePoint());
