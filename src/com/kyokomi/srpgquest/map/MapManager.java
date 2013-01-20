@@ -196,7 +196,7 @@ public class MapManager {
 		int mapPointX = mapItem.getMapPointX();
 		int mapPointY = mapItem.getMapPointY();
 		
-		mapItems[mapPointX][mapPointY] = mapItem;
+		setMapItem(mapPointX, mapPointY, mapItem);
 		mapDatas[mapPointX][mapPointY].setType(mapItem.getMapDataType());
 		
 		// リストに追加
@@ -300,7 +300,7 @@ public class MapManager {
 		cursorItem.setMoveDist(dist);
 		cursorItem.setAttackDist(0);
 		
-		mapItems[mapPointX][mapPointY] = cursorItem;
+		setMapItem(mapPointX, mapPointY, cursorItem);
 		cursorList.add(cursorItem);
 	}
 	
@@ -375,12 +375,12 @@ public class MapManager {
 		// 移動後のマップ情報を更新
 		int oldMapPointX = moveToActorPlayer.getMapPointX();
 		int oldMapPointY = moveToActorPlayer.getMapPointY();
-		mapItems[oldMapPointX][oldMapPointY] = null;
+		setMapItem(oldMapPointX, oldMapPointY, null);
 		mapDatas[oldMapPointX][oldMapPointY] = new MapData();
 		
 		int moveMapPointX = moveFromMapPoint.getMapPointX();
 		int moveMapPointY = moveFromMapPoint.getMapPointY();
-		mapItems[moveMapPointX][moveMapPointY] = moveToActorPlayer;
+		setMapItem(moveMapPointX, moveMapPointY, moveToActorPlayer);
 		mapDatas[moveMapPointX][moveMapPointY].setType(moveToActorPlayer.getMapDataType());
 		mapDatas[moveMapPointX][moveMapPointY].setDist(moveToActorPlayer.getMoveDist());
 		moveToActorPlayer.setMapPointX(moveMapPointX);
@@ -513,7 +513,7 @@ public class MapManager {
 		}
 		
 		// タップ位置から自キャラがいるところまでの最短ルートを探す
-		if (mapItems[x][y] != moveMapItem) {
+		if (getMapItem(x, y) != moveMapItem) {
 			// タップした位置のdistの次はどこか探す
 			dist++;
 			
@@ -667,7 +667,7 @@ public class MapManager {
 //	}
 	
 	public MapItem getMapPointToMapItem(MapPoint mapPoint) {
-		MapItem mapItem = mapItems[mapPoint.getMapPointX()][mapPoint.getMapPointY()];
+		MapItem mapItem = getMapItem(mapPoint.getMapPointX(), mapPoint.getMapPointY());
 		if (mapItem != null) {
 			return mapItem;
 		}
@@ -689,5 +689,21 @@ public class MapManager {
 			return actorPlayerMapItem.getPlayerId();
 		}
 		return 0;
+	}
+	
+	private MapItem getMapItem(int pointX, int pointY) {
+		if (mapItems.length <= pointX || mapItems[0].length <= pointY) {
+			// 範囲外
+			return null;
+		}
+		return mapItems[pointX][pointY];
+	}
+	
+	private void setMapItem(int pointX, int pointY, MapItem mapItem) {
+		if (mapItems.length <= pointX || mapItems[0].length <= pointY) {
+			// 範囲外
+			return;
+		}
+		mapItems[pointX][pointY] = mapItem;
 	}
 }

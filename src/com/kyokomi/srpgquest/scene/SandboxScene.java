@@ -48,7 +48,6 @@ public class SandboxScene extends KeyListenScene
 	private PlayerSprite player;
 	private PlayerSprite enemy;
 	private TalkLayer talkLayer;
-	
 	private Font mFont;
 	
 	public SandboxScene(MultiSceneActivity baseActivity) {
@@ -167,7 +166,7 @@ public class SandboxScene extends KeyListenScene
 					@Override
 					public void onClick(TextButton pTextButtonSprite,
 							float pTouchAreaLocalX, float pTouchAreaLocalY) {
-						Log.d("TextButtonSprite", "Touch!!!!!!!");
+//						Log.d("TextButtonSprite", "Touch!!!!!!!");
 					}
 				});
 		attachChild(textButtonSprite);
@@ -210,7 +209,7 @@ public class SandboxScene extends KeyListenScene
 					@Override
 					public void onClick(TextButton pTextButtonSprite,
 							float pTouchAreaLocalX, float pTouchAreaLocalY) {
-						Log.d("TextButtonSprite", "Touch!!!!!!!");
+//						Log.d("TextButtonSprite", "Touch!!!!!!!");
 					}
 				});
 		textButton.setTag(id);

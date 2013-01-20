@@ -25,7 +25,7 @@ public class MenuRectangle extends Rectangle {
 	private State mState;
 	
 	private int mDirection;
-	private final float margin = 2;
+	private final float margin = 10;
 	private SparseArray<IAreaShape> mEntityList;
 	
 //	private Text mButtonText;
@@ -109,12 +109,18 @@ public class MenuRectangle extends Rectangle {
 			int len = mEntityList.size();
 			IAreaShape entity = null;
 			for (int i = 0; i < len; i++) {
+				
 				entity = mEntityList.valueAt(i);
-				//if (entity.contains(pSceneTouchEvent.getX(), pSceneTouchEvent.getY())) {
+				// 触れている
+				if (entity.contains(pSceneTouchEvent.getX(), pSceneTouchEvent.getY())) {
 					entity.onAreaTouched(pSceneTouchEvent, pTouchAreaLocalX, pTouchAreaLocalY);
-					Log.d("onAreaTouched", "entity Tag = " + entity.getTag());
-					//break;
-				//}
+				// 触れていない
+				} else {
+					if (pSceneTouchEvent.isActionCancel()) {
+						entity.onAreaTouched(pSceneTouchEvent, pTouchAreaLocalX, pTouchAreaLocalY);
+					}
+				}
+//				Log.d("onAreaTouched", "entity Tag = " + entity.getTag());
 			}
 		}
 
@@ -143,6 +149,7 @@ public class MenuRectangle extends Rectangle {
 		if (mEntityList == null) {
 			mEntityList = new SparseArray<IAreaShape>();
 		}
+		pEntity.setTag(pId);
 		if (mEntityList.get(pId) == null) {
 			mEntityList.put(pId, pEntity);
 		} else {
