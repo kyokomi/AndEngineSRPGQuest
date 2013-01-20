@@ -109,4 +109,21 @@ public class MapPoint {
 	public void setDirection(MoveDirectionType direction) {
 		this.direction = direction;
 	}
+	
+	public MoveDirectionType getPointToMoveDirectionType(MapPoint pMapPoint) {
+		int diffX = this.getMapPointX() - pMapPoint.getMapPointX();
+		int diffY = this.getMapPointY() - pMapPoint.getMapPointY();
+		
+		if (diffX == 0 && diffY == 1) {
+			return MoveDirectionType.MOVE_DOWN;
+		} else if (diffX == 0 && diffY == -1) {
+			return MoveDirectionType.MOVE_UP;
+		} else if (diffX == 1 && diffY == 0) {
+			return MoveDirectionType.MOVE_RIGHT;
+		} else if (diffX == -1 && diffY == 0) {
+			return MoveDirectionType.MOVE_LEFT;
+		} else {
+			return MoveDirectionType.MOVE_DEFAULT;
+		}
+	}
 }

@@ -6,6 +6,7 @@ import java.util.List;
 import com.kyokomi.srpgquest.GameManager;
 import com.kyokomi.srpgquest.actor.ActorPlayer;
 import com.kyokomi.srpgquest.constant.MapDataType;
+import com.kyokomi.srpgquest.constant.MoveDirectionType;
 import com.kyokomi.srpgquest.map.common.MapPoint;
 import com.kyokomi.srpgquest.map.item.ActorPlayerMapItem;
 import com.kyokomi.srpgquest.map.item.MapItem;
@@ -273,8 +274,24 @@ public class MapManager {
 		
 	    // 移動情報作成
 		movePointList = new ArrayList<MapPoint>();
+		// 移動開始点を現在地として登録
+		movePointList.add(getMoveMapPoint(
+				moveToActorPlayer.getMapPointX(), 
+				moveToActorPlayer.getMapPointY(), 
+				MoveDirectionType.MOVE_DEFAULT));
+		// 移動経路を作成
 		createMovePointList(moveFromMapPoint.getMapPointX(), moveFromMapPoint.getMapPointY(), 
 				moveFromMapItem.getMoveDist(), moveToActorPlayer);
+
+		// 最初の移動開始時の方向を割り出す（一歩以上移動する場合）
+		if (movePointList.size() > 2) {
+			movePointList.get(0).setDirection(
+					movePointList.get(1).getPointToMoveDirectionType(movePointList.get(0)));			
+		}
+		// 一つ手前の位置から最後の移動箇所へ向かう方向を割り出す
+		moveFromMapPoint.setDirection(
+				moveFromMapPoint.getPointToMoveDirectionType(
+						movePointList.get(movePointList.size() - 1)));
 		// 目的地を最後の移動箇所に指定
 		movePointList.add(moveFromMapPoint);
 		
@@ -360,13 +377,8 @@ public class MapManager {
 		
 		// 初期位置は移動対象外とする制御
 		if (!first) {
-			// 移動情報初期化
-			movePointList = new ArrayList<MapPoint>();
-			
 			// 移動可能範囲に追加
 			addDistCursor(x, y, dist);
-//			mapDatas[x][y].setType(MapDataType.MOVE_DIST);
-//			mapDatas[x][y].setDist(dist);
 		}
 		if (dist == 0) {
 			return;
@@ -403,13 +415,10 @@ public class MapManager {
 		if (!first) {
 			// 移動可能範囲に追加
 			addAttackCursor(x, y, dist);
-//			mapDatas[x][y].setDist(dist);
-//			mapDatas[x][y].setType(MapDataType.ATTACK_DIST);
 		}
 		if (dist == 0) {
 			return;
 		}
-
 		// 上にいけるか?
 		if (y > TOP && mMapItemManager.chkAttack(x, y - 1, dist)) {
 			findAttack(x, y - 1, dist - 1, false);
@@ -452,25 +461,25 @@ public class MapManager {
 			// タップした位置のdistの次はどこか探す
 			dist++;
 			
-			// 上か？
+			// 下か
 			if (y > TOP && mMapItemManager.chkMovePoint(x, y - 1, dist, ignoreDataType)) {
 				createMovePointList(x, y-1, dist, moveMapItem);
-				movePointList.add(mGameManager.getTouchMapPointToMapPoint(x, y-1));
+				movePointList.add(getMoveMapPoint(x, y-1, MoveDirectionType.MOVE_DOWN));
 			}
-			// 下か？
+			// 上か？
 			else if (y < (BOTTOM -1) && mMapItemManager.chkMovePoint(x, y + 1, dist, ignoreDataType)) {
 				createMovePointList(x, y+1, dist, moveMapItem);
-				movePointList.add(mGameManager.getTouchMapPointToMapPoint(x, y+1));
+				movePointList.add(getMoveMapPoint(x, y+1, MoveDirectionType.MOVE_UP));
 			}
 			// 右か?
 			else if (x > LEFT && mMapItemManager.chkMovePoint(x - 1, y, dist, ignoreDataType)) {
 				createMovePointList(x-1, y, dist, moveMapItem);
-				movePointList.add(mGameManager.getTouchMapPointToMapPoint(x-1, y));
+				movePointList.add(getMoveMapPoint(x-1, y, MoveDirectionType.MOVE_RIGHT));
 			}
 			// 左にいけるか?
 			else if (x < (RIGHT - 1) && mMapItemManager.chkMovePoint(x + 1, y, dist, ignoreDataType)) {
 				createMovePointList(x+1, y, dist, moveMapItem);
-				movePointList.add(mGameManager.getTouchMapPointToMapPoint(x+1, y));
+				movePointList.add(getMoveMapPoint(x+1, y, MoveDirectionType.MOVE_LEFT));
 			}
 		}
 	}
@@ -616,5 +625,11 @@ public class MapManager {
 			return actorPlayerMapItem.getPlayerId();
 		}
 		return 0;
+	}
+	
+	private MapPoint getMoveMapPoint(int mapPointX, int mapPointY, MoveDirectionType moveDirectionType) {
+		MapPoint mapPoint = mGameManager.getTouchMapPointToMapPoint(mapPointX, mapPointY);
+		mapPoint.setDirection(moveDirectionType);
+		return mapPoint;
 	}
 }

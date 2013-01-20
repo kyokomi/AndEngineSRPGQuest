@@ -148,7 +148,7 @@ public class MapItemManager {
 	
 	
 	public MapItem getPointItem(MapPoint mapPoint) {
-		return getPointItem(mapPoint);
+		return getPointItem(mapPoint.getMapPointX(), mapPoint.getMapPointY());
 	}
 	public MapItem getPointItem(int mapPointX, int mapPointY) {
 		MapItem mapItem = getCursor(mapPointX, mapPointY);

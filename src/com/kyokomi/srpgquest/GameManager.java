@@ -9,13 +9,11 @@ import com.kyokomi.srpgquest.constant.MoveDirectionType;
 import com.kyokomi.srpgquest.constant.SelectMenuType;
 import com.kyokomi.srpgquest.logic.BattleLogic;
 import com.kyokomi.srpgquest.map.MapManager;
-import com.kyokomi.srpgquest.map.common.MapData;
 import com.kyokomi.srpgquest.map.common.MapPoint;
 import com.kyokomi.srpgquest.map.item.ActorPlayerMapItem;
 import com.kyokomi.srpgquest.map.item.MapItem;
 import com.kyokomi.srpgquest.scene.MapBattleScene;
 
-import android.text.method.HideReturnsTransformationMethod;
 import android.util.Log;
 import android.util.SparseArray;
 

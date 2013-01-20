@@ -176,7 +176,7 @@ public class MapBattleScene extends KeyListenScene
 	 */
 	public void movePlayerAnimation(int playerId, List<MapPoint> moveMapPointList) {
 		PlayerSprite playerSprite = players.get(playerId);
-		playerSprite.move(0.5f, moveMapPointList);
+		playerSprite.move(1.0f, moveMapPointList);
 	}
 	
 	public void showSelectMenu() {

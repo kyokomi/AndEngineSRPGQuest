@@ -360,13 +360,43 @@ public class PlayerSprite extends Rectangle {
 	 * @param moveMapPointList 移動経路リスト
 	 */
 	public void move(float duration, List<MapPoint> moveMapPointList) {
-		setPlayerToDefaultPosition();
 		List<IEntityModifier> modifierList = new ArrayList<IEntityModifier>();
 		float moveStartX = player.getX();
 		float moveStartY = player.getY();
 		float stepDuration = duration / moveMapPointList.size();
-		for (MapPoint mapPoint : moveMapPointList) {
-			modifierList.add(new MoveModifier(stepDuration, moveStartX, mapPoint.getX(), moveStartY, mapPoint.getY()));
+		for (final MapPoint mapPoint : moveMapPointList) {
+			modifierList.add(new SequenceEntityModifier(
+					new MoveModifier(stepDuration, moveStartX, mapPoint.getX(), moveStartY, mapPoint.getY()),
+					new DelayModifier(0.0f, new IEntityModifier.IEntityModifierListener() {
+						@Override
+						public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
+						}
+						
+						@Override
+						public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+							int pCurrentTileIndex = 0;
+							switch (mapPoint.getDirection()) {
+							case MOVE_DOWN:
+								pCurrentTileIndex = 0;
+								break;
+							case MOVE_LEFT:
+								pCurrentTileIndex = 3;
+								break;
+							case MOVE_RIGHT:
+								pCurrentTileIndex = 6;
+								break;
+							case MOVE_UP:
+								pCurrentTileIndex = 9;
+								break;
+							default:
+								break;
+							}
+							player.setCurrentTileIndex(pCurrentTileIndex);
+							setPlayerToDefaultPosition();
+						}
+					})
+					
+					));
 			moveStartX = mapPoint.getX();
 			moveStartY = mapPoint.getY();
 		}
@@ -423,9 +453,10 @@ public class PlayerSprite extends Rectangle {
 	 * プレイヤーデフォルトポジション設定.
 	 */
 	public void setPlayerToDefaultPosition() {
+		int index = player.getCurrentTileIndex();
 		player.animate(
 				new long[]{100, 100, 100}, 
-				new int[]{6, 7, 8}, 
+				new int[]{index, index+1, index+2}, 
 				true);
 		showPlayer(PlayerSpriteType.PLAYER_TYPE_NORMAL);
 	}

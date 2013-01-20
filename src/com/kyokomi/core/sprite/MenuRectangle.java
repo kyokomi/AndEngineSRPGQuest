@@ -38,7 +38,7 @@ public class MenuRectangle extends Rectangle {
 			VertexBufferObjectManager pVertexBufferObjectManager) {
 		super(pX, pY, pWidth, pHeight, pVertexBufferObjectManager);
 		
-		this.setColor(Color.YELLOW);
+		this.setColor(Color.BLACK);
 		this.setAlpha(0.8f);
 //		this.mOnClickListener = pOnClickListener;
 		
