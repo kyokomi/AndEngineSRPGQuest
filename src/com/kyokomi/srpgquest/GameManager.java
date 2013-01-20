@@ -169,12 +169,13 @@ public class GameManager {
 	public MapDataType onTouchMapItemEvent(float x, float y) {
 		MapPoint mapPoint = calcGridDecodePosition(x, y);
 		MapItem mapItem = mapManager.getMapPointToMapItem(mapPoint);
+		MapDataType touchMapDataType;
 		if (mapItem == null) {
-			// TODO: エラー
-			return null;
+			touchMapDataType = MapDataType.NONE;
+		} else {
+			touchMapDataType = mapItem.getMapDataType();
 		}
-		MapDataType touchMapDataType = mapItem.getMapDataType();
-		
+		Log.d(TAG, "GameState = [" + gameState + "]");
 		/* 現在のゲームステータスに応じて処理を行う */
 		switch (gameState) {
 		case INIT:
@@ -204,10 +205,26 @@ public class GameManager {
 			
 		case PLAYER_ATTACK:
 			// 攻撃を選択したときは敵しかタップイベントに反応しない
-			if (touchMapDataType == MapDataType.ENEMY) {
-				// TODO: [将来対応]攻撃確認ウィンドウ表示
+			if (touchMapDataType == MapDataType.ATTACK_DIST) {
+				// 敵が存在するカーソルかチェック
+				ActorPlayerMapItem enemy = mapManager.getMapPointToActorPlayer(mapPoint);
+				if (enemy != null) {
+					// TODO: [将来対応]攻撃確認ウィンドウ表示					
+					
+					// TODO: 攻撃処理
+					
+					mapManager.attackEndChangeMapItem();
+					
+					baseScene.hideCursorSprite();
+					
+					gameState = GameStateType.PLAYER_TURN;
+				}
+			} else {
+				gameState = GameStateType.PLAYER_SELECT;
 				
-				// TODO: 攻撃処理
+				baseScene.hideCursorSprite();
+				// キャンセル
+				baseScene.showSelectMenu();
 			}
 			break;
 			
@@ -289,16 +306,43 @@ public class GameManager {
 	//---------------------------------------------------------
 	// Sceneから呼ばれる
 	//---------------------------------------------------------
-	public void showMoveDistCursor(MapItem mapItem) {
+	/**
+	 * 移動範囲カーソル表示.
+	 * @param mapItem
+	 */
+	public boolean showMoveDistCursor(MapItem mapItem) {
 		MapPoint mapPoint = calcGridPosition(mapItem.getMapPointX(), mapItem.getMapPointY());
-		showMoveDistCursor(mapPoint.getX(), mapPoint.getY());
+		return showMoveDistCursor(mapPoint.getX(), mapPoint.getY());
 	}
-	public void showMoveDistCursor(float x, float y) {
+	public boolean showMoveDistCursor(float x, float y) {
 		MapPoint mapPoint = calcGridDecodePosition(x, y);
 		List<MapItem> mapItems = mapManager.actorPlayerFindDist(mapPoint);
+		if (mapItems == null || mapItems.isEmpty()) {
+			Log.d(TAG, "showMoveDistCursor create error");
+			return false;
+		}
 		for (MapItem mapItem : mapItems) {
 			MapPoint mapItemPoint = calcGridPosition(mapItem.getMapPointX(), mapItem.getMapPointY());
-			baseScene.createCursorSprite(mapItemPoint);
+			baseScene.createMoveCursorSprite(mapItemPoint);
+		}
+		baseScene.sortChildren();
+		return true;
+	}
+	
+	/**
+	 * 攻撃範囲カーソル表示.
+	 * @param mapItem
+	 */
+	private void showAttackDistCursor(MapItem mapItem) {
+		MapPoint mapPoint = calcGridPosition(mapItem.getMapPointX(), mapItem.getMapPointY());
+		showAttackDistCursor(mapPoint.getX(), mapPoint.getY());
+	}
+	public void showAttackDistCursor(float x, float y) {
+		MapPoint mapPoint = calcGridDecodePosition(x, y);
+		List<MapItem> mapItems = mapManager.actorPlayerFindAttackDist(mapPoint);
+		for (MapItem mapItem : mapItems) {
+			MapPoint mapItemPoint = calcGridPosition(mapItem.getMapPointX(), mapItem.getMapPointY());
+			baseScene.createAttackCursorSprite(mapItemPoint);
 		}
 		baseScene.sortChildren();
 	}
@@ -309,12 +353,13 @@ public class GameManager {
 			switch (SelectMenuType.findTag(pressedBtnTag)) {
 			case MENU_ATTACK: // 攻撃
 				gameState = GameStateType.PLAYER_ATTACK;
-				// TODO: あとで
-//				players.get(selectActorPlayer.getPlayerId()).attack2(null);
+				showAttackDistCursor(selectActorPlayer);
 				break;
 			case MENU_MOVE: // 移動
 				gameState = GameStateType.PLAYER_MOVE;
-				showMoveDistCursor(selectActorPlayer);
+				if (!showMoveDistCursor(selectActorPlayer)) {
+					gameState = GameStateType.PLAYER_TURN;
+				}
 				break;
 			case MENU_WAIT: // 待機
 				gameState = GameStateType.PLAYER_TURN;

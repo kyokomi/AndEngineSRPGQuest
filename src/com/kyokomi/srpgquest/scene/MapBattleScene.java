@@ -130,18 +130,33 @@ public class MapBattleScene extends KeyListenScene
 		obstacle.setSize(mapPoint.getGridSize(), mapPoint.getGridSize());
 		attachChild(obstacle);
 	}
+	
+	/**
+	 * 移動カーソル描画.
+	 * @param mapPoint
+	 */
+	public void createMoveCursorSprite(MapPoint mapPoint) {
+		createCursorSprite(mapPoint, Color.GREEN);
+	}
+	/**
+	 * 攻撃カーソル描画.
+	 * @param mapPoint
+	 */
+	public void createAttackCursorSprite(MapPoint mapPoint) {
+		createCursorSprite(mapPoint, Color.YELLOW);
+	}
 	/**
 	 * カーソル描画.
 	 * @param mapPoint
 	 */
-	public void createCursorSprite(MapPoint mapPoint) {
+	private void createCursorSprite(MapPoint mapPoint, Color color) {
 		// 移動または攻撃可能範囲のカーソル
 		Rectangle cursor = new Rectangle(
 				mapPoint.getX(), mapPoint.getY(),
 				mapPoint.getGridSize(), 
 				mapPoint.getGridSize(), 
 				getBaseActivity().getVertexBufferObjectManager());
-		cursor.setColor(Color.GREEN);
+		cursor.setColor(color);
 		cursor.setAlpha(0.4f);
 		attachChild(cursor);
 		cursorList.add(cursor);
@@ -187,22 +202,18 @@ public class MapBattleScene extends KeyListenScene
 		ButtonSprite btnAttack = getResourceButtonSprite("attack_btn.gif", "attack_btn_p.gif");
 		mMenuRectangle.addMenuItem(1, btnAttack);
 		btnAttack.setOnClickListener(selectMenuOnClickListener);
-//		attachButtonSprite(selectMenuBackground, 1, btnRanking, 100, selectMenuOnClickListener);
 		
 		ButtonSprite btnMove = getResourceButtonSprite("move_btn.gif", "move_btn_p.gif");
 		mMenuRectangle.addMenuItem(2, btnMove);
 		btnMove.setOnClickListener(selectMenuOnClickListener);
-//		attachButtonSprite(selectMenuBackground, 2, btnRetry, 150, selectMenuOnClickListener);
 		
 		ButtonSprite btnWait = getResourceButtonSprite("wait_btn.gif", "wait_btn_p.gif");
 		mMenuRectangle.addMenuItem(3, btnWait);
 		btnWait.setOnClickListener(selectMenuOnClickListener);
-//		attachButtonSprite(selectMenuBackground, 3, btnTweet, 200, selectMenuOnClickListener);
 		
 		ButtonSprite btnCancel = getResourceButtonSprite("cancel_btn.gif", "cancel_btn_p.gif");
 		mMenuRectangle.addMenuItem(4, btnCancel);
 		btnCancel.setOnClickListener(selectMenuOnClickListener);
-//		attachButtonSprite(selectMenuBackground, 4, btnCancel, 250, selectMenuOnClickListener);
 		
 		mMenuRectangle.create(2);
 		attachChild(mMenuRectangle);
@@ -236,41 +247,11 @@ public class MapBattleScene extends KeyListenScene
 			if (!isPlayerTouch) {
 				// タッチイベント振り分け処理を呼ぶ
 				gameManager.onTouchMapItemEvent(x, y);
-				
-//				int playerId = gameManager.getTouchPositionToPlayerId(x, y);
-//				if (playerId != 0 && players.indexOfKey(playerId) >= 0) {
-//					selectPlayerId = playerId;
-//					selectMapPoint = gameManager.getTouchPositionToMapPoint(x, y);
-//					
-//					// TODO: 行動可能なプレイヤーなら行動メニューを表示
-//					showSelectMenu();
-//					
-////					// 移動範囲表示
-////					gameManager.showMoveDistCursor(x, y);
-////					// プレイヤータッチ判定
-////					touchPlayer(playerId);
-//				}
 			}
 		}
 		return false;
 	}
-	
-	private void touchPlayer(int playerId) {
 		
-		isPlayerTouch = true;
-
-		PlayerSprite playerSprite = players.get(playerId);
-		playerSprite.attack2(new IEntityModifier.IEntityModifierListener() {
-			@Override
-			public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
-			}
-			@Override
-			public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
-				isPlayerTouch = false;
-			}
-		});
-	}
-	
 	// ---- グリッド表示 ----
 	
 	private void testShowGrid() {
