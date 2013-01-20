@@ -85,6 +85,8 @@ public class MenuRectangle extends Rectangle {
 
 	@Override
 	public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
+		Log.d("", "action = [" + pSceneTouchEvent.getAction() + "] state = [" + this.mState + "]" );
+		
 		if(!this.isEnabled()) {
 			this.changeState(State.DISABLED);
 		} else {
@@ -92,6 +94,8 @@ public class MenuRectangle extends Rectangle {
 			if(pSceneTouchEvent.isActionDown()) {
 				this.changeState(State.PRESSED);
 			} else if(pSceneTouchEvent.isActionCancel() || !this.contains(pSceneTouchEvent.getX(), pSceneTouchEvent.getY())) {
+				this.changeState(State.NORMAL);
+			} else if(pSceneTouchEvent.isActionUp() && this.mState == State.NORMAL) {
 				this.changeState(State.NORMAL);
 			} else if(pSceneTouchEvent.isActionUp() && this.mState == State.PRESSED) {
 				this.changeState(State.NORMAL);
@@ -106,11 +110,11 @@ public class MenuRectangle extends Rectangle {
 			IAreaShape entity = null;
 			for (int i = 0; i < len; i++) {
 				entity = mEntityList.valueAt(i);
-				if (entity.contains(pSceneTouchEvent.getX(), pSceneTouchEvent.getY())) {
+				//if (entity.contains(pSceneTouchEvent.getX(), pSceneTouchEvent.getY())) {
 					entity.onAreaTouched(pSceneTouchEvent, pTouchAreaLocalX, pTouchAreaLocalY);
 					Log.d("onAreaTouched", "entity Tag = " + entity.getTag());
-					break;
-				}
+					//break;
+				//}
 			}
 		}
 

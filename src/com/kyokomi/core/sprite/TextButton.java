@@ -78,11 +78,11 @@ public class TextButton extends Rectangle {
 	public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
 		if(!this.isEnabled()) {
 			this.changeState(State.DISABLED);
-		} else if(pSceneTouchEvent.isActionDown()) {
+		} else if(pSceneTouchEvent.isActionDown() && this.contains(pSceneTouchEvent.getX(), pSceneTouchEvent.getY())) {
 			this.changeState(State.PRESSED);
 		} else if(pSceneTouchEvent.isActionCancel() || !this.contains(pSceneTouchEvent.getX(), pSceneTouchEvent.getY())) {
 			this.changeState(State.NORMAL);
-		} else if(pSceneTouchEvent.isActionUp() && this.mState == State.PRESSED) {
+		} else if(pSceneTouchEvent.isActionUp() && this.mState == State.PRESSED && this.contains(pSceneTouchEvent.getX(), pSceneTouchEvent.getY())) {
 			this.changeState(State.NORMAL);
 
 			if(this.mOnClickListener != null) {
