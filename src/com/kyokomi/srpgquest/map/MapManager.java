@@ -63,14 +63,60 @@ public class MapManager {
 	/**
 	 * TODO: test用
 	 */
-	public void debugShowMapItems() {
+	public void debugShowMapDatas() {
+		Log.d(TAG, "====== debugShowMapDatas ======");
 		StringBuffer buffer = null;
-		for (MapData[] mapItemX : mapDatas) {
+		for (int k = 0; k < mapDatas[0].length; k++) {
 			buffer = new StringBuffer();
-			for (MapData mapItem : mapItemX) {
-				buffer.append(mapItem.getType().getValue());
+			for (int i = 0; i < mapDatas.length; i++) {
+				buffer.append(mapDatas[i][k].getType().getValue());
 				buffer.append(".");
-			}
+			}			
+			Log.d(TAG, buffer.toString());
+		}
+	}
+	public void debugShowMapItems() {
+		Log.d(TAG, "====== debugShowMapItems ======");
+		StringBuffer buffer = null;
+		for (int k = 0; k < mapItems[0].length; k++) {
+			buffer = new StringBuffer();
+			for (int i = 0; i < mapItems.length; i++) {
+				if (mapItems[i][k] == null) {
+					buffer.append("-");
+				} else if (mapItems[i][k].getMapDataType() == MapDataType.ENEMY) {
+					buffer.append("E");
+				} else if (mapItems[i][k].getMapDataType() == MapDataType.MAP_ITEM) {
+					buffer.append("@");
+				} else {
+					buffer.append(mapItems[i][k].getMoveDist());
+				}
+				buffer.append(".");
+			}			
+			Log.d(TAG, buffer.toString());
+		}
+
+//		for (MapData[] mapDataX : mapDatas) {
+//			buffer = new StringBuffer();
+//			
+//			for (MapData mapDataY : mapDataX) {
+//				buffer.append(mapDataY.getType().getValue());
+//				buffer.append(".");
+//			}
+//			Log.d(TAG, buffer.toString());
+//		}
+	}
+	public void debugShowMoveList() {
+		Log.d(TAG, "====== debugShowMoveList ======");
+		StringBuffer buffer = null;
+		for (MapPoint movePoint : movePointList) {
+			buffer = new StringBuffer();
+			buffer.append("(");
+			buffer.append(movePoint.getMapPointX());
+			buffer.append(",");
+			buffer.append(movePoint.getMapPointY());
+			buffer.append(",");
+			buffer.append(movePoint.getDirection());
+			buffer.append(")");
 			Log.d(TAG, buffer.toString());
 		}
 	}
@@ -289,19 +335,22 @@ public class MapManager {
 	 * @param dist
 	 */
 	public void addDistCursor(int mapPointX, int mapPointY, int dist) {
-		if (mapDatas[mapPointX][mapPointY].getType() != MapDataType.NONE) {
-			return;
+		// 未設定 or 移動オブジェクトで移動力が上の場合
+		if (mapDatas[mapPointX][mapPointY].getType() == MapDataType.NONE ||
+				mapDatas[mapPointX][mapPointY].getType() == MapDataType.MOVE_DIST &&
+				mapDatas[mapPointX][mapPointY].getDist() < dist) {
+			
+			// リストに入れたやつだけあとで描画する
+			MapItem cursorItem = new MapItem();
+			cursorItem.setMapDataType(MapDataType.MOVE_DIST);
+			cursorItem.setMapPointX(mapPointX);
+			cursorItem.setMapPointY(mapPointY);
+			cursorItem.setMoveDist(dist);
+			cursorItem.setAttackDist(0);
+			
+			setMapItem(mapPointX, mapPointY, cursorItem);
+//			cursorList.add(cursorItem);
 		}
-		// リストに入れたやつだけあとで描画する
-		MapItem cursorItem = new MapItem();
-		cursorItem.setMapDataType(MapDataType.MOVE_DIST);
-		cursorItem.setMapPointX(mapPointX);
-		cursorItem.setMapPointY(mapPointY);
-		cursorItem.setMoveDist(dist);
-		cursorItem.setAttackDist(0);
-		
-		setMapItem(mapPointX, mapPointY, cursorItem);
-		cursorList.add(cursorItem);
 	}
 	
 	/**
@@ -331,7 +380,17 @@ public class MapManager {
 		mapDatas[mapX][mapY].setType(mapDataType);
 		// 検索開始(再帰呼び出し)
 		findDist(mapX, mapY, dist, true);
-				
+		
+		// TODO: メソッドにする
+		// cursorListを作成
+		cursorList = new ArrayList<MapItem>();
+		for (int x = 0; x < mapItems.length; x++) {
+			for (int y = 0; y < mapItems[x].length; y++) {
+				if (getMapItem(x,y) != null && getMapItem(x,y).getMapDataType() == MapDataType.MOVE_DIST) {
+					cursorList.add(getMapItem(x,y));
+				}
+			}	
+		}
 		// findDistで更新したcursorListを描画してもらう
 		return cursorList;
 	}
@@ -347,9 +406,22 @@ public class MapManager {
 		
 		MapItem mapItem = getMapPointToMapItem(moveFromMapPoint);
 		
+		debugShowMapItems();
 	    // 移動情報作成
+		movePointList = new ArrayList<MapPoint>();
 		createMovePointList(moveFromMapPoint.getMapPointX(), moveFromMapPoint.getMapPointY(), 
 				mapItem.getMoveDist(), moveToActorPlayer);	
+		debugShowMoveList();
+
+		// TODO: メソッドにする
+		// カーソル情報をクリア
+		for (int x = 0; x < mapItems.length; x++) {
+			for (int y = 0; y < mapItems[x].length; y++) {
+				if (getMapItem(x,y) != null && getMapItem(x,y).getMapDataType() == MapDataType.MOVE_DIST) {
+					setMapItem(x, y, null);
+				}
+			}	
+		}
 		
 		// 目的地を最後の移動箇所に指定
 		movePointList.add(moveFromMapPoint);
@@ -432,8 +504,8 @@ public class MapManager {
 			// 移動可能範囲に追加
 			addDistCursor(x, y, dist);
 			mapDatas[x][y].setType(MapDataType.MOVE_DIST);
+			mapDatas[x][y].setDist(dist);
 		}
-		mapDatas[x][y].setDist(dist);
 		if (dist == 0) {
 			return;
 		}
