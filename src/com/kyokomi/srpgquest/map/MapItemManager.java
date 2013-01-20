@@ -118,9 +118,70 @@ public class MapItemManager {
 		return mapItems[mapPointX][mapPointY]; 
 	}
 	
+	public boolean chkMove(int mapPointX, int mapPointY, int dist) {
+		MapItem mapItem = getPointItem(mapPointX, mapPointY);
+		if (mapItem == null || 
+				(mapItem.getMapDataType() == MapDataType.NONE || 
+					(mapItem.getMapDataType() == MapDataType.MOVE_DIST && mapItem.getMoveDist() < dist ))) {
+			return true;
+		}
+		return false;
+	}
+	public boolean chkAttack(int mapPointX, int mapPointY, int dist) {
+		MapItem mapItem = getPointItem(mapPointX, mapPointY);
+		if (mapItem == null || 
+				(mapItem.getMapDataType() == MapDataType.NONE || 
+					mapItem.getMapDataType() == MapDataType.ENEMY || 
+					mapItem.getMapDataType() == MapDataType.MOVE_DIST)) {
+			return true;
+		}
+		return false;
+	}
+	public boolean chkMovePoint(int mapPointX, int mapPointY, int dist, MapDataType ignoreDataType) {
+		MapItem mapItem = getCursor(mapPointX, mapPointY);
+		if (mapItem != null && mapItem.getMoveDist() == dist 
+				&& mapItem.getMapDataType() != ignoreDataType) {
+			return true;
+		}
+		return false;
+	}
+	
+	
+	public MapItem getPointItem(MapPoint mapPoint) {
+		return getPointItem(mapPoint);
+	}
+	public MapItem getPointItem(int mapPointX, int mapPointY) {
+		MapItem mapItem = getCursor(mapPointX, mapPointY);
+		if (mapItem == null) {
+			mapItem = getObject(mapPointX, mapPointY);
+			if (mapItem == null) {
+				mapItem = getBase(mapPointX, mapPointY);
+				if (mapItem == null) {
+					return null;
+				}
+			}
+		}
+		return mapItem;
+	}
 	// ----------------------
 	// TODO: デバッグ用
 	// ----------------------
+//	/**
+//	 * TODO: test用
+//	 */
+//	public void debugShowMapDatas() {
+//		Log.d(TAG, "====== debugShowMapDatas ======");
+//		StringBuffer buffer = null;
+//		for (int k = 0; k < mapDatas[0].length; k++) {
+//			buffer = new StringBuffer();
+//			for (int i = 0; i < mapDatas.length; i++) {
+//				buffer.append(mapDatas[i][k].getType().getValue());
+//				buffer.append(".");
+//			}			
+//			Log.d(TAG, buffer.toString());
+//		}
+//	}
+	
 	public void DEBUG_LOG_MAP_ITEM_LAYER() {
 		Log.d(TAG, "====== DEBUG_LOG_CURSOR_MAP_ITEM_LAYER ======");
 		

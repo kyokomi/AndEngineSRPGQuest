@@ -92,8 +92,6 @@ public class GameManager {
 		
 		gameState = GameStateType.PLAYER_TURN;
 		
-		mapManager.debugShowMapDatas();
-		
 		baseScene.sortChildren();
 	}
 	// -----------------------------------------------------
