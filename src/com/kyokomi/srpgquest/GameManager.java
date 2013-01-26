@@ -2,6 +2,10 @@ package com.kyokomi.srpgquest;
 
 import java.util.List;
 
+import org.andengine.entity.IEntity;
+import org.andengine.entity.modifier.IEntityModifier;
+import org.andengine.util.modifier.IModifier;
+
 import com.kyokomi.srpgquest.actor.ActorPlayer;
 import com.kyokomi.srpgquest.constant.GameStateType;
 import com.kyokomi.srpgquest.constant.MapDataType;
@@ -163,8 +167,8 @@ public class GameManager {
 	 * @return
 	 */
 	public MapDataType onTouchMapItemEvent(float x, float y) {
-		MapPoint mapPoint = calcGridDecodePosition(x, y);
-		MapItem mapItem = mapManager.getMapPointToMapItem(mapPoint);
+		final MapPoint mapPoint = calcGridDecodePosition(x, y);
+		final MapItem mapItem = mapManager.getMapPointToMapItem(mapPoint);
 		MapDataType touchMapDataType;
 		if (mapItem == null) {
 			touchMapDataType = MapDataType.NONE;
@@ -177,7 +181,11 @@ public class GameManager {
 		case INIT:
 			break;
 			
+		/* プレイヤーのターン */
 		case PLAYER_TURN:
+			
+			// TODO: 敵もしくはプレイヤーだったらステータスウィンドウを表示
+			
 			// プレイヤーキャラ選択が可能なので行動可能であればウィンドウ表示
 			if (touchMapDataType == MapDataType.PLAYER) {
 				ActorPlayerMapItem actorPlayerMapItem = (ActorPlayerMapItem) mapItem;
@@ -192,6 +200,7 @@ public class GameManager {
 			}
 			break;
 		
+		/* キャラ選択中 */
 		case PLAYER_SELECT:
 			gameState = GameStateType.PLAYER_TURN;
 			selectActorPlayer = null;
@@ -199,20 +208,27 @@ public class GameManager {
 			baseScene.hideSelectMenu();
 			break;
 			
+		/* 攻撃選択中 */
 		case PLAYER_ATTACK:
 			// 攻撃を選択したときは敵しかタップイベントに反応しない
 			if (touchMapDataType == MapDataType.ATTACK_DIST) {
 				// 敵が存在するカーソルかチェック
 				ActorPlayerMapItem enemy = mapManager.getMapPointToActorPlayer(mapPoint);
 				if (enemy != null) {
-					// TODO: [将来対応]攻撃確認ウィンドウ表示					
+					// TODO: [将来対応]攻撃確認ウィンドウ表示				
 					
 					// TODO: 攻撃処理
 					
+					// バトルロジックで計算
+					// キャラが攻撃モーション
+					// ダメージを表示
+					// 敵キャラがダメージモーション
+					
+					// 攻撃終了後
 					mapManager.attackEndChangeMapItem();
-					
+					// カーソル消去
 					baseScene.hideCursorSprite();
-					
+					// プレイヤーターンに戻る
 					gameState = GameStateType.PLAYER_TURN;
 				}
 			} else {
@@ -223,7 +239,8 @@ public class GameManager {
 				baseScene.showSelectMenu();
 			}
 			break;
-			
+		
+		/* 移動選択中 */
 		case PLAYER_MOVE:
 			// 移動を選択したときは移動可能カーソルにしか反応しない
 			if (touchMapDataType == MapDataType.MOVE_DIST) {
@@ -233,9 +250,11 @@ public class GameManager {
 					List<MapPoint> moveMapPointList = mapManager.actorPlayerCreateMovePointList(
 							selectActorPlayer, mapPoint);
 					
-					// TODO: 移動リストを引数にScene側の移動アニメーションを呼び出す
-					baseScene.movePlayerAnimation(selectActorPlayer.getPlayerId(), moveMapPointList);
+					// 移動先のカーソルの色を変える
+					baseScene.selectCursor(mapPoint);
 					
+					// 移動リストを引数にScene側の移動アニメーションを呼び出す
+					baseScene.movePlayerAnimation(selectActorPlayer.getPlayerId(), moveMapPointList);
 					// 移動結果をマップ情報に反映
 					// TODO: プレイヤーのステータスを移動済みにする
 					mapManager.moveEndChangeMapItem(selectActorPlayer, mapPoint);
@@ -243,8 +262,6 @@ public class GameManager {
 					// TODO: このあと行動選択ウィンドウの移動が押せくなる
 					
 					gameState = GameStateType.PLAYER_TURN;
-					// カーソルを消す
-					baseScene.hideCursorSprite();
 				}
 			}
 			break;
@@ -450,7 +467,7 @@ public class GameManager {
 //	// ------- 攻撃関連
 //	public boolean touchedAttackCursor(View v) {
 //		if (mGameState == GameStateType.PLAYER_SELECT) {
-//			mGameState = GameStateType.PLAYER_ATTACK;
+//			mGameState = GameStateType.)PLAYER_ATTACK;
 //			return true;
 //		} else {
 //			return false;

@@ -359,7 +359,8 @@ public class PlayerSprite extends Rectangle {
 	 * @param duration 移動時間（トータル）
 	 * @param moveMapPointList 移動経路リスト
 	 */
-	public void move(float duration, List<MapPoint> moveMapPointList) {
+	public void move(float duration, List<MapPoint> moveMapPointList, 
+			IEntityModifier.IEntityModifierListener pEntityModifierListener) {
 		List<IEntityModifier> modifierList = new ArrayList<IEntityModifier>();
 		float moveStartX = player.getX();
 		float moveStartY = player.getY();
@@ -399,6 +400,10 @@ public class PlayerSprite extends Rectangle {
 					));
 			moveStartX = mapPoint.getX();
 			moveStartY = mapPoint.getY();
+		}
+		// コールバックがあれば設定
+		if (pEntityModifierListener != null) {
+			modifierList.add(new DelayModifier(0.0f, pEntityModifierListener));
 		}
 		SequenceEntityModifier sequenceEntityModifier  = new SequenceEntityModifier(
 				modifierList.toArray(new IEntityModifier[0]));

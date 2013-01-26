@@ -3,7 +3,9 @@ package com.kyokomi.srpgquest.scene;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.andengine.entity.IEntity;
 import org.andengine.entity.modifier.AlphaModifier;
+import org.andengine.entity.modifier.IEntityModifier;
 import org.andengine.entity.modifier.LoopEntityModifier;
 import org.andengine.entity.modifier.SequenceEntityModifier;
 import org.andengine.entity.primitive.Line;
@@ -14,6 +16,9 @@ import org.andengine.entity.sprite.ButtonSprite;
 import org.andengine.entity.sprite.TiledSprite;
 import org.andengine.input.touch.TouchEvent;
 import org.andengine.util.color.Color;
+import org.andengine.util.modifier.IModifier;
+import org.andengine.util.modifier.IModifier.DeepCopyNotSupportedException;
+import org.andengine.util.modifier.IModifier.IModifierListener;
 
 import android.util.SparseArray;
 import android.view.KeyEvent;
@@ -24,6 +29,7 @@ import com.kyokomi.core.sprite.MenuRectangle;
 import com.kyokomi.core.sprite.PlayerSprite;
 import com.kyokomi.srpgquest.GameManager;
 import com.kyokomi.srpgquest.map.common.MapPoint;
+import com.kyokomi.srpgquest.sprite.CursorRectangle;
 
 public class MapBattleScene extends KeyListenScene 
 	implements IOnSceneTouchListener{
@@ -32,7 +38,7 @@ public class MapBattleScene extends KeyListenScene
 	
 	private SparseArray<PlayerSprite> players;
 	private SparseArray<PlayerSprite> enemys;
-	private List<Rectangle> cursorList;
+	private List<CursorRectangle> cursorList;
 	
 	public MapBattleScene(MultiSceneActivity baseActivity) {
 		super(baseActivity);
@@ -54,7 +60,7 @@ public class MapBattleScene extends KeyListenScene
 		// 初期化
 		players = new SparseArray<PlayerSprite>();
 		enemys = new SparseArray<PlayerSprite>();
-		cursorList = new ArrayList<Rectangle>();
+		cursorList = new ArrayList<CursorRectangle>();
 		// デフォルトフォント初期化
 		initFont(16);
 		
@@ -90,6 +96,7 @@ public class MapBattleScene extends KeyListenScene
 		player.setPlayerToDefaultPosition();
 		player.setPlayerPosition(mapPoint.getX(), mapPoint.getY());
 		player.setPlayerSize(mapPoint.getGridSize(), mapPoint.getGridSize());
+		player.setZIndex(20);
 		attachChild(player);
 		players.put(playerId, player);
 	}
@@ -108,6 +115,7 @@ public class MapBattleScene extends KeyListenScene
 		enemy.setPlayerToDefaultPosition();
 		enemy.setPlayerPosition(mapPoint.getX(), mapPoint.getY());
 		enemy.setPlayerSize(mapPoint.getGridSize(), mapPoint.getGridSize());
+		enemy.setZIndex(20);
 		attachChild(enemy);
 		enemys.put(enemyId, enemy);
 	}
@@ -121,6 +129,7 @@ public class MapBattleScene extends KeyListenScene
 		obstacle.setPosition(mapPoint.getX(), mapPoint.getY());
 		obstacle.setCurrentTileIndex(currentTileIndex);
 		obstacle.setSize(mapPoint.getGridSize(), mapPoint.getGridSize());
+		obstacle.setZIndex(20);
 		attachChild(obstacle);
 	}
 	
@@ -129,22 +138,37 @@ public class MapBattleScene extends KeyListenScene
 	 * @param mapPoint
 	 */
 	public void createMoveCursorSprite(MapPoint mapPoint) {
-		createCursorSprite(mapPoint, Color.GREEN);
+		CursorRectangle cursorRectangle = createCursorSprite(mapPoint, Color.GREEN);
+		cursorRectangle.setZIndex(10);
 	}
 	/**
 	 * 攻撃カーソル描画.
 	 * @param mapPoint
 	 */
 	public void createAttackCursorSprite(MapPoint mapPoint) {
-		createCursorSprite(mapPoint, Color.YELLOW);
+		CursorRectangle cursorRectangle = createCursorSprite(mapPoint, Color.YELLOW);
+		cursorRectangle.setZIndex(30);
+	}
+	/**
+	 * カーソル選択.
+	 */
+	public void selectCursor(MapPoint mapPoint) {
+		for (CursorRectangle cursorRectangle : cursorList) {
+			if (mapPoint.isMuchMapPoint(cursorRectangle.getmMapPointX(), cursorRectangle.getmMapPointY())) {
+				cursorRectangle.setColor(Color.BLUE);
+				break;
+			}
+		}
+		sortChildren();
 	}
 	/**
 	 * カーソル描画.
 	 * @param mapPoint
 	 */
-	private void createCursorSprite(MapPoint mapPoint, Color color) {
+	private CursorRectangle createCursorSprite(MapPoint mapPoint, Color color) {
 		// 移動または攻撃可能範囲のカーソル
-		Rectangle cursor = new Rectangle(
+		CursorRectangle cursor = new CursorRectangle(
+				mapPoint.getMapPointX(), mapPoint.getMapPointY(),
 				mapPoint.getX(), mapPoint.getY(),
 				mapPoint.getGridSize(), 
 				mapPoint.getGridSize(), 
@@ -158,13 +182,22 @@ public class MapBattleScene extends KeyListenScene
 				)));
 		attachChild(cursor);
 		cursorList.add(cursor);
+		
+		return cursor;
 	}
 	
 	public void hideCursorSprite() {
-		for (Rectangle cursor : cursorList) {
-			cursor.detachChildren();
-			cursor.detachSelf();
-		}
+		// 別スレッドで削除
+		getBaseActivity().runOnUpdateThread(new Runnable() {
+			@Override
+			public void run() {
+				for (Rectangle cursor : cursorList) {
+					cursor.detachChildren();
+					cursor.detachSelf();
+				}
+				cursorList = new ArrayList<CursorRectangle>();
+			}
+		});
 	}
 	
 	/**
@@ -174,7 +207,22 @@ public class MapBattleScene extends KeyListenScene
 	 */
 	public void movePlayerAnimation(int playerId, List<MapPoint> moveMapPointList) {
 		PlayerSprite playerSprite = players.get(playerId);
-		playerSprite.move(1.0f, moveMapPointList);
+		playerSprite.move(1.0f, moveMapPointList, new IEntityModifier.IEntityModifierListener() {
+			
+			@Override
+			public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+				// TODO Auto-generated method stub
+				// カーソルを消す
+				hideCursorSprite();				
+			}
+		});
+
 	}
 	
 	public void showSelectMenu() {
@@ -196,6 +244,8 @@ public class MapBattleScene extends KeyListenScene
 				getWindowWidth() / 2, getWindowHeight() / 2, 
 				getWindowWidth(), getWindowHeight(), 
 				getBaseActivity().getVertexBufferObjectManager());
+		mMenuRectangle.setZIndex(40);
+		
 		// 各ボタン配置
 		ButtonSprite btnAttack = getResourceButtonSprite("attack_btn.gif", "attack_btn_p.gif");
 		mMenuRectangle.addMenuItem(1, btnAttack);
