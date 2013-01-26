@@ -12,7 +12,14 @@ import android.util.Log;
 public class BattleLogic {
 	private final static String TAG = "BattleLogic";
 
-	public void attack(ActorPlayer from, ActorPlayer to) {
+	/**
+	 * fromがtoに攻撃した結果のダメージを返却します.
+	 * hitPointは更新します。
+	 * @param from
+	 * @param to
+	 * @return ダメージ値
+	 */
+	public int attack(ActorPlayer from, ActorPlayer to) {
 		Log.d(TAG, "-------------- FROM STATUS -------------- ");
 		Log.d(TAG, "attack  : " + from.getAttackPoint());
 		Log.d(TAG, "defence : " + from.getDefencePoint());
@@ -35,5 +42,6 @@ public class BattleLogic {
 		to.setHitPoint(to.getHitPoint() - damege);
 		Log.d(TAG, "to beforeHP : " + to.getHitPoint());
 		
+		return damege;
 	}
 }

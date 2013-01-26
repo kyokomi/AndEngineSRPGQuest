@@ -365,6 +365,9 @@ public class PlayerSprite extends Rectangle {
 		float moveStartX = player.getX();
 		float moveStartY = player.getY();
 		float stepDuration = duration / moveMapPointList.size();
+		if (stepDuration == duration) {
+			stepDuration = stepDuration / 4;
+		}
 		for (final MapPoint mapPoint : moveMapPointList) {
 			modifierList.add(new SequenceEntityModifier(
 					new MoveModifier(stepDuration, moveStartX, mapPoint.getX(), moveStartY, mapPoint.getY()),

@@ -2,10 +2,6 @@ package com.kyokomi.srpgquest;
 
 import java.util.List;
 
-import org.andengine.entity.IEntity;
-import org.andengine.entity.modifier.IEntityModifier;
-import org.andengine.util.modifier.IModifier;
-
 import com.kyokomi.srpgquest.actor.ActorPlayer;
 import com.kyokomi.srpgquest.constant.GameStateType;
 import com.kyokomi.srpgquest.constant.MapDataType;
@@ -33,7 +29,7 @@ public class GameManager {
 	
 	private MapBattleScene baseScene;
 	
-	private GameStateType gameState;
+	private GameStateType mGameState;
 	
 	private SparseArray<ActorPlayer> playerList;
 	private SparseArray<ActorPlayer> enemyList;
@@ -42,7 +38,10 @@ public class GameManager {
 	private MapManager mapManager;
 	
 	/** バトル汎用. */
-	private BattleLogic battleLogic;
+	private BattleLogic mBattleLogic;
+	
+	/** 選択したプレイヤーテンポラリ. */
+	private ActorPlayerMapItem mSelectActorPlayer;
 	
 	/**
 	 * コンストラクタ.
@@ -52,11 +51,11 @@ public class GameManager {
 		this.baseScene = baseScene;
 
 		// 初期化
-		battleLogic = new BattleLogic();
+		mBattleLogic = new BattleLogic();
 		playerList = new SparseArray<ActorPlayer>();
 		enemyList = new SparseArray<ActorPlayer>();
 		
-		gameState = GameStateType.INIT;
+		changeGameState(GameStateType.INIT);
 	}
 	
 	/**
@@ -92,7 +91,7 @@ public class GameManager {
 		addObstacle(4, 2);
 		addObstacle(5, 2);
 		
-		gameState = GameStateType.PLAYER_TURN;
+		changeGameState(GameStateType.PLAYER_TURN);
 		
 		baseScene.sortChildren();
 	}
@@ -147,12 +146,13 @@ public class GameManager {
 	public MapPoint getMapItemToMapPoint(MapItem mapItem) {
 		return calcGridPosition(mapItem.getMapPointX(), mapItem.getMapPointY());
 	}
-	
-	/** 選択したプレイヤーテンポラリ. */
-	private ActorPlayerMapItem selectActorPlayer;
-	
+
+	/**
+	 * 選択中のアクター取得.
+	 * @return
+	 */
 	public ActorPlayerMapItem getSelectActorPlayer() {
-		return selectActorPlayer;
+		return mSelectActorPlayer;
 	}
 	
 	/**
@@ -175,9 +175,8 @@ public class GameManager {
 		} else {
 			touchMapDataType = mapItem.getMapDataType();
 		}
-		Log.d(TAG, "GameState = [" + gameState + "]");
 		/* 現在のゲームステータスに応じて処理を行う */
-		switch (gameState) {
+		switch (mGameState) {
 		case INIT:
 			break;
 			
@@ -192,18 +191,16 @@ public class GameManager {
 		
 				// 攻撃もしくは移動が完了していなければ行動可能とする
 				if (!actorPlayerMapItem.isMoveDone() || !actorPlayerMapItem.isAttackDone()) {
-					gameState = GameStateType.PLAYER_SELECT;
-					selectActorPlayer = actorPlayerMapItem;
 					// 行動ウィンドウを表示
-					baseScene.showSelectMenu();
+					showSelectMenu(actorPlayerMapItem);
 				}
 			}
 			break;
 		
 		/* キャラ選択中 */
 		case PLAYER_SELECT:
-			gameState = GameStateType.PLAYER_TURN;
-			selectActorPlayer = null;
+			changeGameState(GameStateType.PLAYER_TURN);
+			mSelectActorPlayer = null;
 			// 行動ウィンドウ以外を押したら行動ウィンドウを閉じる
 			baseScene.hideSelectMenu();
 			break;
@@ -217,51 +214,55 @@ public class GameManager {
 				if (enemy != null) {
 					// TODO: [将来対応]攻撃確認ウィンドウ表示				
 					
-					// TODO: 攻撃処理
+					// ------- 攻撃処理 --------
+					battleStart(mSelectActorPlayer, enemy);
 					
-					// バトルロジックで計算
-					// キャラが攻撃モーション
-					// ダメージを表示
-					// 敵キャラがダメージモーション
-					
-					// 攻撃終了後
-					mapManager.attackEndChangeMapItem();
-					// カーソル消去
-					baseScene.hideCursorSprite();
 					// プレイヤーターンに戻る
-					gameState = GameStateType.PLAYER_TURN;
+					changeGameState(GameStateType.PLAYER_TURN);
 				}
 			} else {
-				gameState = GameStateType.PLAYER_SELECT;
-				
-				baseScene.hideCursorSprite();
 				// キャンセル
-				baseScene.showSelectMenu();
+				showSelectMenu();
 			}
+			// カーソル消去
+			baseScene.hideCursorSprite();
 			break;
 		
 		/* 移動選択中 */
 		case PLAYER_MOVE:
 			// 移動を選択したときは移動可能カーソルにしか反応しない
 			if (touchMapDataType == MapDataType.MOVE_DIST) {
-				if (selectActorPlayer != null) {
+				if (mSelectActorPlayer != null) {
 					
 					// 移動List作成
 					List<MapPoint> moveMapPointList = mapManager.actorPlayerCreateMovePointList(
-							selectActorPlayer, mapPoint);
+							mSelectActorPlayer, mapPoint);
 					
 					// 移動先のカーソルの色を変える
 					baseScene.selectCursor(mapPoint);
 					
 					// 移動リストを引数にScene側の移動アニメーションを呼び出す
-					baseScene.movePlayerAnimation(selectActorPlayer.getPlayerId(), moveMapPointList);
-					// 移動結果をマップ情報に反映
-					// TODO: プレイヤーのステータスを移動済みにする
-					mapManager.moveEndChangeMapItem(selectActorPlayer, mapPoint);
-					
-					// TODO: このあと行動選択ウィンドウの移動が押せくなる
-					
-					gameState = GameStateType.PLAYER_TURN;
+					baseScene.movePlayerAnimation(mSelectActorPlayer.getPlayerId(), moveMapPointList, 
+							new MapBattleScene.IAnimationCallback() {
+						@Override
+						public void doAction() {
+							// 移動結果をマップ情報に反映
+							// TODO: プレイヤーのステータスを移動済みにする
+							mapManager.moveEndChangeMapItem(mSelectActorPlayer, mapPoint);
+							
+							// TODO: このあと行動選択ウィンドウの移動が押せくなる
+							// TODO: 行動可能な場合
+							if (true) {
+								// ポップアップ表示
+								showSelectMenu();
+							} 
+//							else {
+//								// TODO: このキャラを待機モードにする
+//								
+//								changeGameState(GameStateType.PLAYER_TURN);
+//							}	
+						}
+					});
 				}
 			}
 			break;
@@ -310,6 +311,11 @@ public class GameManager {
 		// TODO: DBとかから取得？
 		actorPlayer.setMovePoint(5);
 		actorPlayer.setAttackRange(1);
+		
+		actorPlayer.setHitPoint(100);
+		actorPlayer.setAttackPoint(60);
+		actorPlayer.setDefencePoint(10);
+		
 		return actorPlayer;
 	}
 	private void addObstacle(int mapPointX, int mapPointY) {
@@ -360,22 +366,26 @@ public class GameManager {
 		baseScene.sortChildren();
 	}
 	
+	/**
+	 * メニューボタン選択イベント振り分け.
+	 * @param pressedBtnTag
+	 */
 	public void touchMenuBtnEvent(int pressedBtnTag) {
 		
-		if (selectActorPlayer != null) {
+		if (mSelectActorPlayer != null) {
 			switch (SelectMenuType.findTag(pressedBtnTag)) {
 			case MENU_ATTACK: // 攻撃
-				gameState = GameStateType.PLAYER_ATTACK;
-				showAttackDistCursor(selectActorPlayer);
+				changeGameState(GameStateType.PLAYER_ATTACK);
+				showAttackDistCursor(mSelectActorPlayer);
 				break;
 			case MENU_MOVE: // 移動
-				gameState = GameStateType.PLAYER_MOVE;
-				if (!showMoveDistCursor(selectActorPlayer)) {
-					gameState = GameStateType.PLAYER_TURN;
+				changeGameState(GameStateType.PLAYER_MOVE);
+				if (!showMoveDistCursor(mSelectActorPlayer)) {
+					changeGameState(GameStateType.PLAYER_TURN);
 				}
 				break;
 			case MENU_WAIT: // 待機
-				gameState = GameStateType.PLAYER_TURN;
+				changeGameState(GameStateType.PLAYER_TURN);
 				baseScene.hideCursorSprite();
 				break;
 			case MENU_CANCEL: // キャンセル
@@ -384,21 +394,40 @@ public class GameManager {
 				break;
 			}
 		}
-		
 		baseScene.hideSelectMenu();
 	}
-//    /**
-//	 * @return the mMainActivity
-//	 */
-//	public Activity getActivity() {
-//		return mMainActivity;
-//	}
-//	public void addMapItem(View child) {
-//		mMainActivity.addBaseView(child);
-//    }
-//    public void removeMapItem(View view) {
-//    	mMainActivity.removeBaseView(view);
-//    }
+	
+	// ----------------------------------------------------------
+	// BaseSceneの操作
+	// ----------------------------------------------------------
+	/**
+	 * 選択メニュー表示.
+	 */
+	private void showSelectMenu() {
+		showSelectMenu(null);
+	}
+	/**
+	 * 選択メニュー表示.
+	 */
+	private void showSelectMenu(ActorPlayerMapItem pSelectActorPlayer) {
+		if (pSelectActorPlayer != null) {
+			mSelectActorPlayer = pSelectActorPlayer;
+		}
+		changeGameState(GameStateType.PLAYER_SELECT);
+		baseScene.showSelectMenu(getMapItemToMapPoint(mSelectActorPlayer));
+	}
+	
+	// ----------------------------------------------------------
+	// GameState
+	// ----------------------------------------------------------
+	/**
+	 * ゲームステータス変更.
+	 * @param pGameStateType
+	 */
+	private void changeGameState(GameStateType pGameStateType) {
+		Log.d(TAG, "GameState [" + mGameState + "] => [" + pGameStateType + "]");
+		mGameState = pGameStateType;
+	}
 //	public void gameLog(String text) {
 //		Log.d(TAG, text);
 //		mMainActivity.setGameLog(text);
@@ -406,97 +435,54 @@ public class GameManager {
 //	public void showPlayerStatus(CharacterStatus playerStatus) {
 //		mMainActivity.showPlayerStatus(playerStatus);
 //	}
-//	/**
-//	 * 選択メニュー表示.
-//	 * @param x
-//	 * @param y
-//	 */
-//	public void showSelectMenu(float x, float y) {
-//		mSelectMenuList.setX(x);
-//		mSelectMenuList.setY(y);
-//		mSelectMenuList.setOnItemClickListener(new ListView.OnItemClickListener() {
-//			@Override
-//			public void onItemClick(AdapterView<?> parent, View view,
-//					int position, long id) {
-//				selectMenuItemClick(position);
-//			}
-//		});
-//		// ベースViewに配置
-//		mMainActivity.addBaseView(mSelectMenuList);
-//	}
-//	public void selectMenuItemClick(int position) {
-//		switch (position) {
-//		case 0:
-//			if(!mMapManager.showCharcterDist()) {
-//				return;
-//			}
-//			break;
-//		case 1:
-//			if (!mMapManager.showCharcterAttack()) {
-//				return;
-//			}
-//			break;
-//		case 2:
-//			mMapManager.characterEnd();
-//			break;
-//		case 3:
-//			mMapManager.selectCancel();
-//			break;
-//		default:
-//			// 例外
-//			actionCancel();
-//			break;
-//		}
-//		
-//		// ベースViewから削除
-//		mMainActivity.removeBaseView(mSelectMenuList);
-//	}
 //	
-//	public boolean touchedPlayer(View v) {
-//		if (mGameState == GameStateType.PLAYER_TURN) {
-//			mGameState = GameStateType.PLAYER_SELECT;
-//			
-//			showPlayerStatus(((CharacterSpriteView)v).getCharacterStatus());
-//			// 選択メニュー表示
-//			showSelectMenu(v.getX(), v.getY());
-//			return true;
-//		} else {
-//			return false;
-//		}
-//	}
-//	// ------- 攻撃関連
-//	public boolean touchedAttackCursor(View v) {
-//		if (mGameState == GameStateType.PLAYER_SELECT) {
-//			mGameState = GameStateType.)PLAYER_ATTACK;
-//			return true;
-//		} else {
-//			return false;
-//		}
-//	}
-//	
-//	/**
-//	 * バトル開始し、倒したかの結果を返します.
-//	 * TODO: 反撃できるようにしたら　返り討ちになる場合もあるのでbooleanじゃフラグが足りない
-//	 * 
-//	 * @param player
-//	 * @param enemy 更新しちゃいます (注意)
-//	 * @return true:倒した / false:倒してない
-//	 */
-//	public boolean battleStart(CharacterSpriteView player, CharacterSpriteView enemy) {
-//		// バトルロジック呼び出し
-//		mBattleLogic.attack(player.getCharacterStatus(), enemy.getCharacterStatus());
-//		// 結果HPがどうなったか
-//		int hp = enemy.getCharacterStatus().getHitPoint();
-//		if (hp <= 0) {
-//			// ログ
-//			gameLog("攻撃しました。倒しました!");
-//			return true;
-//		} else {
-//			// ログ
-//			gameLog("攻撃しました。残りHP[" + hp + "]");
-//			return false;
-//		}
-//	}
+
+	/**
+	 * バトル開始し、倒したかの結果を返します.
+	 * TODO: 反撃できるようにしたら　返り討ちになる場合もあるのでbooleanじゃフラグが足りない
+	 * 
+	 * @param player
+	 * @param enemy 更新しちゃいます (注意)
+	 * @return true:倒した / false:倒してない
+	 */
+	private boolean battleStart(ActorPlayerMapItem fromPlayerMapItem, ActorPlayerMapItem toPlayerMapItem) {
+		ActorPlayer formPlayer = getActorMapItemActorPlayer(fromPlayerMapItem);
+		ActorPlayer toPlayer = getActorMapItemActorPlayer(toPlayerMapItem);
+
+		// バトルロジック実行
+		int damage = mBattleLogic.attack(formPlayer, toPlayer);
+		
+		// TODO: [将来対応]キャラが攻撃モーション,敵キャラがダメージモーション
+		
+		// ダメージを表示
+		baseScene.showDamageText(damage, getMapItemToMapPoint(toPlayerMapItem));
+		// TODO: 攻撃終了後 倒れたアクターをマップ上から削除とか
+		mapManager.attackEndChangeMapItem();
+		
+		// 死亡判定
+		if (toPlayer.getHitPoint() <= 0) {
+			// 死亡
+			return true;
+		} else {
+			// 生き残り
+			return false;
+		}
+	}
+	
+	private ActorPlayer getActorMapItemActorPlayer(ActorPlayerMapItem actorMapItem) {
+		ActorPlayer player = null;
+		switch (actorMapItem.getMapDataType()) {
+		case PLAYER:
+			player = playerList.get(actorMapItem.getPlayerId());
+			break;
+		case ENEMY:
+			player = enemyList.get(actorMapItem.getPlayerId());
+			break;
+		default:
+			break;
+		}
+		return player;
+	}
 //	
 //	/**
 //	 * バトル終了後.
@@ -507,43 +493,6 @@ public class GameManager {
 //		updateGameState();
 //	}
 //	
-//	/**
-//	 * 待機時.
-//	 */
-//	public void actionWait(MapDataType mapDataType) {
-//		actionEnd(mapDataType);
-//		updateGameState();
-//	}
-//	/**
-//	 * 操作キャンセル時.
-//	 */
-//	public void actionCancel() {
-//		mGameState = GameStateType.PLAYER_TURN;
-//		updateGameState();
-//	}
-//		
-//	// -------- 移動関連
-//	/**
-//	 * 移動カーソル選択時.
-//	 * @param v
-//	 * @return true:移動開始 / false:移動しない
-//	 */
-//	public boolean touchedMoveCursor(View v) {
-//		if (mGameState == GameStateType.PLAYER_SELECT) {
-//			mGameState = GameStateType.PLAYER_MOVE;
-//			return true;
-//		} else {
-//			return false;
-//		}
-//	}
-//	/**
-//	 * 移動完了時.
-//	 */
-//	public void moveEnd(MapDataType mapDataType) {
-//		actionEnd(mapDataType);
-//		checkTouchNotEnd();
-//		updateGameState();
-//	}
 //	
 //	private void checkTouchNotEnd() {
 //		View v = mMapManager.isSelectPlayerEnd();
