@@ -2,7 +2,7 @@ package com.kyokomi.srpgquest;
 
 import java.util.List;
 
-import com.kyokomi.srpgquest.actor.ActorPlayer;
+import com.kyokomi.core.dto.ActorPlayerDto;
 import com.kyokomi.srpgquest.constant.GameStateType;
 import com.kyokomi.srpgquest.constant.MapDataType;
 import com.kyokomi.srpgquest.constant.MoveDirectionType;
@@ -31,8 +31,8 @@ public class GameManager {
 	
 	private GameStateType mGameState;
 	
-	private SparseArray<ActorPlayer> playerList;
-	private SparseArray<ActorPlayer> enemyList;
+	private SparseArray<ActorPlayerDto> playerList;
+	private SparseArray<ActorPlayerDto> enemyList;
 	
 	/** マップ管理. */
 	private MapManager mapManager;
@@ -52,8 +52,8 @@ public class GameManager {
 
 		// 初期化
 		mBattleLogic = new BattleLogic();
-		playerList = new SparseArray<ActorPlayer>();
-		enemyList = new SparseArray<ActorPlayer>();
+		playerList = new SparseArray<ActorPlayerDto>();
+		enemyList = new SparseArray<ActorPlayerDto>();
 		
 		changeGameState(GameStateType.INIT);
 	}
@@ -286,11 +286,11 @@ public class GameManager {
 			// すでに追加済み
 			return;
 		}
- 		ActorPlayer player = createActorPlayer(playerId);
+ 		ActorPlayerDto player = createActorPlayer(playerId, playerImageId);
 		playerList.put(playerId, player);
 		mapManager.addPlayer(mapPointX, mapPointY, player);
 		// Scene側でSpriteを生成
-		baseScene.createPlayerSprite(playerId, playerImageId,
+		baseScene.createPlayerSprite(player,
 				calcGridPosition(mapPointX, mapPointY));
 	}
 	private void addEnemy(int mapPointX, int mapPointY, int enemyId, int enemyImageId) {
@@ -298,16 +298,17 @@ public class GameManager {
 			// すでに追加済み
 			return;
 		}
- 		ActorPlayer enemy = createActorPlayer(enemyId);
+		ActorPlayerDto enemy = createActorPlayer(enemyId, enemyImageId);
 		enemyList.put(enemyId, enemy);
 		mapManager.addEnemy(mapPointX, mapPointY, enemy);
 		// Scene側でSpriteを生成
-		baseScene.createEnemySprite(enemyId, enemyImageId,
+		baseScene.createEnemySprite(enemy, 
 				calcGridPosition(mapPointX, mapPointY));
 	}
-	private ActorPlayer createActorPlayer(int playerId) {
-		ActorPlayer actorPlayer = new ActorPlayer();
+	private ActorPlayerDto createActorPlayer(int playerId, int imageResId) {
+		ActorPlayerDto actorPlayer = new ActorPlayerDto();
 		actorPlayer.setPlayerId(playerId);
+		actorPlayer.setImageResId(imageResId);
 		// TODO: DBとかから取得？
 		actorPlayer.setMovePoint(5);
 		actorPlayer.setAttackRange(1);
@@ -446,8 +447,8 @@ public class GameManager {
 	 * @return true:倒した / false:倒してない
 	 */
 	private boolean battleStart(ActorPlayerMapItem fromPlayerMapItem, ActorPlayerMapItem toPlayerMapItem) {
-		ActorPlayer formPlayer = getActorMapItemActorPlayer(fromPlayerMapItem);
-		ActorPlayer toPlayer = getActorMapItemActorPlayer(toPlayerMapItem);
+		ActorPlayerDto formPlayer = getActorMapItemActorPlayer(fromPlayerMapItem);
+		ActorPlayerDto toPlayer = getActorMapItemActorPlayer(toPlayerMapItem);
 
 		// バトルロジック実行
 		int damage = mBattleLogic.attack(formPlayer, toPlayer);
@@ -469,8 +470,8 @@ public class GameManager {
 		}
 	}
 	
-	private ActorPlayer getActorMapItemActorPlayer(ActorPlayerMapItem actorMapItem) {
-		ActorPlayer player = null;
+	private ActorPlayerDto getActorMapItemActorPlayer(ActorPlayerMapItem actorMapItem) {
+		ActorPlayerDto player = null;
 		switch (actorMapItem.getMapDataType()) {
 		case PLAYER:
 			player = playerList.get(actorMapItem.getPlayerId());

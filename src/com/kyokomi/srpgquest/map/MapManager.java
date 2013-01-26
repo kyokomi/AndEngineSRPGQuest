@@ -3,8 +3,8 @@ package com.kyokomi.srpgquest.map;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.kyokomi.core.dto.ActorPlayerDto;
 import com.kyokomi.srpgquest.GameManager;
-import com.kyokomi.srpgquest.actor.ActorPlayer;
 import com.kyokomi.srpgquest.constant.MapDataType;
 import com.kyokomi.srpgquest.constant.MoveDirectionType;
 import com.kyokomi.srpgquest.map.common.MapPoint;
@@ -77,7 +77,7 @@ public class MapManager {
 	 * @param mapPointY
 	 * @param actorPlayer
 	 */
-	public void addPlayer(int mapPointX, int mapPointY, ActorPlayer actorPlayer) {
+	public void addPlayer(int mapPointX, int mapPointY, ActorPlayerDto actorPlayer) {
 		addActor(MapDataType.PLAYER, mapPointX, mapPointY, actorPlayer);
 	}
 	
@@ -87,7 +87,7 @@ public class MapManager {
 	 * @param mapPointY
 	 * @param actorPlayer
 	 */
-	public void addEnemy(int mapPointX, int mapPointY, ActorPlayer actorPlayer) {
+	public void addEnemy(int mapPointX, int mapPointY, ActorPlayerDto actorPlayer) {
 		addActor(MapDataType.ENEMY, mapPointX, mapPointY, actorPlayer);
 	}
 	
@@ -114,7 +114,7 @@ public class MapManager {
 	 * @param mapPointY
 	 * @param actorPlayer
 	 */
-	private void addActor(MapDataType mapDataType, int mapPointX, int mapPointY, ActorPlayer actorPlayer) {
+	private void addActor(MapDataType mapDataType, int mapPointX, int mapPointY, ActorPlayerDto actorPlayer) {
 		ActorPlayerMapItem playerMapItem = new ActorPlayerMapItem();
 		playerMapItem.setPlayerId(actorPlayer.getPlayerId());
 		playerMapItem.setAttackDist(actorPlayer.getAttackRange());

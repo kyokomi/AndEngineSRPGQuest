@@ -1,6 +1,6 @@
 package com.kyokomi.srpgquest.logic;
 
-import com.kyokomi.srpgquest.actor.ActorPlayer;
+import com.kyokomi.core.dto.ActorPlayerDto;
 
 import android.util.Log;
 
@@ -19,7 +19,7 @@ public class BattleLogic {
 	 * @param to
 	 * @return ダメージ値
 	 */
-	public int attack(ActorPlayer from, ActorPlayer to) {
+	public int attack(ActorPlayerDto from, ActorPlayerDto to) {
 		Log.d(TAG, "-------------- FROM STATUS -------------- ");
 		Log.d(TAG, "attack  : " + from.getAttackPoint());
 		Log.d(TAG, "defence : " + from.getDefencePoint());

@@ -18,36 +18,45 @@ import org.andengine.util.color.Color;
 import org.andengine.util.modifier.IModifier;
 
 import com.kyokomi.core.constants.PlayerSpriteType;
+import com.kyokomi.core.dto.ActorPlayerDto;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.srpgquest.map.common.MapPoint;
 
 public class PlayerSprite extends Rectangle {
 	
-	private Integer playerId;
+	private ActorPlayerDto mActorPlayer;
 	
+	/**
+	 * @return the mActorPlayer
+	 */
+	public ActorPlayerDto getActorPlayer() {
+		return mActorPlayer;
+	}
+
+	/**
+	 * @param mActorPlayer the mActorPlayer to set
+	 */
+	public void setActorPlayer(ActorPlayerDto pActorPlayer) {
+		this.mActorPlayer = pActorPlayer;
+	}
+
 	/**
 	 * @return the playerId
 	 */
 	public Integer getPlayerId() {
-		return playerId;
+		return mActorPlayer.getPlayerId();
 	}
 
-	/**
-	 * @param playerId the playerId to set
-	 */
-	public void setPlayerId(Integer playerId) {
-		this.playerId = playerId;
-	}
-
-	public PlayerSprite(KeyListenScene baseScene, 
-			float pX, float pY, float pWidth, float pHeight,
-			int imageId, int tag, float scale,
+	public PlayerSprite(ActorPlayerDto pActorPlayer, KeyListenScene baseScene, 
+			float pX, float pY, float pWidth, float pHeight, float scale,
 			VertexBufferObjectManager pVertexBufferObjectManager) {
 		super(pX, pY, pWidth, pHeight, pVertexBufferObjectManager);
 		
+		this.mActorPlayer = pActorPlayer;
+		
 		setColor(Color.TRANSPARENT);
 		
-		playerSpriteInit(baseScene, imageId, tag, pX, pY, scale);
+		playerSpriteInit(baseScene, pX, pY, scale);
 	}
 	
 	/** 武器（アイコンセット）. */
@@ -70,11 +79,10 @@ public class PlayerSprite extends Rectangle {
 		return playerFace;
 	}
 	
-	private void playerSpriteInit(KeyListenScene baseScene, int imageId, int playerId, float x, float y, float scale) {
-		this.playerId = playerId;
+	private void playerSpriteInit(KeyListenScene baseScene, float x, float y, float scale) {
 		
 		// playerキャラを追加 攻撃と防御のスプライトもセットで読み込んでおく
-		String baseFileName = "actor" + imageId;
+		String baseFileName = "actor" + mActorPlayer.getImageResId();
 		player        = baseScene.getResourceAnimatedSprite(baseFileName + "_0_s.png", 3, 4);
 		playerDefense = baseScene.getResourceAnimatedSprite(baseFileName + "_2_s.png", 3, 4);
 		playerAttack  = baseScene.getResourceAnimatedSprite(baseFileName + "_3_s.png", 3, 4);
@@ -101,8 +109,8 @@ public class PlayerSprite extends Rectangle {
 		initWeaponAndEffect(baseScene, scale);
 		
 		// タグ設定
-		setTag(playerId);
-		playerFace.setTag(playerId);
+		setTag(mActorPlayer.getPlayerId());
+		playerFace.setTag(mActorPlayer.getPlayerId());
 	}
 
 	/**

@@ -25,6 +25,7 @@ import org.andengine.util.color.Color;
 import org.andengine.util.modifier.IModifier;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
+import com.kyokomi.core.dto.ActorPlayerDto;
 import com.kyokomi.core.dto.PlayerTalkDto;
 import com.kyokomi.core.dto.PlayerTalkDto.TalkDirection;
 import com.kyokomi.core.scene.KeyListenScene;
@@ -93,18 +94,38 @@ public class SandboxScene extends KeyListenScene
 		float scale = 2.0f;
 		
 		// プレイヤー配置
-		player = new PlayerSprite(this, 
+		ActorPlayerDto actorPlayer = new ActorPlayerDto();
+		actorPlayer.setPlayerId(1);
+		actorPlayer.setImageResId(110);
+		actorPlayer.setMovePoint(5);
+		actorPlayer.setAttackRange(1);
+		
+		actorPlayer.setHitPoint(100);
+		actorPlayer.setAttackPoint(60);
+		actorPlayer.setDefencePoint(10);
+		
+		player = new PlayerSprite(actorPlayer, this, 
 				0, 0, getWindowWidth(), getWindowHeight(), 
-				110, 1, scale,
+				scale,
 				getBaseActivity().getVertexBufferObjectManager());
 		player.setPlayerToAttackPosition();
 		player.setPlayerFlippedHorizontal(true);
 		player.setPlayerPosition(130, 150);
 		attachChild(player);
 		
-		enemy = new PlayerSprite(this, 
+		// 敵
+		ActorPlayerDto actorPlayer2 = new ActorPlayerDto();
+		actorPlayer2.setPlayerId(2);
+		actorPlayer2.setImageResId(34);
+		actorPlayer2.setMovePoint(5);
+		actorPlayer2.setAttackRange(1);
+		
+		actorPlayer2.setHitPoint(100);
+		actorPlayer2.setAttackPoint(60);
+		actorPlayer2.setDefencePoint(10);
+		enemy = new PlayerSprite(actorPlayer2, this, 
 				0, 0, getWindowWidth(), getWindowHeight(), 
-				34, 2, scale,
+				scale,
 				getBaseActivity().getVertexBufferObjectManager());
 		enemy.setPlayerToAttackPosition();
 		enemy.setPlayerPosition(getWindowWidth() - 100, 150);

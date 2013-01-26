@@ -28,6 +28,7 @@ import android.util.SparseArray;
 import android.view.KeyEvent;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
+import com.kyokomi.core.dto.ActorPlayerDto;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.core.sprite.MenuRectangle;
 import com.kyokomi.core.sprite.PlayerSprite;
@@ -128,10 +129,9 @@ public class MapBattleScene extends KeyListenScene
 	 * @param imageId
 	 * @param mapPoint
 	 */
-	public void createPlayerSprite(int playerId, int imageId, MapPoint mapPoint) {
-		PlayerSprite player = new PlayerSprite(this, 
-				0, 0, getWindowWidth(), getWindowHeight(), 
-				imageId, playerId, 1.0f,
+	public void createPlayerSprite(ActorPlayerDto playerActor, MapPoint mapPoint) {
+		PlayerSprite player = new PlayerSprite(playerActor, this, 
+				0, 0, getWindowWidth(), getWindowHeight(), 1.0f,
 				getBaseActivity().getVertexBufferObjectManager());
 		
 		player.setPlayerToDefaultPosition();
@@ -139,7 +139,7 @@ public class MapBattleScene extends KeyListenScene
 		player.setPlayerSize(mapPoint.getGridSize(), mapPoint.getGridSize());
 		player.setZIndex(LayerZIndex.ACTOR_LAYER.getValue());
 		attachChild(player);
-		players.put(playerId, player);
+		players.put(playerActor.getPlayerId(), player);
 	}
 	/**
 	 * 敵キャラ描画.
@@ -147,10 +147,9 @@ public class MapBattleScene extends KeyListenScene
 	 * @param imageId
 	 * @param mapPoint
 	 */
-	public void createEnemySprite(int enemyId, int imageId, MapPoint mapPoint) {
-		PlayerSprite enemy = new PlayerSprite(this, 
-				0, 0, getWindowWidth(), getWindowHeight(), 
-				imageId, enemyId, 1.0f,
+	public void createEnemySprite(ActorPlayerDto enemyActor, MapPoint mapPoint) {
+		PlayerSprite enemy = new PlayerSprite(enemyActor, this, 
+				0, 0, getWindowWidth(), getWindowHeight(), 1.0f,
 				getBaseActivity().getVertexBufferObjectManager());
 		
 		enemy.setPlayerToDefaultPosition();
@@ -158,7 +157,7 @@ public class MapBattleScene extends KeyListenScene
 		enemy.setPlayerSize(mapPoint.getGridSize(), mapPoint.getGridSize());
 		enemy.setZIndex(LayerZIndex.ACTOR_LAYER.getValue());
 		attachChild(enemy);
-		enemys.put(enemyId, enemy);
+		enemys.put(enemyActor.getPlayerId(), enemy);
 	}
 	
 	/**

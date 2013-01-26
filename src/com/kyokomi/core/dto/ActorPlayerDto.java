@@ -1,6 +1,6 @@
-package com.kyokomi.srpgquest.actor;
+package com.kyokomi.core.dto;
 
-public class ActorPlayer {
+public class ActorPlayerDto {
 
 	/** プレイヤーを一意に識別するID. */
 	private Integer playerId;
