@@ -17,8 +17,12 @@ public class ActorPlayerDto {
 	private int defencePoint;
 	/** HP. */
 	private int hitPoint;
+	/** HP最大値. */
+	private int hitPointLimit;
 	/** MP. */
 	private int magicPoint;
+	/** MP最大値. */
+	private int magicPointLimit;
 	
 	/** 移動力(ステータス表示用). */
 	private int movePoint;

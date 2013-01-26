@@ -31,6 +31,7 @@ import com.kyokomi.core.dto.PlayerTalkDto.TalkDirection;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.core.sprite.MenuRectangle;
 import com.kyokomi.core.sprite.PlayerSprite;
+import com.kyokomi.core.sprite.PlayerStatusRectangle;
 import com.kyokomi.core.sprite.TalkLayer;
 import com.kyokomi.core.sprite.TextButton;
 import com.kyokomi.srpgquest.R;
@@ -47,6 +48,7 @@ public class SandboxScene extends KeyListenScene
 	
 	private PlayerSprite player;
 	private PlayerSprite enemy;
+	private PlayerStatusRectangle mPlayerStatusRectangle;
 	private TalkLayer talkLayer;
 	private Font mFont;
 	
@@ -62,6 +64,8 @@ public class SandboxScene extends KeyListenScene
 		
 		// --- test ---
 		sampleMenuRectangle();
+		
+		samplePlayerStatus();
 	}
 	
 //	private FPSCounter mFpsCounter;
@@ -96,6 +100,7 @@ public class SandboxScene extends KeyListenScene
 		// プレイヤー配置
 		ActorPlayerDto actorPlayer = new ActorPlayerDto();
 		actorPlayer.setPlayerId(1);
+		actorPlayer.setName("アスリーン");
 		actorPlayer.setImageResId(110);
 		actorPlayer.setMovePoint(5);
 		actorPlayer.setAttackRange(1);
@@ -133,20 +138,25 @@ public class SandboxScene extends KeyListenScene
 
 		// 会話プレイヤーリストを作成
 		SparseArray<TiledSprite> playerSprite = new SparseArray<TiledSprite>();
-		playerSprite.put(player.getPlayerId(), player.getPlayerTalk());
-		playerSprite.put(enemy.getPlayerId(), enemy.getPlayerTalk());
+		playerSprite.put(player.getPlayerId(), player.getPlayerFace());
+		playerSprite.put(enemy.getPlayerId(), enemy.getPlayerFace());
 		
 		// 会話内容を作成
 		List<PlayerTalkDto> talks = new ArrayList<PlayerTalkDto>();
-		talks.add(new PlayerTalkDto(player.getPlayerId(), "アスリーン", 0, TalkDirection.TALK_DIRECT_LEFT,
+		talks.add(new PlayerTalkDto(player.getPlayerId(), 
+				player.getActorPlayer().getName(), 0, TalkDirection.TALK_DIRECT_LEFT,
 				"これは、ゲームであっても、遊びではない。"));
-		talks.add(new PlayerTalkDto(enemy.getPlayerId(), "ラーティ・クルス", 0, TalkDirection.TALK_DIRECT_RIGHT,
+		talks.add(new PlayerTalkDto(enemy.getPlayerId(), 
+				"ラーティ・クルス", 0, TalkDirection.TALK_DIRECT_RIGHT,
 				"こんにちわ。"));
-		talks.add(new PlayerTalkDto(player.getPlayerId(), "アスリーン", 3, TalkDirection.TALK_DIRECT_LEFT,
+		talks.add(new PlayerTalkDto(player.getPlayerId(), 
+				player.getActorPlayer().getName(), 3, TalkDirection.TALK_DIRECT_LEFT,
 				"言っとくが俺はソロだ。\n１日２日オレンジになるくらいどおって事ないぞ。"));
-		talks.add(new PlayerTalkDto(player.getPlayerId(), "アスリーン", 2, TalkDirection.TALK_DIRECT_LEFT,
+		talks.add(new PlayerTalkDto(player.getPlayerId(), 
+				player.getActorPlayer().getName(), 2, TalkDirection.TALK_DIRECT_LEFT,
 				"レベルなんてタダの数字だよ。\nこの世界での強さは、単なる幻想に過ぎない。\nそんなものよりもっと大事なものがある。"));
-		talks.add(new PlayerTalkDto(enemy.getPlayerId(), "ラーティ・クルス", 1, TalkDirection.TALK_DIRECT_RIGHT,
+		talks.add(new PlayerTalkDto(enemy.getPlayerId(), 
+				"ラーティ・クルス", 1, TalkDirection.TALK_DIRECT_RIGHT,
 				"なんでや！！\n何でディアベルハンを見殺しにしたんや！"));
 		
 		// 会話レイヤーを生成
@@ -235,6 +245,13 @@ public class SandboxScene extends KeyListenScene
 		mMenuRectangle.setEnabled(false);
 		mMenuRectangle.setVisible(false);
 		registerTouchArea(mMenuRectangle);
+	}
+	
+	private void samplePlayerStatus() {
+		mPlayerStatusRectangle = new PlayerStatusRectangle(this, player, mFont, getWindowWidth() / 2, 0, 
+				getWindowWidth() / 2, getWindowHeight() / 2, 
+				getBaseActivity().getVertexBufferObjectManager());
+		attachChild(mPlayerStatusRectangle);
 	}
 	
 	private TextButton createTextButton(int id, Font pFont) {

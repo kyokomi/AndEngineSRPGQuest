@@ -75,8 +75,13 @@ public class PlayerSprite extends Rectangle {
 	
 	/** プレイヤー会話. */
 	private TiledSprite playerFace;
-	public TiledSprite getPlayerTalk() {
+	public TiledSprite getPlayerFace() {
 		return playerFace;
+	}
+	
+	public String getFaceFileName() {
+		String baseFileName = "actor" + mActorPlayer.getImageResId();
+		return baseFileName + "_f.png";
 	}
 	
 	private void playerSpriteInit(KeyListenScene baseScene, float x, float y, float scale) {
@@ -87,7 +92,7 @@ public class PlayerSprite extends Rectangle {
 		playerDefense = baseScene.getResourceAnimatedSprite(baseFileName + "_2_s.png", 3, 4);
 		playerAttack  = baseScene.getResourceAnimatedSprite(baseFileName + "_3_s.png", 3, 4);
 		playerCutIn   = baseScene.getResourceSprite(baseFileName + "_cutin_s.jpg");
-		playerFace    = baseScene.getResourceTiledSprite(baseFileName + "_f.png", 4, 2);
+		playerFace    = baseScene.getResourceTiledSprite(getFaceFileName(), 4, 2);
 		
 		attachChild(player);
 		attachChild(playerDefense);
