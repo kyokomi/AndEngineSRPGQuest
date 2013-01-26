@@ -37,7 +37,6 @@ import com.kyokomi.srpgquest.R;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.graphics.Typeface;
-import android.util.Log;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 import android.widget.Toast;
@@ -57,13 +56,34 @@ public class SandboxScene extends KeyListenScene
 		// フォント作成
 		initFont();
 		
+		// FPS表示
+		initFps(getWindowWidth() - 100, getWindowHeight() - 20, mFont);
+		
 		// --- test ---
-		
-//		sampleMenuScene();
-		
 		sampleMenuRectangle();
-		
 	}
+	
+//	private FPSCounter mFpsCounter;
+//	private Text mFpsText;
+//	/**
+//	 * FPSの画面表示.
+//	 */
+//	private void initFps(float x, float y, Font font) {
+//		mFpsText= new Text(x, y, font, "FPS:0.000000000000000000000000", 
+//				getBaseActivity().getVertexBufferObjectManager());
+//		attachChild(mFpsText);
+//
+//		mFpsCounter = new FPSCounter();
+//		registerUpdateHandler(mFpsCounter);
+//		registerUpdateHandler(new TimerHandler(1/60f, true, new ITimerCallback() {
+//			@Override
+//			public void onTimePassed(TimerHandler pTimerHandler) {
+//				if (mFpsCounter != null) {
+//					mFpsText.setText("FPS:" + mFpsCounter.getFPS());
+//				}
+//			}
+//		}));
+//	}
 	
 	@Override
 	public void init() {

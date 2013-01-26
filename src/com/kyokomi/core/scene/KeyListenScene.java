@@ -12,10 +12,19 @@ import org.andengine.entity.sprite.ButtonSprite;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.sprite.TiledSprite;
 import org.andengine.entity.sprite.ButtonSprite.OnClickListener;
+import org.andengine.entity.text.Text;
+import org.andengine.entity.util.AverageFPSCounter;
+import org.andengine.entity.util.FPSCounter;
+import org.andengine.opengl.font.Font;
+import org.andengine.opengl.texture.Texture;
+import org.andengine.opengl.texture.TextureOptions;
+import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
+import org.andengine.util.color.Color;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
 
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.view.KeyEvent;
 
 /**
@@ -201,5 +210,63 @@ public abstract class KeyListenScene extends Scene {
 		intent.setType("text/plain");
 		intent.putExtra(Intent.EXTRA_TEXT, text);
 		getBaseActivity().startActivity(intent);
+	}
+	
+	// -------- FPS --------
+	
+	private FPSCounter mFpsCounter;
+	private Text mFpsText;
+	/**
+	 * FPSの画面表示.
+	 */
+	protected void initFps(float x, float y, Font font) {
+		mFpsText= new Text(x, y, font, "FPS:0.000000000000000000000000", 
+				getBaseActivity().getVertexBufferObjectManager());
+		attachChild(mFpsText);
+
+		mFpsCounter = new AverageFPSCounter(1) {
+			
+			@Override
+			protected void onHandleAverageDurationElapsed(float pFPS) {
+				mFpsText.setText("FPS:" + pFPS);
+			}
+		};
+		registerUpdateHandler(mFpsCounter);
+		
+	}
+	protected void clearFps() {
+		unregisterUpdateHandler(mFpsCounter);
+		detachChild(mFpsText);
+		
+		mFpsCounter = null;
+		mFpsText = null;
+	}
+	
+	// --------フォント -------
+	
+	private Font mBaseFont;
+	
+	protected void initFont(int fontSize) {
+		mBaseFont = createFont(Typeface.DEFAULT, fontSize, Color.WHITE);
+	}
+	protected Font getFont() {
+		if (mBaseFont == null) {
+			initFont(16);
+		}
+		return mBaseFont;
+	}
+	
+	private Font createFont(Typeface typeface, int fontSize, Color color) {
+		Texture texture = new BitmapTextureAtlas(
+				this.getBaseActivity().getTextureManager(), 512, 512, 
+				TextureOptions.BILINEAR_PREMULTIPLYALPHA);
+		
+		Font font = new Font(this.getBaseActivity().getFontManager(), 
+				texture, typeface, fontSize, true, color);
+		
+		this.getBaseActivity().getTextureManager().loadTexture(texture);
+		this.getBaseActivity().getFontManager().loadFont(font);
+		
+		return font;
 	}
 }

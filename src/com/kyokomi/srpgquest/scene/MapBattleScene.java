@@ -3,29 +3,18 @@ package com.kyokomi.srpgquest.scene;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.microedition.khronos.opengles.GL10;
-
-import org.andengine.entity.IEntity;
-import org.andengine.entity.modifier.IEntityModifier;
+import org.andengine.entity.modifier.AlphaModifier;
+import org.andengine.entity.modifier.LoopEntityModifier;
+import org.andengine.entity.modifier.SequenceEntityModifier;
 import org.andengine.entity.primitive.Line;
 import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.sprite.ButtonSprite;
-import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.sprite.TiledSprite;
-import org.andengine.entity.text.Text;
-import org.andengine.entity.text.TextOptions;
 import org.andengine.input.touch.TouchEvent;
-import org.andengine.opengl.font.Font;
-import org.andengine.opengl.texture.Texture;
-import org.andengine.opengl.texture.TextureOptions;
-import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
-import org.andengine.util.HorizontalAlign;
 import org.andengine.util.color.Color;
-import org.andengine.util.modifier.IModifier;
 
-import android.graphics.Typeface;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 
@@ -33,7 +22,6 @@ import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.core.sprite.MenuRectangle;
 import com.kyokomi.core.sprite.PlayerSprite;
-import com.kyokomi.core.sprite.TextButton;
 import com.kyokomi.srpgquest.GameManager;
 import com.kyokomi.srpgquest.map.common.MapPoint;
 
@@ -67,6 +55,8 @@ public class MapBattleScene extends KeyListenScene
 		players = new SparseArray<PlayerSprite>();
 		enemys = new SparseArray<PlayerSprite>();
 		cursorList = new ArrayList<Rectangle>();
+		// デフォルトフォント初期化
+		initFont(16);
 		
 		// グリッド線表示
 		testShowGrid();
@@ -80,6 +70,9 @@ public class MapBattleScene extends KeyListenScene
 		
 		// メニューを作っておく
 		createSelectMenuSprite();
+
+		// FPS表示
+		initFps(getWindowWidth() - 100, getWindowHeight() - 20, getFont());
 	}
 	
 	/**
@@ -157,7 +150,12 @@ public class MapBattleScene extends KeyListenScene
 				mapPoint.getGridSize(), 
 				getBaseActivity().getVertexBufferObjectManager());
 		cursor.setColor(color);
-		cursor.setAlpha(0.4f);
+		cursor.setAlpha(0.2f);
+		// 点滅表示設定
+		cursor.registerEntityModifier(new LoopEntityModifier(new SequenceEntityModifier(
+				new AlphaModifier(0.5f, 0.2f, 0.6f),
+				new AlphaModifier(0.5f, 0.6f, 0.2f)
+				)));
 		attachChild(cursor);
 		cursorList.add(cursor);
 	}
