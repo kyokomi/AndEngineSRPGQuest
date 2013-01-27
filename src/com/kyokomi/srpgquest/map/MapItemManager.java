@@ -67,6 +67,18 @@ public class MapItemManager {
 		return cursorList;
 	}
 	
+	public List<MapItem> getObjectMapItemList(MapDataType mapDataType) {
+		List<MapItem> objectList = new ArrayList<MapItem>();
+		for (int x = 0; x < mObjectMapItemLayer.length; x++) {
+			for (int y = 0; y < mObjectMapItemLayer[x].length; y++) {
+				if (getObject(x,y) != null && getObject(x,y).getMapDataType() == mapDataType) {
+					objectList.add(getObject(x,y));
+				}
+			}	
+		}
+		return objectList;
+	}
+	
 	public void setCursor(MapPoint mapPoint, MapItem mapItem) {
 		setCursor(mapPoint.getMapPointX(), mapPoint.getMapPointY(), mapItem);
 	}
@@ -183,7 +195,7 @@ public class MapItemManager {
 //	}
 	
 	public void DEBUG_LOG_MAP_ITEM_LAYER() {
-		Log.d(TAG, "====== DEBUG_LOG_CURSOR_MAP_ITEM_LAYER ======");
+		Log.d(TAG, "====== DEBUG_LOG_MAP_ITEM_LAYER ======");
 		
 		StringBuffer buffer = null;
 		for (int y = 0; y < mMapY; y++) {
@@ -213,6 +225,8 @@ public class MapItemManager {
 			return ("E");
 		} else if (mapItem.getMapDataType() == MapDataType.MAP_ITEM) {
 			return ("@");
+		} else if (mapItem.getMapDataType() == MapDataType.PLAYER) {
+			return ("P");
 		} else {
 			return String.valueOf(mapItem.getMoveDist());
 		}

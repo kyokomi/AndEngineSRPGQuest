@@ -133,6 +133,15 @@ public class MapPoint {
 	 * @param mapPointY
 	 * @return true:一致 / false:不一致
 	 */
+	public boolean isMuchMapPoint(MapPoint mapPoint) {
+		return isMuchMapPoint(mapPoint.getMapPointX(), mapPoint.getMapPointY());
+	}
+	/**
+	 * マップ座標一致判定.
+	 * @param mapPointX
+	 * @param mapPointY
+	 * @return true:一致 / false:不一致
+	 */
 	public boolean isMuchMapPoint(int mapPointX, int mapPointY) {
 		return this.mapPointX == mapPointX && this.mapPointY == mapPointY;
 	}

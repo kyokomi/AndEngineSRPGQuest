@@ -11,7 +11,6 @@ import com.kyokomi.srpgquest.map.common.MapPoint;
 import com.kyokomi.srpgquest.map.item.ActorPlayerMapItem;
 import com.kyokomi.srpgquest.map.item.MapItem;
 
-import android.R.id;
 import android.util.Log;
 
 /**
@@ -253,6 +252,7 @@ public class MapManager {
 
 		// カーソル情報を初期化
 		mMapItemManager.clearCursorMapItemLayer();
+		
 		// 検索開始(再帰呼び出し)
 		findDist(mapX, mapY, dist, true);
 		
@@ -272,7 +272,11 @@ public class MapManager {
 		mMapItemManager.DEBUG_LOG_MAP_ITEM_LAYER(); // DEBUG
 		
 		MapItem moveFromMapItem = mMapItemManager.getCursor(moveFromMapPoint);
-		
+		if (moveFromMapItem == null) {
+			Log.e(TAG, "moveFromMapItem not found xy[" + 
+					moveFromMapPoint.getMapPointX() + ", " + moveFromMapPoint.getMapPointY() + "]");
+			return null;
+		}
 	    // 移動情報作成
 		movePointList = new ArrayList<MapPoint>();
 		// 移動開始点を現在地として登録
@@ -299,7 +303,7 @@ public class MapManager {
 		debugShowMoveList(); // DEBUG
 
 		// カーソル情報をクリア
-		mMapItemManager.clearCursorMapItemLayer();
+//		mMapItemManager.clearCursorMapItemLayer();
 
 		return movePointList;
 	}
@@ -492,129 +496,128 @@ public class MapManager {
 			}
 		}
 	}
-//	
-//	/**
-//	 * 敵の行動.
-//	 * @param enemy
-//	 */
-//	public void enemyMove(CharacterSpriteView enemy) {
-//		CharacterSpriteView attackTarget = null;
-//		
-//		// 評価ポイント
-//		int evalPoint = Integer.MAX_VALUE;
-//		
-//		// 障害物を無視して距離を求める
-//		// 最も直線距離の近い相手を攻撃目標にする
-//		for (CharacterSpriteView player : playerList) {
-//			int dist = Math.abs(enemy.getMapPointX() - player.getMapPointX()) + 
-//					Math.abs(enemy.getMapPointY() - player.getMapPointY());
-//			if (evalPoint > dist) {
-//				attackTarget = player;
-//				evalPoint = dist;
-//			}
-//		}
-//		// 移動検索
-//		charcterFindDist(enemy);
-//		
-//		evalPoint = Integer.MIN_VALUE;
-//		int moveX = enemy.getMapPointX();
-//		int moveY = enemy.getMapPointY();
-//		
-//		int tageX = attackTarget.getMapPointX();
-//		int tageY = attackTarget.getMapPointY();
-//		
-//		for (int y = TOP; y < BOTTOM; y++) {
-//			for (int x = LEFT; x < RIGHT; x++) {
-//				// 攻撃距離計算
-//				int dist = Math.abs(x - tageX) + Math.abs(y - tageY);
-//				// 攻撃範囲内
-//				if (dist <= enemy.getAttackDist()) {
-//					int moveDist = 0;
-//					if (mapDatas[x][y].getType() == MapDataType.MOVE_DIST) {
-//						// 移動可能範囲
-//						moveDist = mapDatas[x][y].getDist();
-//					} else if (mapViews[x][y] == enemy) {
-//						continue;
-//					}
-//					
-//					// 評価点の求め方
-//					// なるべく動かず、できるだけ遠くから攻撃する
-//					int point = moveDist + dist * 2;
-//					
-//					if (evalPoint < point) {
-//						evalPoint = point;
-//						moveX = x;
-//						moveY = y;
-//					}
-//				}
-//			}
-//		}
-//		
-//		// 攻撃可能位置に移動できない
-//		if (evalPoint == Integer.MIN_VALUE) {
-//			// TODO: 可能な限り近づくとか？
-//			attackTarget = null;
-//			moveX = enemy.getMapPointX();
-//			moveY = enemy.getMapPointY();
-//		}
-//		
-//		boolean isNotMove = true;
-//		
-//		// 最初の位置と違う場合、移動する
-//		if (moveX == enemy.getMapPointX() && moveY == enemy.getMapPointY()) {
-//			
-//		} else {
-//			// TODO: cursorはmapViewの中にないのでリストから探す
-//			for (MapSpriteView cursor : cursorList) {
-//				if (cursor.getMapPointX() == moveX && cursor.getMapPointY() == moveY) {
-//					
-//					// 移動
-//					moveEnemy(cursor, enemy, attackTarget);
-//					
-//					isNotMove = false;
-//					break;
-//				}
-//			}
-//		}
-//		
-//		if (isNotMove) {
-//			// カーソル情報をクリア
-//			cursorInit(enemy);
-//			
-//			enemy.setAttackDone(true);
-//			enemy.setMoveDone(true);
-//			mGameManager.actionWait(enemy.getMapDataType());
-//		}
-//	}
-//	
-//	private void moveEnemy(final MapSpriteView moveToMapItem, final CharacterSpriteView moveToView, 
-//			final CharacterSpriteView attackTarget) {
-//		moveMapItem(moveToMapItem, moveToView, new AnimatorListener() {
-//			@Override public void onAnimationStart(Animator animation) {}
-//			@Override public void onAnimationRepeat(Animator animation) {}
-//			@Override public void onAnimationCancel(Animator animation) {}
-//			@Override
-//			public void onAnimationEnd(Animator animation) {
-//				moveMapItemEnd(moveToMapItem, moveToView);
-//				
-//				// 攻撃判定
-//				charcterFindAttack(moveToView);
-//				
-//				// デュエルスタート！
-//				CharacterSpriteView from = moveToView;
-//				CharacterSpriteView to = attackTarget;
-//				battle(from, to);
-//			
-//				// カーソル情報クリア
-//				cursorInit(moveToView);
-//			}
-//		});
-//	}
+	
+	/**
+	 * プレイヤーターン終了判定.
+	 * @return
+	 */
+	public boolean checkPlayerTurnEnd() {
+		boolean isAllWait = true;
+		List<MapItem> playerMapItemList = mMapItemManager.getObjectMapItemList(MapDataType.PLAYER);
+		for (MapItem mapItem : playerMapItemList) {
+			if (mapItem instanceof ActorPlayerMapItem) {
+				if (((ActorPlayerMapItem) mapItem).isWaitDone() == false) {
+					isAllWait = false;
+					break;
+				}
+			}
+		}
+		return isAllWait;
+	}
+	
+	/**
+	 * 全プレイヤーを行動可能にする
+	 * @return
+	 */
+	public void refreshAllActorWait(MapDataType mapDataType) {
+		List<MapItem> playerMapItemList = mMapItemManager.getObjectMapItemList(mapDataType);
+		for (MapItem mapItem : playerMapItemList) {
+			if (mapItem instanceof ActorPlayerMapItem) {
+				((ActorPlayerMapItem) mapItem).setWaitDone(false);
+			}
+		}
+	}
+
+	public ActorPlayerMapItem findAttackPlayerMapitem(ActorPlayerMapItem enemyMapItem) {
+		ActorPlayerMapItem attackTarget = null;
+		// 評価ポイント方式
+		int evalPoint = Integer.MAX_VALUE;
+		
+		// 障害物を無視して距離を求める
+		// 最も直線距離の近い相手を攻撃目標にする
+		List<MapItem> playerList = mMapItemManager.getObjectMapItemList(MapDataType.PLAYER);
+		for (MapItem player : playerList) {
+			if (player instanceof ActorPlayerMapItem) {
+				int dist = Math.abs(enemyMapItem.getMapPointX() - player.getMapPointX()) + 
+						Math.abs(enemyMapItem.getMapPointY() - player.getMapPointY());
+				if (evalPoint > dist) {
+					attackTarget = (ActorPlayerMapItem) player;
+					evalPoint = dist;
+				}				
+			}
+		}
+		return attackTarget;
+	}
+	
+	/**
+	 * 敵の移動先マップポイントを探索.
+	 * @param attackTarget
+	 * @param enemyMapItem
+	 * @return
+	 */
+	public MapPoint findEnemyMoveMapPoint(ActorPlayerMapItem attackTarget, ActorPlayerMapItem enemyMapItem) {
+		
+		int evalPoint = Integer.MIN_VALUE;
+		int moveX = enemyMapItem.getMapPointX();
+		int moveY = enemyMapItem.getMapPointY();
+		
+		int tageX = attackTarget.getMapPointX();
+		int tageY = attackTarget.getMapPointY();
+		
+		for (int y = TOP; y < BOTTOM; y++) {
+			for (int x = LEFT; x < RIGHT; x++) {
+				// 攻撃距離計算
+				int dist = Math.abs(x - tageX) + Math.abs(y - tageY);
+				// 攻撃範囲内
+				if (dist <= enemyMapItem.getAttackDist()) {
+					int moveDist = 0;
+					
+					if (mMapItemManager.getCursor(x, y) != null && 
+							mMapItemManager.getCursor(x, y).getMapDataType() == MapDataType.MOVE_DIST) {
+						// 移動可能範囲
+						moveDist = mMapItemManager.getCursor(x, y).getMoveDist();
+					} else {
+						continue;
+					}
+					
+					// 評価点の求め方
+					// なるべく動かず、できるだけ遠くから攻撃する
+					int point = moveDist + dist * 2;
+					
+					if (evalPoint < point) {
+						evalPoint = point;
+						moveX = x;
+						moveY = y;
+					}
+				}
+			}
+		}
+		
+		// 攻撃可能位置に移動できない
+		if (evalPoint == Integer.MIN_VALUE) {
+			// TODO: 可能な限り近づくとか？
+			moveX = enemyMapItem.getMapPointX();
+			moveY = enemyMapItem.getMapPointY();
+		}
+		
+		return mGameManager.getTouchMapPointToMapPoint(moveX, moveY);
+	}
 	
 	// ----------------------------------------------------------
 	// 汎用
 	// ----------------------------------------------------------
 	
+	public ActorPlayerMapItem getPlayerIdToActorMapItem(int playerId, MapDataType mapDataType) {
+		List<MapItem> actorList = mMapItemManager.getObjectMapItemList(mapDataType);
+		for (MapItem actor : actorList) {
+			if (actor.getMapDataType() == mapDataType && actor instanceof ActorPlayerMapItem) {
+				if (((ActorPlayerMapItem) actor).getPlayerId() == playerId) {
+					return (ActorPlayerMapItem) actor;
+				}
+			}
+		}
+		return null;
+	}
 	public MapItem getMapPointToMapItem(MapPoint mapPoint) {
 		return mMapItemManager.getPointItem(mapPoint);
 	}

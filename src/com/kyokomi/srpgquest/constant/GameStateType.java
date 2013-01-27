@@ -18,6 +18,7 @@ public enum GameStateType {
 	
 	/** アニメーション中. */
 	ANIMATION(30),
+	END(99),
 	;
 	
 	private Integer value;

@@ -358,7 +358,26 @@ public class MapBattleScene extends KeyListenScene
 		});
 	}
 	/**
-	 * 歩行スタート.
+	 * 敵移動アニメーション.
+	 * @param playerId
+	 * @param moveMapPointList
+	 */
+	public void moveEnemyAnimation(int enemyId, List<MapPoint> moveMapPointList, 
+			final IAnimationCallback animationCallback) {
+		PlayerSprite enemySprite = enemys.get(enemyId);
+		enemySprite.move(1.0f, moveMapPointList, new IEntityModifier.IEntityModifierListener() {
+			@Override
+			public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
+			}
+			@Override
+			public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+				// コールバック
+				animationCallback.doAction();
+			}
+		});
+	}
+	/**
+	 * プレイヤー歩行スタート.
 	 * @param playerId
 	 */
 	public void startWalkingPlayerAnimation(int playerId) {
@@ -366,7 +385,7 @@ public class MapBattleScene extends KeyListenScene
 		playerSprite.setPlayerToDefaultPosition();
 	}
 	/**
-	 * 歩行停止.
+	 * プレイヤー歩行停止.
 	 * @param playerId
 	 */
 	public void stopWalkingPlayerAnimation(int playerId) {
@@ -374,6 +393,23 @@ public class MapBattleScene extends KeyListenScene
 		playerSprite.setPlayerToDefaultPositionStop();
 	}
 
+	/**
+	 * エネミー歩行スタート.
+	 * @param enemyId
+	 */
+	public void startWalkingEnemyAnimation(int enemyId) {
+		PlayerSprite enemySprite = enemys.get(enemyId);
+		enemySprite.setPlayerToDefaultPosition();
+	}
+	/**
+	 * エネミー歩行停止.
+	 * @param enemyId
+	 */
+	public void stopWalkingEnemyAnimation(int enemyId) {
+		PlayerSprite enemySprite = enemys.get(enemyId);
+		enemySprite.setPlayerToDefaultPositionStop();
+	}
+	
 	/**
 	 * 指定のMapPointの位置にダメージ値をテキストで拡大アニメーション表示する.
 	 * 表示が終わったら消えます。

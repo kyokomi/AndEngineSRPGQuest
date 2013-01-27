@@ -35,7 +35,7 @@ public class GameManager {
 	private SparseArray<ActorPlayerDto> enemyList;
 	
 	/** マップ管理. */
-	private MapManager mapManager;
+	private MapManager mMapManager;
 	
 	/** バトル汎用. */
 	private BattleLogic mBattleLogic;
@@ -66,7 +66,7 @@ public class GameManager {
 	 */
 	public void mapInit(int mapX, int mapY, float scale) {
 		// 初期データ設定(mapX * mapYのグリッドを作成)
-		mapManager = new MapManager(this, mapX, mapY, scale);
+		mMapManager = new MapManager(this, mapX, mapY, scale);
 		
 		// TODO: test用
 		int playerId = 1;
@@ -117,7 +117,7 @@ public class GameManager {
 	 */
 	public int getTouchPositionToPlayerId(float x, float y) {
 		MapPoint mapPoint = calcGridDecodePosition(x, y);
-		return mapManager.getMapPointToActorPlayerId(mapPoint);
+		return mMapManager.getMapPointToActorPlayerId(mapPoint);
 	}
 	/**
 	 * タッチした画面のx,y座標からマップ座標情報を取得.
@@ -167,7 +167,7 @@ public class GameManager {
 	 */
 	public MapDataType onTouchMapItemEvent(float x, float y) {
 		final MapPoint mapPoint = calcGridDecodePosition(x, y);
-		final MapItem mapItem = mapManager.getMapPointToMapItem(mapPoint);
+		final MapItem mapItem = mMapManager.getMapPointToMapItem(mapPoint);
 		MapDataType touchMapDataType;
 		if (mapItem == null) {
 			touchMapDataType = MapDataType.NONE;
@@ -221,7 +221,7 @@ public class GameManager {
 			// 攻撃を選択したときは敵しかタップイベントに反応しない
 			if (touchMapDataType == MapDataType.ATTACK_DIST) {
 				// 敵が存在するカーソルかチェック
-				ActorPlayerMapItem enemy = mapManager.getMapPointToActorPlayer(mapPoint);
+				ActorPlayerMapItem enemy = mMapManager.getMapPointToActorPlayer(mapPoint);
 				if (enemy != null) {
 					// TODO: [将来対応]攻撃確認ウィンドウ表示				
 					
@@ -235,7 +235,7 @@ public class GameManager {
 						baseScene.stopWalkingPlayerAnimation(mSelectActorPlayer.getPlayerId());
 					}
 					// 攻撃終了後 倒れたアクターをマップ上から削除とかカーソルを初期化など
-					mapManager.attackEndChangeMapItem(mSelectActorPlayer, enemy, isDead);
+					mMapManager.attackEndChangeMapItem(mSelectActorPlayer, enemy, isDead);
 					
 					// プレイヤーターンに戻る
 					changeGameState(GameStateType.PLAYER_TURN);
@@ -255,7 +255,7 @@ public class GameManager {
 				if (mSelectActorPlayer != null) {
 					
 					// 移動List作成
-					List<MapPoint> moveMapPointList = mapManager.actorPlayerCreateMovePointList(
+					List<MapPoint> moveMapPointList = mMapManager.actorPlayerCreateMovePointList(
 							mSelectActorPlayer, mapPoint);
 					
 					// 移動先のカーソルの色を変える
@@ -271,7 +271,7 @@ public class GameManager {
 							
 							// 移動結果をマップ情報に反映
 							// プレイヤーのステータスを移動済みにする
-							mapManager.moveEndChangeMapItem(mSelectActorPlayer, mapPoint);
+							mMapManager.moveEndChangeMapItem(mSelectActorPlayer, mapPoint);
 							// 移動済みに更新
 							mSelectActorPlayer.setMoveDone(true);
 							
@@ -311,7 +311,7 @@ public class GameManager {
 		}
  		ActorPlayerDto player = createActorPlayer(playerId, playerImageId);
 		playerList.put(playerId, player);
-		mapManager.addPlayer(mapPointX, mapPointY, player);
+		mMapManager.addPlayer(mapPointX, mapPointY, player);
 		// Scene側でSpriteを生成
 		baseScene.createPlayerSprite(player,
 				calcGridPosition(mapPointX, mapPointY));
@@ -323,7 +323,7 @@ public class GameManager {
 		}
 		ActorPlayerDto enemy = createActorPlayer(enemyId, enemyImageId);
 		enemyList.put(enemyId, enemy);
-		mapManager.addEnemy(mapPointX, mapPointY, enemy);
+		mMapManager.addEnemy(mapPointX, mapPointY, enemy);
 		// Scene側でSpriteを生成
 		baseScene.createEnemySprite(enemy, 
 				calcGridPosition(mapPointX, mapPointY));
@@ -353,7 +353,7 @@ public class GameManager {
 		return actorPlayer;
 	}
 	private void addObstacle(int mapPointX, int mapPointY) {
-		mapManager.addObstacle(mapPointX, mapPointY);
+		mMapManager.addObstacle(mapPointX, mapPointY);
 		baseScene.createObstacleSprite(calcGridPosition(mapPointX, mapPointY), 16 * 12 + 0);
 	}
 	//---------------------------------------------------------
@@ -369,7 +369,7 @@ public class GameManager {
 	}
 	public boolean showMoveDistCursor(float x, float y) {
 		MapPoint mapPoint = calcGridDecodePosition(x, y);
-		List<MapItem> mapItems = mapManager.actorPlayerFindDist(mapPoint);
+		List<MapItem> mapItems = mMapManager.actorPlayerFindDist(mapPoint);
 		if (mapItems == null || mapItems.isEmpty()) {
 			Log.d(TAG, "showMoveDistCursor create error");
 			return false;
@@ -392,7 +392,7 @@ public class GameManager {
 	}
 	public void showAttackDistCursor(float x, float y) {
 		MapPoint mapPoint = calcGridDecodePosition(x, y);
-		List<MapItem> mapItems = mapManager.actorPlayerFindAttackDist(mapPoint);
+		List<MapItem> mapItems = mMapManager.actorPlayerFindAttackDist(mapPoint);
 		for (MapItem mapItem : mapItems) {
 			MapPoint mapItemPoint = calcGridPosition(mapItem.getMapPointX(), mapItem.getMapPointY());
 			baseScene.createAttackCursorSprite(mapItemPoint);
@@ -477,9 +477,147 @@ public class GameManager {
 	 */
 	private void changeGameState(GameStateType pGameStateType) {
 		Log.d(TAG, "GameState [" + mGameState + "] => [" + pGameStateType + "]");
-		mGameState = pGameStateType;
 		
-		// TODO: ターンエンド判定
+		if (pGameStateType == GameStateType.PLAYER_TURN) {
+			// プレイヤー勝利判定
+			if (!isBeingEnemy()) {
+				// プレイヤー処理
+				// TODO: 勝利のカットインを入れてコールバックで次のシナリオへ
+				Log.d(TAG, "Player Win");
+				mGameState = GameStateType.END;
+				return ;
+			}
+			
+			// プレイヤーターンエンド判定
+			if (mMapManager.checkPlayerTurnEnd()) {
+				// ターン終了=> 敵のターン
+				mGameState = GameStateType.ENEMY_TURN;
+				// 敵のターン処理を実行
+				changeEnemyTurn();
+				
+				// 敵の勝利判定
+				if (!isBeingPlayer()) {
+					// 敵勝利
+					// TODO: 敗北のカットインを入れてコールバックでタイトル画面に戻す
+					Log.d(TAG, "Player Lose");
+					mGameState = GameStateType.END;
+					return ;
+				}
+				
+				// プレイヤーターン開始
+				// TODO: アニメーション呼び出し
+				
+				// 全プレイヤーを行動可能にしてアニメーションを再開
+				mMapManager.refreshAllActorWait(MapDataType.PLAYER);
+				int count = playerList.size();
+				for (int i = 0; i < count; i++) {
+					baseScene.startWalkingPlayerAnimation(playerList.valueAt(i).getPlayerId());
+				}
+			}
+			mGameState = GameStateType.PLAYER_TURN;
+		} else {
+			mGameState = pGameStateType;			
+		}
+	}
+	
+	/**
+	 * 敵の行動.
+	 * @param enemy
+	 */
+	public void doEnemyAction(ActorPlayerDto enemy, final ActorPlayerMapItem enemyMapItem) {
+		
+		// 攻撃対象のプレイヤーを探索
+		final ActorPlayerMapItem attackTarget = mMapManager.findAttackPlayerMapitem(enemyMapItem);
+		if (attackTarget == null) {
+			// 攻撃対象がいない
+			return;
+		}
+		
+		// 移動検索
+		if (!showMoveDistCursor(enemyMapItem)) {
+			// 移動カーソル作成失敗
+			return ;
+		}
+		
+		// 攻撃対象へ攻撃するための移動先を探索
+		final MapPoint enemyMovePoint = mMapManager.findEnemyMoveMapPoint(attackTarget, enemyMapItem);
+		// 最初の位置と違う場合、移動する
+		if (enemyMovePoint != null && !enemyMovePoint.isMuchMapPoint(getMapItemToMapPoint(enemyMapItem))) {
+			
+			// 移動List作成
+			List<MapPoint> moveMapPointList = mMapManager.actorPlayerCreateMovePointList(
+					enemyMapItem, enemyMovePoint);
+			if (moveMapPointList != null) {
+				// 移動先のカーソルの色を変える
+				baseScene.selectCursor(enemyMovePoint);
+				
+				// 移動リストを引数にScene側の移動アニメーションを呼び出す
+				baseScene.moveEnemyAnimation(enemyMapItem.getPlayerId(), moveMapPointList, 
+						new MapBattleScene.IAnimationCallback() {
+					@Override
+					public void doAction() {
+						// カーソルを消す
+						baseScene.hideCursorSprite();
+						
+						// 移動結果をマップ情報に反映
+						// プレイヤーのステータスを移動済みにする
+						mMapManager.moveEndChangeMapItem(enemyMapItem, enemyMovePoint);
+						// 移動済みに更新
+						enemyMapItem.setMoveDone(true);
+						
+						// 行動可能であれば攻撃する
+						if (!enemyMapItem.isWaitDone()) {
+							// 攻撃範囲表示
+							showAttackDistCursor(enemyMapItem);
+										
+							// 攻撃範囲にプレイヤーが存在する場合
+							if (true) {
+								boolean isDead = battleStart(enemyMapItem, attackTarget);
+								// 攻撃済みにする
+								enemyMapItem.setAttackDone(true);
+								if (enemyMapItem.isWaitDone()) {
+									// アニメーション停止
+									baseScene.stopWalkingEnemyAnimation(enemyMapItem.getPlayerId());
+								}
+								// 攻撃終了後 倒れたアクターをマップ上から削除とかカーソルを初期化など
+								mMapManager.attackEndChangeMapItem(enemyMapItem, attackTarget, isDead);
+							}						
+						} else {
+							// アニメーション停止
+							baseScene.stopWalkingEnemyAnimation(enemyMapItem.getPlayerId());
+						}	
+
+						// 待機
+						enemyMapItem.setWaitDone(true);
+					}
+				});
+			} else {
+				// 待機
+				enemyMapItem.setWaitDone(true);
+			}
+		} else {
+			// 待機
+			enemyMapItem.setWaitDone(true);
+		}
+	}
+	
+	private boolean isBeingPlayer() {
+		return isBeingActor(playerList);
+	}
+	private boolean isBeingEnemy() {
+		return isBeingActor(enemyList);
+	}
+	private boolean isBeingActor(SparseArray<ActorPlayerDto> actorArray) {
+		boolean isBeingActor = false;
+		int count = actorArray.size();
+		for (int i = 0; i < count; i++) {
+			ActorPlayerDto actor = actorArray.valueAt(i);
+			if (actor.getHitPoint() > 0) {
+				isBeingActor = true;
+				break;
+			}
+		}
+		return isBeingActor;
 	}
 	// ----------------------------------------------------------
 	// Battle
@@ -518,11 +656,13 @@ public class GameManager {
 			baseScene.refreshEnemyStatusWindow(toPlayerMapItem.getPlayerId());
 			if (isDead) {
 				baseScene.removeEnemy(toPlayerMapItem.getPlayerId());
+				enemyList.remove(toPlayerMapItem.getPlayerId());
 			}
 		} else if (toPlayerMapItem.getMapDataType() == MapDataType.PLAYER) {
 			baseScene.refreshPlayerStatusWindow(toPlayerMapItem.getPlayerId());
 			if (isDead) {
 				baseScene.removePlayer(toPlayerMapItem.getPlayerId());
+				playerList.remove(toPlayerMapItem.getPlayerId());
 			}
 		}
 		return isDead;
@@ -655,35 +795,31 @@ public class GameManager {
 //			Log.d(TAG, "isRunning!!!!!!!!!!!");
 //		}
 //	}
-//	private void changeEnemyTurn() {
-//		gameLog("EnemyTurn");
-//		
-//		if (mEnemyTurnAnim.getListeners() == null) {
-//			mEnemyTurnAnim.addListener(new Animator.AnimatorListener() {
-//				@Override public void onAnimationStart(Animator animation) {}
-//				@Override public void onAnimationRepeat(Animator animation) {}
-//				@Override public void onAnimationCancel(Animator animation) {}
-//				// アニメーション後に開始
-//				@Override public void onAnimationEnd(Animator animation) {
-//					
-//					mGameState = GameStateType.ENEMY_TURN;
-//					
-//					List<CharacterSpriteView> enemys = mMapManager.getEnemyList();
-//					for (CharacterSpriteView enemy : enemys) {
-//						if (enemy.getCharacterStatus().getHitPoint() > 0) {
-//							enemy.setMoveDone(false);
-//							enemy.setAttackDone(true);
-//							mMapManager.enemyMove(enemy);						
-//						}
-//					}
-//				}
-//			});
-//		}
-//		mGameState = GameStateType.ANIMATOR;
-//		if (!mEnemyTurnAnim.isRunning()) {
-//			mEnemyTurnAnim.start();
-//		}
-//	}
+	private void changeEnemyTurn() {
+
+		// 全エネミーを行動可能にする
+		mMapManager.refreshAllActorWait(MapDataType.ENEMY);
+		int count = enemyList.size();
+		for (int i = 0; i < count; i++) {
+			baseScene.startWalkingEnemyAnimation(enemyList.valueAt(i).getPlayerId());
+		}
+		
+		// 敵のターンアニメーション
+		// TODO: baseを呼ぶ
+		
+		// モンスターのリストを取得
+		for (int i = 0; i < count; i++) {
+			ActorPlayerDto enemy = enemyList.valueAt(i);
+			ActorPlayerMapItem enemyMapItem = mMapManager.getPlayerIdToActorMapItem(
+					enemy.getPlayerId(), MapDataType.ENEMY);
+			
+			Log.d(TAG, "Enemy isAttackDone["+ enemyMapItem.isAttackDone() + "] isMoveDoen["+ enemyMapItem.isMoveDone() + "]");
+			// 行動させる
+			doEnemyAction(enemy, enemyMapItem);
+			// TODO: 普通にループしてるとアニメーションのコールバックが終わる前に次のキャラが動いていまう。クリア判定とかもいっちゃう
+		}
+	}
+	
 //	private void playerWin() {
 //		gameLog("playerWin");
 //	}

@@ -105,6 +105,8 @@ public class PlayerSprite extends Rectangle {
 		return baseFileName + "_f.png";
 	}
 	
+	private int lastMoveCurrentIndex = 0;
+	
 	private void playerSpriteInit(KeyListenScene baseScene, float x, float y, float scale) {
 		
 		// playerキャラを追加 攻撃と防御のスプライトもセットで読み込んでおく
@@ -412,24 +414,24 @@ public class PlayerSprite extends Rectangle {
 						
 						@Override
 						public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
-							int pCurrentTileIndex = 0;
+							lastMoveCurrentIndex = 0;
 							switch (mapPoint.getDirection()) {
 							case MOVE_DOWN:
-								pCurrentTileIndex = 0;
+								lastMoveCurrentIndex = 0;
 								break;
 							case MOVE_LEFT:
-								pCurrentTileIndex = 3;
+								lastMoveCurrentIndex = 3;
 								break;
 							case MOVE_RIGHT:
-								pCurrentTileIndex = 6;
+								lastMoveCurrentIndex = 6;
 								break;
 							case MOVE_UP:
-								pCurrentTileIndex = 9;
+								lastMoveCurrentIndex = 9;
 								break;
 							default:
 								break;
 							}
-							player.setCurrentTileIndex(pCurrentTileIndex);
+							player.setCurrentTileIndex(lastMoveCurrentIndex);
 							setPlayerToDefaultPosition();
 						}
 					})
@@ -495,10 +497,9 @@ public class PlayerSprite extends Rectangle {
 	 * プレイヤーデフォルトポジション設定.
 	 */
 	public void setPlayerToDefaultPosition() {
-		int index = player.getCurrentTileIndex();
 		player.animate(
 				new long[]{100, 100, 100}, 
-				new int[]{index, index+1, index+2}, 
+				new int[]{lastMoveCurrentIndex, lastMoveCurrentIndex+1, lastMoveCurrentIndex+2}, 
 				true);
 		showPlayer(PlayerSpriteType.PLAYER_TYPE_NORMAL);
 	}
@@ -506,8 +507,7 @@ public class PlayerSprite extends Rectangle {
 	 * プレイヤーデフォルトポジション設定.
 	 */
 	public void setPlayerToDefaultPositionStop() {
-		int index = player.getCurrentTileIndex();
-		player.stopAnimation(index);
+		player.stopAnimation(lastMoveCurrentIndex);
 		showPlayer(PlayerSpriteType.PLAYER_TYPE_NORMAL);
 	}
 	
