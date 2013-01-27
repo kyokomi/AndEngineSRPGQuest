@@ -486,6 +486,12 @@ public class GameManager {
 		// TODO: 攻撃終了後 倒れたアクターをマップ上から削除とか
 		mapManager.attackEndChangeMapItem();
 		
+		// ステータスウィンドウへの反映
+		if (toPlayerMapItem.getMapDataType() == MapDataType.ENEMY) {
+			baseScene.refreshEnemyStatusWindow(toPlayerMapItem.getPlayerId());
+		} else if (toPlayerMapItem.getMapDataType() == MapDataType.PLAYER) {
+			baseScene.refreshPlayerStatusWindow(toPlayerMapItem.getPlayerId());
+		}
 		// 死亡判定
 		if (toPlayer.getHitPoint() <= 0) {
 			// 死亡

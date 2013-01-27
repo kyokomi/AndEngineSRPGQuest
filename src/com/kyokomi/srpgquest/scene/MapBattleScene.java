@@ -184,6 +184,12 @@ public class MapBattleScene extends KeyListenScene
 		attachChild(obstacle);
 	}
 	
+	/**
+	 * ステータスウィンドウ初期化.
+	 * @param actorSprite
+	 * @param y
+	 * @return
+	 */
 	private PlayerStatusRectangle initStatusWindow(PlayerSprite actorSprite, float y) {
 		if (actorSprite == null) {
 			return null;
@@ -199,6 +205,14 @@ public class MapBattleScene extends KeyListenScene
 		return mPlayerStatusRectangle;
 	}
 	
+	public void refreshPlayerStatusWindow(int playerId) {
+		PlayerSprite player = players.get(playerId);
+		player.getPlayerStatusRectangle().refresh();
+	}
+	public void refreshEnemyStatusWindow(int enemyId) {
+		PlayerSprite enemy = enemys.get(enemyId);
+		enemy.getPlayerStatusRectangle().refresh();
+	}
 	// ------------------------ カーソル --------------------------
 	/**
 	 * 移動カーソル描画.

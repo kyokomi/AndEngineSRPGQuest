@@ -182,4 +182,31 @@ public class PlayerStatusRectangle extends Rectangle {
 			text.setColor(pColor);
 		}
 	}
+	
+	public void refresh() {
+		
+		ActorPlayerDto actor = mPlayerSprite.getActorPlayer();
+		
+		mNameText.setText(actor.getName()); 
+		
+		mLevelExpText.setText( 
+				String.format("Lv.%2d (%3d/%3d)", actor.getLv(), actor.getExp(), 100));
+		mHitPointText.setText( 
+				String.format("HP %3d/%3d", actor.getHitPoint(), actor.getHitPointLimit()));
+		mMoveAttackDirectionText.setText( 
+				String.format("移動力 %d 射程 %d", actor.getMovePoint(), actor.getAttackRange()));
+		mAttackPointText.setText( 
+				String.format("攻撃力 %3d" ,actor.getAttackPoint()));
+		mDefencePointText.setText( 
+				String.format("防御力 %3d", actor.getDefencePoint()));
+	
+		// スキル欄ヘッダー
+		mSkillHeaderText.setText("[スキル]");
+		// 装備欄ヘッダー
+		mEquipHeaderText.setText("[装備]");
+		// 武器テキスト
+		mWeaponNameText.setText("レイピア"); 
+		// アクセサリーテキスト
+		mAccessoryNameText.setText("普通の指輪"); 
+	}
 }
