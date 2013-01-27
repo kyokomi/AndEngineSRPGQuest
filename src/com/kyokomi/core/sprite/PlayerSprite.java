@@ -13,6 +13,7 @@ import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.sprite.AnimatedSprite;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.sprite.TiledSprite;
+import org.andengine.opengl.font.Font;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import org.andengine.util.color.Color;
 import org.andengine.util.modifier.IModifier;
@@ -25,7 +26,13 @@ import com.kyokomi.srpgquest.map.common.MapPoint;
 public class PlayerSprite extends Rectangle {
 	
 	private ActorPlayerDto mActorPlayer;
-	
+	private PlayerStatusRectangle mPlayerStatusRectangle;
+
+	public PlayerStatusRectangle createPlayerStatusWindow(KeyListenScene pBaseScene, Font pFont, float pX, float pY, float pWidth, float pHeight) {
+		mPlayerStatusRectangle = new PlayerStatusRectangle(pBaseScene, 
+				this, pFont, pX, pY, pWidth, pHeight);
+		return mPlayerStatusRectangle;
+	}
 	/**
 	 * @return the mActorPlayer
 	 */
@@ -38,6 +45,20 @@ public class PlayerSprite extends Rectangle {
 	 */
 	public void setActorPlayer(ActorPlayerDto pActorPlayer) {
 		this.mActorPlayer = pActorPlayer;
+	}
+
+	/**
+	 * @return the playerStatusRectangle
+	 */
+	public PlayerStatusRectangle getPlayerStatusRectangle() {
+		return mPlayerStatusRectangle;
+	}
+
+	/**
+	 * @param playerStatusRectangle the playerStatusRectangle to set
+	 */
+	public void setPlayerStatusRectangle(PlayerStatusRectangle playerStatusRectangle) {
+		this.mPlayerStatusRectangle = playerStatusRectangle;
 	}
 
 	/**

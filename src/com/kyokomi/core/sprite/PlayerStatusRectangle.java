@@ -8,7 +8,6 @@ import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.sprite.TiledSprite;
 import org.andengine.entity.text.Text;
 import org.andengine.opengl.font.Font;
-import org.andengine.opengl.vbo.VertexBufferObjectManager;
 import org.andengine.util.color.Color;
 
 import com.kyokomi.core.dto.ActorPlayerDto;
@@ -46,15 +45,15 @@ public class PlayerStatusRectangle extends Rectangle {
 	
 	private List<Text> mTextList;
 	
-	public PlayerStatusRectangle(KeyListenScene pBaseScene, final PlayerSprite pPlayerSprite, final Font pFont, float pX, float pY, float pWidth,
-			float pHeight, VertexBufferObjectManager pVertexBufferObjectManager) {
-		super(pX, pY, pWidth, pHeight, pVertexBufferObjectManager);
+	public PlayerStatusRectangle(KeyListenScene pBaseScene, final PlayerSprite pPlayerSprite, final Font pFont, 
+			float pX, float pY, float pWidth, float pHeight) {
+		super(pX, pY, pWidth, pHeight, pBaseScene.getBaseActivity().getVertexBufferObjectManager());
 		
 		this.setColor(Color.WHITE);
 		this.setAlpha(0.5f);
 		
 		this.mPlayerSprite = pPlayerSprite;
-		init(pBaseScene, pFont, pVertexBufferObjectManager);
+		init(pBaseScene, pFont);
 	}
 	
 	/**
@@ -66,7 +65,7 @@ public class PlayerStatusRectangle extends Rectangle {
 	 * @param pFont
 	 * @param pVertexBufferObjectManager
 	 */
-	private void init(KeyListenScene pBaseScene, Font pFont, VertexBufferObjectManager pVertexBufferObjectManager) {
+	private void init(KeyListenScene pBaseScene, Font pFont) {
 		
 		mTextList = new ArrayList<Text>();
 		
@@ -77,30 +76,30 @@ public class PlayerStatusRectangle extends Rectangle {
 		float faceRigthX = mFaceTiledSprite.getWidth();
 		mNameText = new Text(faceRigthX, 0, pFont, 
 				actor.getName(), 
-				pVertexBufferObjectManager);
+				pBaseScene.getBaseActivity().getVertexBufferObjectManager());
 		attachChildText(mNameText);
 		mLevelExpText = new Text(faceRigthX, mNameText.getY() + mNameText.getHeight(), pFont, 
 				String.format("Lv.%2d (%3d/%3d)", actor.getLv(), actor.getExp(), 100), 
-				pVertexBufferObjectManager);
+				pBaseScene.getBaseActivity().getVertexBufferObjectManager());
 		attachChildText(mLevelExpText);
 		mHitPointText = new Text(faceRigthX, mLevelExpText.getY() + mLevelExpText.getHeight(), pFont, 
 				String.format("HP %02d/%02d", actor.getHitPoint(), actor.getHitPointLimit()),
-				pVertexBufferObjectManager);
+				pBaseScene.getBaseActivity().getVertexBufferObjectManager());
 		attachChildText(mHitPointText);
 		mMoveAttackDirectionText = new Text(faceRigthX, mHitPointText.getY() + mHitPointText.getHeight(), pFont, 
 				String.format("移動力 %d 射程 %d", actor.getMovePoint(), actor.getAttackRange()), 
-				pVertexBufferObjectManager);
+				pBaseScene.getBaseActivity().getVertexBufferObjectManager());
 		attachChildText(mMoveAttackDirectionText);
 		
 		float nameRigthX = (getWidth() - faceRigthX) / 2 + faceRigthX;
 		float nameBottomY = mNameText.getY() + mNameText.getHeight();
 		mAttackPointText = new Text(nameRigthX, nameBottomY, pFont, 
 				String.format("攻撃力 %3d" ,actor.getAttackPoint()), 
-				pVertexBufferObjectManager);
+				pBaseScene.getBaseActivity().getVertexBufferObjectManager());
 		attachChildText(mAttackPointText);
 		mDefencePointText = new Text(nameRigthX, mAttackPointText.getY() + mAttackPointText.getHeight(), pFont, 
 				String.format("防御力 %3d", actor.getDefencePoint()), 
-				pVertexBufferObjectManager);
+				pBaseScene.getBaseActivity().getVertexBufferObjectManager());
 		attachChildText(mDefencePointText);
 	
 		// スキル領域を作成
@@ -112,7 +111,7 @@ public class PlayerStatusRectangle extends Rectangle {
 		// スキル欄ヘッダー
 		mSkillHeaderText = new Text(0, 0, pFont, 
 				"[スキル]", 
-				pVertexBufferObjectManager);
+				pBaseScene.getBaseActivity().getVertexBufferObjectManager());
 		attachChildText(mSkillIconRectangle, mSkillHeaderText);
 		// スキルアイコン
 		List<Integer> skillIds = new ArrayList<Integer>(); // TODO: スキルもプレイヤー情報に持つ
@@ -142,7 +141,7 @@ public class PlayerStatusRectangle extends Rectangle {
 		// 装備欄ヘッダー
 		mEquipHeaderText = new Text(0, 0, pFont, 
 				"[装備]", 
-				pVertexBufferObjectManager);
+				pBaseScene.getBaseActivity().getVertexBufferObjectManager());
 		attachChildText(mEquipIconRectangle, mEquipHeaderText);
 		// 武器アイコン
 		mWeaponIconSprite = pBaseScene.getResourceTiledSprite("icon_set.png", 16, 48);
@@ -153,7 +152,7 @@ public class PlayerStatusRectangle extends Rectangle {
 		mWeaponNameText = new Text(mWeaponIconSprite.getWidth() + mEquipHeaderText.getX(), 
 				mWeaponIconSprite.getY() + mWeaponIconSprite.getHeight() / 2, 
 				pFont, "レイピア", 
-				pVertexBufferObjectManager);
+				pBaseScene.getBaseActivity().getVertexBufferObjectManager());
 		mWeaponNameText.setY(mWeaponNameText.getY() - mWeaponNameText.getHeight() / 2);
 		attachChildText(mEquipIconRectangle, mWeaponNameText);
 		// アクセサリーアイコン
@@ -165,7 +164,7 @@ public class PlayerStatusRectangle extends Rectangle {
 		mAccessoryNameText = new Text(mAccessoryIconSprite.getWidth() + mAccessoryIconSprite.getX(), 
 				mAccessoryIconSprite.getY() + mAccessoryIconSprite.getHeight() / 2, 
 				pFont, "普通の指輪", 
-				pVertexBufferObjectManager);
+				pBaseScene.getBaseActivity().getVertexBufferObjectManager());
 		mAccessoryNameText.setY(mAccessoryNameText.getY() - mAccessoryNameText.getHeight() / 2);
 		attachChildText(mEquipIconRectangle, mAccessoryNameText);
 	}

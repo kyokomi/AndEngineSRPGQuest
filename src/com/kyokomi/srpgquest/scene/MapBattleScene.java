@@ -32,6 +32,7 @@ import com.kyokomi.core.dto.ActorPlayerDto;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.core.sprite.MenuRectangle;
 import com.kyokomi.core.sprite.PlayerSprite;
+import com.kyokomi.core.sprite.PlayerStatusRectangle;
 import com.kyokomi.srpgquest.GameManager;
 import com.kyokomi.srpgquest.map.common.MapPoint;
 import com.kyokomi.srpgquest.sprite.CursorRectangle;
@@ -140,6 +141,11 @@ public class MapBattleScene extends KeyListenScene
 		player.setZIndex(LayerZIndex.ACTOR_LAYER.getValue());
 		attachChild(player);
 		players.put(playerActor.getPlayerId(), player);
+		
+		PlayerStatusRectangle playerStatusRect = initStatusWindow(player, 0);
+		playerStatusRect.setZIndex(LayerZIndex.POPUP_LAYER.getValue());
+		playerStatusRect.setColor(Color.BLUE);
+		playerStatusRect.setAlpha(0.5f);
 	}
 	/**
 	 * 敵キャラ描画.
@@ -158,6 +164,11 @@ public class MapBattleScene extends KeyListenScene
 		enemy.setZIndex(LayerZIndex.ACTOR_LAYER.getValue());
 		attachChild(enemy);
 		enemys.put(enemyActor.getPlayerId(), enemy);
+		
+		PlayerStatusRectangle enemyStatusRect = initStatusWindow(enemy, 0);
+		enemyStatusRect.setZIndex(LayerZIndex.POPUP_LAYER.getValue());
+		enemyStatusRect.setColor(Color.RED);
+		enemyStatusRect.setAlpha(0.5f);
 	}
 	
 	/**
@@ -171,6 +182,21 @@ public class MapBattleScene extends KeyListenScene
 		obstacle.setSize(mapPoint.getGridSize(), mapPoint.getGridSize());
 		obstacle.setZIndex(LayerZIndex.ACTOR_LAYER.getValue());
 		attachChild(obstacle);
+	}
+	
+	private PlayerStatusRectangle initStatusWindow(PlayerSprite actorSprite, float y) {
+		if (actorSprite == null) {
+			return null;
+		}
+		PlayerStatusRectangle mPlayerStatusRectangle = actorSprite.getPlayerStatusRectangle();
+		if (mPlayerStatusRectangle == null) {
+			mPlayerStatusRectangle = actorSprite.createPlayerStatusWindow(
+					this, getFont(), 
+					getWindowWidth() / 2, y, 
+					getWindowWidth() / 2, getWindowHeight() / 2);
+			mPlayerStatusRectangle.setZIndex(LayerZIndex.POPUP_LAYER.getValue());
+		}
+		return mPlayerStatusRectangle;
 	}
 	
 	// ------------------------ カーソル --------------------------
@@ -267,8 +293,6 @@ public class MapBattleScene extends KeyListenScene
 			}
 			@Override
 			public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
-				// カーソルを消す
-				hideCursorSprite();
 				// コールバック
 				animationCallback.doAction();
 			}
@@ -372,7 +396,54 @@ public class MapBattleScene extends KeyListenScene
 		// 非表示にする
 		hideSelectMenu();
 	}
+	private PlayerStatusRectangle mPlayerStatusRect;
+	private PlayerStatusRectangle mEnemyStatusRect;
 	
+	// --------------- ステータスウィンドウ --------------
+	public void showPlayerStatusWindow(int playerId) {
+		if (mPlayerStatusRect != null) {
+			detachChild(mPlayerStatusRect);
+		}
+		// エネミーが表示されていたら下に表示
+		float y = 0;
+		if (mEnemyStatusRect != null && mEnemyStatusRect.isVisible()) {
+			y = mEnemyStatusRect.getY() + mEnemyStatusRect.getHeight();
+		}
+		mPlayerStatusRect = players.get(playerId).getPlayerStatusRectangle();
+		if (mPlayerStatusRect != null) {
+			mPlayerStatusRect.setVisible(true);
+			mPlayerStatusRect.setY(y);
+			attachChild(mPlayerStatusRect);	
+		}
+		sortChildren();
+	}
+	public void showEnemyStatusWindow(int enemyId) {
+		if (mEnemyStatusRect != null) {
+			detachChild(mEnemyStatusRect);
+		}
+		// プレイヤーが表示されていたら下に表示
+		float y = 0;
+		if (mPlayerStatusRect != null && mPlayerStatusRect.isVisible()) {
+			y = mPlayerStatusRect.getY() + mPlayerStatusRect.getHeight();
+		}
+		mEnemyStatusRect = enemys.get(enemyId).getPlayerStatusRectangle();
+		if (mEnemyStatusRect != null) {
+			mEnemyStatusRect.setVisible(true);
+			mEnemyStatusRect.setY(y);
+			attachChild(mEnemyStatusRect);
+		}
+		sortChildren();
+	}
+	public void hidePlayerStatusWindow() {
+		if (mPlayerStatusRect != null) {
+			mPlayerStatusRect.setVisible(false);
+		}
+	}
+	public void hideEnemyStatusWindow() {
+		if (mEnemyStatusRect != null) {
+			mEnemyStatusRect.setVisible(false);
+		}
+	}
 	// --------------- イベント系 -------------------
 	
 	/**

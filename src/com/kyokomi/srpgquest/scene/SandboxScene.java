@@ -258,9 +258,9 @@ public class SandboxScene extends KeyListenScene
 	}
 	
 	private void samplePlayerStatus() {
-		mPlayerStatusRectangle = new PlayerStatusRectangle(this, player, mFont, getWindowWidth() / 2, 0, 
-				getWindowWidth() / 2, getWindowHeight() / 2, 
-				getBaseActivity().getVertexBufferObjectManager());
+		mPlayerStatusRectangle = player.createPlayerStatusWindow(this, mFont, getWindowWidth() / 2, 0, 
+				getWindowWidth() / 2, getWindowHeight() / 2);
+		
 		mPlayerStatusRectangle.setColor(Color.BLUE);
 		mPlayerStatusRectangle.setAlpha(0.5f);
 		attachChild(mPlayerStatusRectangle);

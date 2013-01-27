@@ -182,18 +182,28 @@ public class GameManager {
 			
 		/* プレイヤーのターン */
 		case PLAYER_TURN:
-			
-			// TODO: 敵もしくはプレイヤーだったらステータスウィンドウを表示
-			
+						
 			// プレイヤーキャラ選択が可能なので行動可能であればウィンドウ表示
 			if (touchMapDataType == MapDataType.PLAYER) {
 				ActorPlayerMapItem actorPlayerMapItem = (ActorPlayerMapItem) mapItem;
-		
+				
+				// 敵のステータスは非表示
+				baseScene.hideEnemyStatusWindow();
+				
 				// 攻撃もしくは移動が完了していなければ行動可能とする
 				if (!actorPlayerMapItem.isMoveDone() || !actorPlayerMapItem.isAttackDone()) {
 					// 行動ウィンドウを表示
 					showSelectMenu(actorPlayerMapItem);
+				} else {
+					// プレイヤーのステータスは表示
+					baseScene.showPlayerStatusWindow(actorPlayerMapItem.getPlayerId());
 				}
+			} else if (touchMapDataType == MapDataType.ENEMY) {
+				ActorPlayerMapItem actorEnemyMapItem = (ActorPlayerMapItem) mapItem;
+				// プレイヤーのステータス非表示
+				baseScene.hidePlayerStatusWindow();
+				// 敵のステータス表示
+				baseScene.showEnemyStatusWindow(actorEnemyMapItem.getPlayerId());
 			}
 			break;
 		
@@ -202,7 +212,7 @@ public class GameManager {
 			changeGameState(GameStateType.PLAYER_TURN);
 			mSelectActorPlayer = null;
 			// 行動ウィンドウ以外を押したら行動ウィンドウを閉じる
-			baseScene.hideSelectMenu();
+			hideSelectMenu();
 			break;
 			
 		/* 攻撃選択中 */
@@ -246,6 +256,9 @@ public class GameManager {
 							new MapBattleScene.IAnimationCallback() {
 						@Override
 						public void doAction() {
+							// カーソルを消す
+							baseScene.hideCursorSprite();
+							
 							// 移動結果をマップ情報に反映
 							// TODO: プレイヤーのステータスを移動済みにする
 							mapManager.moveEndChangeMapItem(mSelectActorPlayer, mapPoint);
@@ -309,11 +322,17 @@ public class GameManager {
 		ActorPlayerDto actorPlayer = new ActorPlayerDto();
 		actorPlayer.setPlayerId(playerId);
 		actorPlayer.setImageResId(imageResId);
-		// TODO: DBとかから取得？
+		// TODO: DBとかから取得
+		
+		actorPlayer.setName("アスリーン");
+		actorPlayer.setLv(1);
+		actorPlayer.setExp(10);
+		
 		actorPlayer.setMovePoint(5);
 		actorPlayer.setAttackRange(1);
 		
 		actorPlayer.setHitPoint(100);
+		actorPlayer.setHitPointLimit(100);
 		actorPlayer.setAttackPoint(60);
 		actorPlayer.setDefencePoint(10);
 		
@@ -395,7 +414,7 @@ public class GameManager {
 				break;
 			}
 		}
-		baseScene.hideSelectMenu();
+		hideSelectMenu();
 	}
 	
 	// ----------------------------------------------------------
@@ -416,6 +435,13 @@ public class GameManager {
 		}
 		changeGameState(GameStateType.PLAYER_SELECT);
 		baseScene.showSelectMenu(getMapItemToMapPoint(mSelectActorPlayer));
+		// プレイヤーのステータスも非表示
+		baseScene.showPlayerStatusWindow(mSelectActorPlayer.getPlayerId());
+	}
+	private void hideSelectMenu() {
+		baseScene.hideSelectMenu();
+		// プレイヤーのステータスも非表示
+		baseScene.hidePlayerStatusWindow();
 	}
 	
 	// ----------------------------------------------------------

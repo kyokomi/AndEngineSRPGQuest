@@ -327,6 +327,8 @@ public class MapManager {
 		mMapItemManager.setObject(moveMapPointX, moveMapPointY, moveToActorPlayer);
 		moveToActorPlayer.setMapPointX(moveMapPointX);
 		moveToActorPlayer.setMapPointY(moveMapPointY);
+		
+		mMapItemManager.clearCursorMapItemLayer();
 	}
 	
 	/**
@@ -336,7 +338,7 @@ public class MapManager {
 	 * @param moveToView
 	 */
 	public void attackEndChangeMapItem() {
-		// TODO: 現在何もすることがない
+		mMapItemManager.clearCursorMapItemLayer();
 	}
 	
 	/**
