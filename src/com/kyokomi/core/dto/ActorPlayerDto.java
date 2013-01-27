@@ -15,6 +15,10 @@ public class ActorPlayerDto {
 	private int attackPoint;
 	/** 防御力. */
 	private int defencePoint;
+	/** レベル. */
+	private int lv;
+	/** 経験値. */
+	private int exp;
 	/** HP. */
 	private int hitPoint;
 	/** HP最大値. */
@@ -137,5 +141,61 @@ public class ActorPlayerDto {
 	 */
 	public void setAttackRange(int attackRange) {
 		this.attackRange = attackRange;
+	}
+
+	/**
+	 * @return the lv
+	 */
+	public int getLv() {
+		return lv;
+	}
+
+	/**
+	 * @param lv the lv to set
+	 */
+	public void setLv(int lv) {
+		this.lv = lv;
+	}
+
+	/**
+	 * @return the exp
+	 */
+	public int getExp() {
+		return exp;
+	}
+
+	/**
+	 * @param exp the exp to set
+	 */
+	public void setExp(int exp) {
+		this.exp = exp;
+	}
+
+	/**
+	 * @return the hitPointLimit
+	 */
+	public int getHitPointLimit() {
+		return hitPointLimit;
+	}
+
+	/**
+	 * @param hitPointLimit the hitPointLimit to set
+	 */
+	public void setHitPointLimit(int hitPointLimit) {
+		this.hitPointLimit = hitPointLimit;
+	}
+
+	/**
+	 * @return the magicPointLimit
+	 */
+	public int getMagicPointLimit() {
+		return magicPointLimit;
+	}
+
+	/**
+	 * @param magicPointLimit the magicPointLimit to set
+	 */
+	public void setMagicPointLimit(int magicPointLimit) {
+		this.magicPointLimit = magicPointLimit;
 	}
 }

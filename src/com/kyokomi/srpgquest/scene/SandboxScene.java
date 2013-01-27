@@ -100,12 +100,17 @@ public class SandboxScene extends KeyListenScene
 		// プレイヤー配置
 		ActorPlayerDto actorPlayer = new ActorPlayerDto();
 		actorPlayer.setPlayerId(1);
-		actorPlayer.setName("アスリーン");
 		actorPlayer.setImageResId(110);
+		
+		actorPlayer.setName("アスリーン");
+		actorPlayer.setLv(1);
+		actorPlayer.setExp(10);
+		
 		actorPlayer.setMovePoint(5);
 		actorPlayer.setAttackRange(1);
 		
 		actorPlayer.setHitPoint(100);
+		actorPlayer.setHitPointLimit(100);
 		actorPlayer.setAttackPoint(60);
 		actorPlayer.setDefencePoint(10);
 		
@@ -122,6 +127,11 @@ public class SandboxScene extends KeyListenScene
 		ActorPlayerDto actorPlayer2 = new ActorPlayerDto();
 		actorPlayer2.setPlayerId(2);
 		actorPlayer2.setImageResId(34);
+		
+		actorPlayer2.setName("ラーティ・クルス");
+		actorPlayer2.setLv(1);
+		actorPlayer2.setExp(10);
+		
 		actorPlayer2.setMovePoint(5);
 		actorPlayer2.setAttackRange(1);
 		
@@ -147,7 +157,7 @@ public class SandboxScene extends KeyListenScene
 				player.getActorPlayer().getName(), 0, TalkDirection.TALK_DIRECT_LEFT,
 				"これは、ゲームであっても、遊びではない。"));
 		talks.add(new PlayerTalkDto(enemy.getPlayerId(), 
-				"ラーティ・クルス", 0, TalkDirection.TALK_DIRECT_RIGHT,
+				enemy.getActorPlayer().getName(), 0, TalkDirection.TALK_DIRECT_RIGHT,
 				"こんにちわ。"));
 		talks.add(new PlayerTalkDto(player.getPlayerId(), 
 				player.getActorPlayer().getName(), 3, TalkDirection.TALK_DIRECT_LEFT,
@@ -156,7 +166,7 @@ public class SandboxScene extends KeyListenScene
 				player.getActorPlayer().getName(), 2, TalkDirection.TALK_DIRECT_LEFT,
 				"レベルなんてタダの数字だよ。\nこの世界での強さは、単なる幻想に過ぎない。\nそんなものよりもっと大事なものがある。"));
 		talks.add(new PlayerTalkDto(enemy.getPlayerId(), 
-				"ラーティ・クルス", 1, TalkDirection.TALK_DIRECT_RIGHT,
+				enemy.getActorPlayer().getName(), 1, TalkDirection.TALK_DIRECT_RIGHT,
 				"なんでや！！\n何でディアベルハンを見殺しにしたんや！"));
 		
 		// 会話レイヤーを生成
@@ -251,6 +261,8 @@ public class SandboxScene extends KeyListenScene
 		mPlayerStatusRectangle = new PlayerStatusRectangle(this, player, mFont, getWindowWidth() / 2, 0, 
 				getWindowWidth() / 2, getWindowHeight() / 2, 
 				getBaseActivity().getVertexBufferObjectManager());
+		mPlayerStatusRectangle.setColor(Color.BLUE);
+		mPlayerStatusRectangle.setAlpha(0.5f);
 		attachChild(mPlayerStatusRectangle);
 	}
 	
