@@ -502,6 +502,14 @@ public class PlayerSprite extends Rectangle {
 				true);
 		showPlayer(PlayerSpriteType.PLAYER_TYPE_NORMAL);
 	}
+	/**
+	 * プレイヤーデフォルトポジション設定.
+	 */
+	public void setPlayerToDefaultPositionStop() {
+		int index = player.getCurrentTileIndex();
+		player.stopAnimation(index);
+		showPlayer(PlayerSpriteType.PLAYER_TYPE_NORMAL);
+	}
 	
 	/**
 	 * プレイヤー攻撃ポジション設定.

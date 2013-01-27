@@ -194,6 +194,8 @@ public class GameManager {
 					// 行動ウィンドウを表示
 					showSelectMenu(actorPlayerMapItem);
 				} else {
+					// アニメーション停止
+					baseScene.stopWalkingPlayerAnimation(mSelectActorPlayer.getPlayerId());
 					// プレイヤーのステータスは表示
 					baseScene.showPlayerStatusWindow(actorPlayerMapItem.getPlayerId());
 				}
@@ -228,7 +230,10 @@ public class GameManager {
 					
 					// 攻撃済みにする
 					mSelectActorPlayer.setAttackDone(true);
-					
+					if (mSelectActorPlayer.isWaitDone()) {
+						// アニメーション停止
+						baseScene.stopWalkingPlayerAnimation(mSelectActorPlayer.getPlayerId());
+					}
 					// 攻撃終了後 倒れたアクターをマップ上から削除とかカーソルを初期化など
 					mapManager.attackEndChangeMapItem(mSelectActorPlayer, enemy, isDead);
 					
@@ -265,7 +270,7 @@ public class GameManager {
 							baseScene.hideCursorSprite();
 							
 							// 移動結果をマップ情報に反映
-							// TODO: プレイヤーのステータスを移動済みにする
+							// プレイヤーのステータスを移動済みにする
 							mapManager.moveEndChangeMapItem(mSelectActorPlayer, mapPoint);
 							// 移動済みに更新
 							mSelectActorPlayer.setMoveDone(true);
@@ -274,7 +279,8 @@ public class GameManager {
 								// ポップアップ表示
 								showSelectMenu();
 							} else {
-								// TODO: アニメーション停止
+								// アニメーション停止
+								baseScene.stopWalkingPlayerAnimation(mSelectActorPlayer.getPlayerId());
 								
 								changeGameState(GameStateType.PLAYER_TURN);
 							}	
@@ -326,9 +332,13 @@ public class GameManager {
 		ActorPlayerDto actorPlayer = new ActorPlayerDto();
 		actorPlayer.setPlayerId(playerId);
 		actorPlayer.setImageResId(imageResId);
-		// TODO: DBとかから取得
 		
-		actorPlayer.setName("アスリーン");
+		// TODO: DBとかから取得
+		if (playerId == 1) {
+			actorPlayer.setName("アスリーン");
+		} else {
+			actorPlayer.setName("ラーティ・クルス");
+		}
 		actorPlayer.setLv(1);
 		actorPlayer.setExp(10);
 		
@@ -412,6 +422,11 @@ public class GameManager {
 				}
 				break;
 			case MENU_WAIT: // 待機
+				// 待機状態にする
+				mSelectActorPlayer.setWaitDone(true);
+				// アニメーション停止
+				baseScene.stopWalkingPlayerAnimation(mSelectActorPlayer.getPlayerId());
+				
 				changeGameState(GameStateType.PLAYER_TURN);
 				baseScene.hideCursorSprite();
 				break;
@@ -494,7 +509,7 @@ public class GameManager {
 			isDead = false;
 		}
 		
-		// TODO: [将来対応]キャラが攻撃モーション,敵キャラがダメージモーション
+		// TODO: [将来対応]キャラが攻撃モーションと敵の方向を向く,敵キャラがダメージモーション
 		
 		// ダメージを表示
 		baseScene.showDamageText(damage, getMapItemToMapPoint(toPlayerMapItem));

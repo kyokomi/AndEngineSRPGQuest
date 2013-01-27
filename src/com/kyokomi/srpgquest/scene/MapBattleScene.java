@@ -357,6 +357,22 @@ public class MapBattleScene extends KeyListenScene
 			}
 		});
 	}
+	/**
+	 * 歩行スタート.
+	 * @param playerId
+	 */
+	public void startWalkingPlayerAnimation(int playerId) {
+		PlayerSprite playerSprite = players.get(playerId);
+		playerSprite.setPlayerToDefaultPosition();
+	}
+	/**
+	 * 歩行停止.
+	 * @param playerId
+	 */
+	public void stopWalkingPlayerAnimation(int playerId) {
+		PlayerSprite playerSprite = players.get(playerId);
+		playerSprite.setPlayerToDefaultPositionStop();
+	}
 
 	/**
 	 * 指定のMapPointの位置にダメージ値をテキストで拡大アニメーション表示する.
