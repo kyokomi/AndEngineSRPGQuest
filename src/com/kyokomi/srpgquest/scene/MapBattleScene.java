@@ -205,14 +205,46 @@ public class MapBattleScene extends KeyListenScene
 		return mPlayerStatusRectangle;
 	}
 	
+	/**
+	 * プレイヤーステータス更新.
+	 * @param playerId
+	 */
 	public void refreshPlayerStatusWindow(int playerId) {
 		PlayerSprite player = players.get(playerId);
 		player.getPlayerStatusRectangle().refresh();
 	}
+	/**
+	 * 敵ステータス更新.
+	 * @param enemyId
+	 */
 	public void refreshEnemyStatusWindow(int enemyId) {
 		PlayerSprite enemy = enemys.get(enemyId);
 		enemy.getPlayerStatusRectangle().refresh();
 	}
+	
+	public void removePlayer(final int playerId) {
+		// 別スレッドで削除
+		getBaseActivity().runOnUpdateThread(new Runnable() {
+			@Override
+			public void run() {
+				PlayerSprite player = players.get(playerId);
+				player.detachSelf();
+				players.remove(playerId);
+			}
+		});
+	}
+	public void removeEnemy(final int enemyId) {
+		// 別スレッドで削除
+		getBaseActivity().runOnUpdateThread(new Runnable() {
+			@Override
+			public void run() {
+				PlayerSprite enemy = enemys.get(enemyId);
+				enemy.detachSelf();
+				enemys.remove(enemyId);
+			}
+		});
+	}
+	
 	// ------------------------ カーソル --------------------------
 	/**
 	 * 移動カーソル描画.

@@ -156,7 +156,6 @@ public class GameManager {
 	}
 	
 	/**
-	 * TODO: タッチするタイミングは色々あるのでその辺理解して振り分けないといけない
 	 * 行動キャラ選択のタッチ
 	 * 移動時のタッチ
 	 * 攻撃時のタッチ
@@ -343,7 +342,7 @@ public class GameManager {
 		baseScene.createObstacleSprite(calcGridPosition(mapPointX, mapPointY), 16 * 12 + 0);
 	}
 	//---------------------------------------------------------
-	// Sceneから呼ばれる
+	// カーソル表示関連
 	//---------------------------------------------------------
 	/**
 	 * 移動範囲カーソル表示.
@@ -386,6 +385,9 @@ public class GameManager {
 		baseScene.sortChildren();
 	}
 	
+	// ----------------------------------------------------------
+	// メニュー関連
+	// ----------------------------------------------------------
 	/**
 	 * メニューボタン選択イベント振り分け.
 	 * @param pressedBtnTag
@@ -416,10 +418,7 @@ public class GameManager {
 		}
 		hideSelectMenu();
 	}
-	
-	// ----------------------------------------------------------
-	// BaseSceneの操作
-	// ----------------------------------------------------------
+
 	/**
 	 * 選択メニュー表示.
 	 */
@@ -455,15 +454,9 @@ public class GameManager {
 		Log.d(TAG, "GameState [" + mGameState + "] => [" + pGameStateType + "]");
 		mGameState = pGameStateType;
 	}
-//	public void gameLog(String text) {
-//		Log.d(TAG, text);
-//		mMainActivity.setGameLog(text);
-//	}
-//	public void showPlayerStatus(CharacterStatus playerStatus) {
-//		mMainActivity.showPlayerStatus(playerStatus);
-//	}
-//	
-
+	// ----------------------------------------------------------
+	// Battle
+	// ----------------------------------------------------------
 	/**
 	 * バトル開始し、倒したかの結果を返します.
 	 * TODO: 反撃できるようにしたら　返り討ちになる場合もあるのでbooleanじゃフラグが足りない
@@ -473,35 +466,47 @@ public class GameManager {
 	 * @return true:倒した / false:倒してない
 	 */
 	private boolean battleStart(ActorPlayerMapItem fromPlayerMapItem, ActorPlayerMapItem toPlayerMapItem) {
+		boolean isDead = false;
+		
 		ActorPlayerDto formPlayer = getActorMapItemActorPlayer(fromPlayerMapItem);
 		ActorPlayerDto toPlayer = getActorMapItemActorPlayer(toPlayerMapItem);
 
 		// バトルロジック実行
 		int damage = mBattleLogic.attack(formPlayer, toPlayer);
+		// 死亡判定
+		if (toPlayer.getHitPoint() <= 0) {
+			// 死亡
+			isDead = true;
+		} else {
+			// 生き残り
+			isDead = false;
+		}
 		
 		// TODO: [将来対応]キャラが攻撃モーション,敵キャラがダメージモーション
 		
 		// ダメージを表示
 		baseScene.showDamageText(damage, getMapItemToMapPoint(toPlayerMapItem));
-		// TODO: 攻撃終了後 倒れたアクターをマップ上から削除とか
-		mapManager.attackEndChangeMapItem();
+		// 攻撃終了後 倒れたアクターをマップ上から削除とかカーソルを初期化など
+		mapManager.attackEndChangeMapItem(toPlayerMapItem, isDead);
 		
-		// ステータスウィンドウへの反映
+		// ステータスウィンドウへの反映と死亡時はマップ上から消す
 		if (toPlayerMapItem.getMapDataType() == MapDataType.ENEMY) {
 			baseScene.refreshEnemyStatusWindow(toPlayerMapItem.getPlayerId());
+			if (isDead) {
+				baseScene.removeEnemy(toPlayerMapItem.getPlayerId());
+			}
 		} else if (toPlayerMapItem.getMapDataType() == MapDataType.PLAYER) {
 			baseScene.refreshPlayerStatusWindow(toPlayerMapItem.getPlayerId());
+			if (isDead) {
+				baseScene.removePlayer(toPlayerMapItem.getPlayerId());
+			}
 		}
-		// 死亡判定
-		if (toPlayer.getHitPoint() <= 0) {
-			// 死亡
-			return true;
-		} else {
-			// 生き残り
-			return false;
-		}
+		return isDead;
 	}
 	
+	// ----------------------------------------------------------
+	// 汎用
+	// ----------------------------------------------------------
 	private ActorPlayerDto getActorMapItemActorPlayer(ActorPlayerMapItem actorMapItem) {
 		ActorPlayerDto player = null;
 		switch (actorMapItem.getMapDataType()) {
@@ -516,17 +521,7 @@ public class GameManager {
 		}
 		return player;
 	}
-//	
-//	/**
-//	 * バトル終了後.
-//	 */
-//	public void battleEnd(MapDataType mapDataType) {
-//		actionEnd(mapDataType);
-//		checkTouchNotEnd();
-//		updateGameState();
-//	}
-//	
-//	
+
 //	private void checkTouchNotEnd() {
 //		View v = mMapManager.isSelectPlayerEnd();
 //		if (v != null) {

@@ -11,6 +11,7 @@ import com.kyokomi.srpgquest.map.common.MapPoint;
 import com.kyokomi.srpgquest.map.item.ActorPlayerMapItem;
 import com.kyokomi.srpgquest.map.item.MapItem;
 
+import android.R.id;
 import android.util.Log;
 
 /**
@@ -328,6 +329,7 @@ public class MapManager {
 		moveToActorPlayer.setMapPointX(moveMapPointX);
 		moveToActorPlayer.setMapPointY(moveMapPointY);
 		
+		// 移動範囲カーソルをクリア
 		mMapItemManager.clearCursorMapItemLayer();
 	}
 	
@@ -337,8 +339,15 @@ public class MapManager {
 	 * @param mapPointY
 	 * @param moveToView
 	 */
-	public void attackEndChangeMapItem() {
+	public void attackEndChangeMapItem(ActorPlayerMapItem mapActorPlayerMapItem, boolean isDead) {
+		// 攻撃範囲カーソルをクリア
 		mMapItemManager.clearCursorMapItemLayer();
+		
+		// 死亡した場合、マップ上から消去する
+		if (isDead) {
+			mMapItemManager.setObject(mapActorPlayerMapItem.getMapPointX(), 
+					mapActorPlayerMapItem.getMapPointY(), null);
+		}
 	}
 	
 	/**
