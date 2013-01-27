@@ -190,7 +190,7 @@ public class GameManager {
 				baseScene.hideEnemyStatusWindow();
 				
 				// 攻撃もしくは移動が完了していなければ行動可能とする
-				if (!actorPlayerMapItem.isMoveDone() || !actorPlayerMapItem.isAttackDone()) {
+				if (!actorPlayerMapItem.isWaitDone()) {
 					// 行動ウィンドウを表示
 					showSelectMenu(actorPlayerMapItem);
 				} else {
@@ -224,7 +224,13 @@ public class GameManager {
 					// TODO: [将来対応]攻撃確認ウィンドウ表示				
 					
 					// ------- 攻撃処理 --------
-					battleStart(mSelectActorPlayer, enemy);
+					boolean isDead = battleStart(mSelectActorPlayer, enemy);
+					
+					// 攻撃済みにする
+					mSelectActorPlayer.setAttackDone(true);
+					
+					// 攻撃終了後 倒れたアクターをマップ上から削除とかカーソルを初期化など
+					mapManager.attackEndChangeMapItem(mSelectActorPlayer, enemy, isDead);
 					
 					// プレイヤーターンに戻る
 					changeGameState(GameStateType.PLAYER_TURN);
@@ -261,18 +267,17 @@ public class GameManager {
 							// 移動結果をマップ情報に反映
 							// TODO: プレイヤーのステータスを移動済みにする
 							mapManager.moveEndChangeMapItem(mSelectActorPlayer, mapPoint);
+							// 移動済みに更新
+							mSelectActorPlayer.setMoveDone(true);
 							
-							// TODO: このあと行動選択ウィンドウの移動が押せくなる
-							// TODO: 行動可能な場合
-							if (true) {
+							if (!mSelectActorPlayer.isWaitDone()) {
 								// ポップアップ表示
 								showSelectMenu();
-							} 
-//							else {
-//								// TODO: このキャラを待機モードにする
-//								
-//								changeGameState(GameStateType.PLAYER_TURN);
-//							}	
+							} else {
+								// TODO: アニメーション停止
+								
+								changeGameState(GameStateType.PLAYER_TURN);
+							}	
 						}
 					});
 				}
@@ -432,8 +437,13 @@ public class GameManager {
 		if (pSelectActorPlayer != null) {
 			mSelectActorPlayer = pSelectActorPlayer;
 		}
+		// TODO: DEBUGログ
+		Log.d(TAG, "mSelectActorPlayer[" + mSelectActorPlayer.getPlayerId() + "] isAttackDone=[" + mSelectActorPlayer.isAttackDone() + "]" + 
+				"isMoveDone=[" + mSelectActorPlayer.isMoveDone() + "]");
+		
 		changeGameState(GameStateType.PLAYER_SELECT);
-		baseScene.showSelectMenu(getMapItemToMapPoint(mSelectActorPlayer));
+		baseScene.showSelectMenu(mSelectActorPlayer.isAttackDone(), mSelectActorPlayer.isMoveDone(), 
+				getMapItemToMapPoint(mSelectActorPlayer));
 		// プレイヤーのステータスも非表示
 		baseScene.showPlayerStatusWindow(mSelectActorPlayer.getPlayerId());
 	}
@@ -453,6 +463,8 @@ public class GameManager {
 	private void changeGameState(GameStateType pGameStateType) {
 		Log.d(TAG, "GameState [" + mGameState + "] => [" + pGameStateType + "]");
 		mGameState = pGameStateType;
+		
+		// TODO: ターンエンド判定
 	}
 	// ----------------------------------------------------------
 	// Battle
@@ -486,9 +498,6 @@ public class GameManager {
 		
 		// ダメージを表示
 		baseScene.showDamageText(damage, getMapItemToMapPoint(toPlayerMapItem));
-		// 攻撃終了後 倒れたアクターをマップ上から削除とかカーソルを初期化など
-		mapManager.attackEndChangeMapItem(toPlayerMapItem, isDead);
-		
 		// ステータスウィンドウへの反映と死亡時はマップ上から消す
 		if (toPlayerMapItem.getMapDataType() == MapDataType.ENEMY) {
 			baseScene.refreshEnemyStatusWindow(toPlayerMapItem.getPlayerId());

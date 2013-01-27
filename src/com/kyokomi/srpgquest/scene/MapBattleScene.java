@@ -33,6 +33,7 @@ import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.core.sprite.MenuRectangle;
 import com.kyokomi.core.sprite.PlayerSprite;
 import com.kyokomi.core.sprite.PlayerStatusRectangle;
+import com.kyokomi.core.sprite.MenuRectangle.MenuDirection;
 import com.kyokomi.srpgquest.GameManager;
 import com.kyokomi.srpgquest.map.common.MapPoint;
 import com.kyokomi.srpgquest.sprite.CursorRectangle;
@@ -68,6 +69,10 @@ public class MapBattleScene extends KeyListenScene
 	private List<CursorRectangle> cursorList;
 	
 	private Text mDamageText;
+	
+	private MenuRectangle mMenuRectangle;
+	private PlayerStatusRectangle mPlayerStatusRect;
+	private PlayerStatusRectangle mEnemyStatusRect;
 	
 	public MapBattleScene(MultiSceneActivity baseActivity) {
 		super(baseActivity);
@@ -221,7 +226,10 @@ public class MapBattleScene extends KeyListenScene
 		PlayerSprite enemy = enemys.get(enemyId);
 		enemy.getPlayerStatusRectangle().refresh();
 	}
-	
+	/**
+	 * プレイヤーキャラ消去.
+	 * @param playerId
+	 */
 	public void removePlayer(final int playerId) {
 		// 別スレッドで削除
 		getBaseActivity().runOnUpdateThread(new Runnable() {
@@ -233,6 +241,10 @@ public class MapBattleScene extends KeyListenScene
 			}
 		});
 	}
+	/**
+	 * 敵キャラ消去.
+	 * @param enemyId
+	 */
 	public void removeEnemy(final int enemyId) {
 		// 別スレッドで削除
 		getBaseActivity().runOnUpdateThread(new Runnable() {
@@ -324,6 +336,7 @@ public class MapBattleScene extends KeyListenScene
 	public interface IAnimationCallback {
 		public void doAction();
 	}
+	
 	// ----------------- アニメーション　演出 -------------------
 	/**
 	 * プレイヤー移動アニメーション.
@@ -382,7 +395,7 @@ public class MapBattleScene extends KeyListenScene
 	}
 	// ---------------- メニュー -------------------
 	
-	public void showSelectMenu(MapPoint mapPoint) {
+	public void showSelectMenu(boolean isAttackDone, boolean isMovedDone, MapPoint mapPoint) {
 		float x = mapPoint.getX();
 		// 横は画面半分のどっち側にいるかで表示位置を垂直方向に反転させる
 		if (x < getWindowWidth() / 2) {
@@ -398,6 +411,21 @@ public class MapBattleScene extends KeyListenScene
 		mMenuRectangle.setX(x);
 		mMenuRectangle.setY(y);
 		
+		// 攻撃
+		IEntity attackMenuItem = mMenuRectangle.getChildByTag(
+				SelectMenuType.SELECT_MENU_ATTACK_TYPE.getValue());
+		if (attackMenuItem instanceof ButtonSprite) {
+			((ButtonSprite) attackMenuItem).setEnabled(!isAttackDone);
+			((ButtonSprite) attackMenuItem).setVisible(!isAttackDone); // 非活性ボタンがあればイラナイ
+		}
+		// 移動
+		IEntity moveMenuItem = mMenuRectangle.getChildByTag(
+				SelectMenuType.SELECT_MENU_MOVE_TYPE.getValue());
+		if (moveMenuItem instanceof ButtonSprite) {
+			((ButtonSprite) moveMenuItem).setEnabled(!isMovedDone);
+			((ButtonSprite) moveMenuItem).setVisible(!isMovedDone); // 非活性ボタンがあればイラナイ
+		}
+		
 		// 非表示
 		mMenuRectangle.setEnabled(true);
 		mMenuRectangle.setVisible(true);
@@ -408,8 +436,23 @@ public class MapBattleScene extends KeyListenScene
 		mMenuRectangle.setVisible(false);
 	}
 	
-	private MenuRectangle mMenuRectangle;
-	
+	enum SelectMenuType {
+		SELECT_MENU_ATTACK_TYPE(1),
+		SELECT_MENU_MOVE_TYPE(2),
+		SELECT_MENU_WAIT_TYPE(3),
+		SELECT_MENU_CANCEL_TYPE(4),
+		;
+		
+		private Integer value;
+		
+		private SelectMenuType(Integer value) {
+			this.value = value;
+		}
+		
+		public Integer getValue() {
+			return value;
+		}
+	}
 	public void createSelectMenuSprite() {
 					
 		mMenuRectangle = new MenuRectangle(
@@ -420,30 +463,28 @@ public class MapBattleScene extends KeyListenScene
 		
 		// 各ボタン配置
 		ButtonSprite btnAttack = getResourceButtonSprite("attack_btn.gif", "attack_btn_p.gif");
-		mMenuRectangle.addMenuItem(1, btnAttack);
+		mMenuRectangle.addMenuItem(SelectMenuType.SELECT_MENU_ATTACK_TYPE.getValue(), btnAttack);
 		btnAttack.setOnClickListener(selectMenuOnClickListener);
 		
 		ButtonSprite btnMove = getResourceButtonSprite("move_btn.gif", "move_btn_p.gif");
-		mMenuRectangle.addMenuItem(2, btnMove);
+		mMenuRectangle.addMenuItem(SelectMenuType.SELECT_MENU_MOVE_TYPE.getValue(), btnMove);
 		btnMove.setOnClickListener(selectMenuOnClickListener);
 		
 		ButtonSprite btnWait = getResourceButtonSprite("wait_btn.gif", "wait_btn_p.gif");
-		mMenuRectangle.addMenuItem(3, btnWait);
+		mMenuRectangle.addMenuItem(SelectMenuType.SELECT_MENU_WAIT_TYPE.getValue(), btnWait);
 		btnWait.setOnClickListener(selectMenuOnClickListener);
 		
 		ButtonSprite btnCancel = getResourceButtonSprite("cancel_btn.gif", "cancel_btn_p.gif");
-		mMenuRectangle.addMenuItem(4, btnCancel);
+		mMenuRectangle.addMenuItem(SelectMenuType.SELECT_MENU_CANCEL_TYPE.getValue(), btnCancel);
 		btnCancel.setOnClickListener(selectMenuOnClickListener);
 		
-		mMenuRectangle.create(2);
+		mMenuRectangle.create(MenuDirection.MENU_DIRECTION_Y);
 		attachChild(mMenuRectangle);
 		registerTouchArea(mMenuRectangle);
 
 		// 非表示にする
 		hideSelectMenu();
 	}
-	private PlayerStatusRectangle mPlayerStatusRect;
-	private PlayerStatusRectangle mEnemyStatusRect;
 	
 	// --------------- ステータスウィンドウ --------------
 	public void showPlayerStatusWindow(int playerId) {
@@ -503,9 +544,6 @@ public class MapBattleScene extends KeyListenScene
 		}
 	};
 
-	/** プレイヤータッチ. */
-	private boolean isPlayerTouch;
-	
 	/**
 	 * 画面タッチイベント.
 	 */
@@ -517,11 +555,8 @@ public class MapBattleScene extends KeyListenScene
 		float y = pSceneTouchEvent.getY();
 		
 		if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
-			
-			if (!isPlayerTouch) {
-				// タッチイベント振り分け処理を呼ぶ
-				gameManager.onTouchMapItemEvent(x, y);
-			}
+			// タッチイベント振り分け処理を呼ぶ
+			gameManager.onTouchMapItemEvent(x, y);
 		}
 		return false;
 	}

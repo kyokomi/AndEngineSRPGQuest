@@ -24,7 +24,7 @@ public class MenuRectangle extends Rectangle {
 	private boolean mEnabled = true;
 	private State mState;
 	
-	private int mDirection;
+	private MenuDirection mDirection;
 	private final float margin = 10;
 	private SparseArray<IAreaShape> mEntityList;
 	
@@ -158,8 +158,24 @@ public class MenuRectangle extends Rectangle {
 		}
 	}
 	
+	public enum MenuDirection {
+		MENU_DIRECTION_X(1),
+		MENU_DIRECTION_Y(2),
+		;
+		
+		private Integer value;
+		
+		private MenuDirection(Integer value) {
+			this.value = value;
+		}
+		
+		public Integer getValue() {
+			return value;
+		}
+	}
+	
 	// 横か縦か選べるように
-	public void create(int pDirection) {
+	public void create(MenuDirection pDirection) {
 		
 		this.mDirection = pDirection;
 		float x = margin;
@@ -179,13 +195,13 @@ public class MenuRectangle extends Rectangle {
 			
 			float marginWithWidth = entity.getWidth() + margin;
 			float marginWithHeight = entity.getHeight() + margin;
-			if (mDirection == 1) {
+			if (mDirection == MenuDirection.MENU_DIRECTION_X) {
 				x += marginWithWidth;
 				marginWithWidth = x;
 				
 				marginWithHeight += margin;
 				
-			} else if (mDirection == 2) {
+			} else if (mDirection == MenuDirection.MENU_DIRECTION_Y) {
 				y += marginWithHeight;
 				marginWithHeight = y;
 				

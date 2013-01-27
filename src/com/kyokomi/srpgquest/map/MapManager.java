@@ -312,8 +312,6 @@ public class MapManager {
 	 */
 	public void moveEndChangeMapItem(
 			ActorPlayerMapItem moveToActorPlayer, MapPoint moveFromMapPoint) {
-		// 移動済みに更新（TODO: 参照されてる？）
-		moveToActorPlayer.setMoveDone(true);
 		
 		// リストとかカーソルまわりの情報を全部クリア
 		movePointList = new ArrayList<MapPoint>();
@@ -339,14 +337,14 @@ public class MapManager {
 	 * @param mapPointY
 	 * @param moveToView
 	 */
-	public void attackEndChangeMapItem(ActorPlayerMapItem mapActorPlayerMapItem, boolean isDead) {
+	public void attackEndChangeMapItem(ActorPlayerMapItem fromPlayerMapItem, ActorPlayerMapItem toPlayerMapItem, boolean isDead) {
 		// 攻撃範囲カーソルをクリア
 		mMapItemManager.clearCursorMapItemLayer();
 		
-		// 死亡した場合、マップ上から消去する
+		// 死亡した場合、攻撃対象をマップ上から消去する
 		if (isDead) {
-			mMapItemManager.setObject(mapActorPlayerMapItem.getMapPointX(), 
-					mapActorPlayerMapItem.getMapPointY(), null);
+			mMapItemManager.setObject(toPlayerMapItem.getMapPointX(), 
+					toPlayerMapItem.getMapPointY(), null);
 		}
 	}
 	

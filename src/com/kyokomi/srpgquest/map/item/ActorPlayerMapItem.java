@@ -51,4 +51,24 @@ public class ActorPlayerMapItem extends MapItem {
 	public void setAttackDone(boolean attackDone) {
 		this.attackDone = attackDone;
 	}
+	
+	/**
+	 * キャラクターを待機にする.
+	 * @param actorPlayerMapItem
+	 */
+	public void setWaitDone(boolean waitDone) {
+		this.setAttackDone(waitDone);
+		this.setMoveDone(waitDone);
+	}
+	/**
+	 * キャラクターが待機中か判定する.
+	 * @param actorPlayerMapItem
+	 * @return true:待機中 / false:まだ行動できる
+	 */
+	public boolean isWaitDone() {
+		if (this.isMoveDone() && this.isAttackDone()) {
+			return true;
+		}
+		return false;
+	}
 }

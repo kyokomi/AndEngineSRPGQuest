@@ -34,7 +34,9 @@ import com.kyokomi.core.sprite.PlayerSprite;
 import com.kyokomi.core.sprite.PlayerStatusRectangle;
 import com.kyokomi.core.sprite.TalkLayer;
 import com.kyokomi.core.sprite.TextButton;
+import com.kyokomi.core.sprite.MenuRectangle.MenuDirection;
 import com.kyokomi.srpgquest.R;
+import com.kyokomi.srpgquest.constant.MoveDirectionType;
 
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -249,7 +251,7 @@ public class SandboxScene extends KeyListenScene
 			TextButton textButton = createTextButton(i+1, font);
 			mMenuRectangle.addMenuItem(textButton.getTag(), textButton);
 		}
-		mMenuRectangle.create(2);
+		mMenuRectangle.create(MenuDirection.MENU_DIRECTION_Y);
 		attachChild(mMenuRectangle);
 		// 非表示
 		mMenuRectangle.setEnabled(false);
