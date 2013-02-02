@@ -184,7 +184,9 @@ public abstract class KeyListenScene extends Scene {
 			public void run() {
 				for (int i = 0; i < entity.getChildCount(); i++) {
 					// タッチの検知も無効にする
-					unregisterTouchArea((ButtonSprite) entity.getChildByIndex(i));
+					if (entity.getChildByIndex(i) instanceof ButtonSprite) {
+						unregisterTouchArea((ButtonSprite) entity.getChildByIndex(i));
+					}
 				}
 				entity.detachChildren();
 				entity.detachSelf();

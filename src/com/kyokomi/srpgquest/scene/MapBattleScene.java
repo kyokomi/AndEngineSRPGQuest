@@ -31,11 +31,14 @@ import android.view.KeyEvent;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.dto.ActorPlayerDto;
+import com.kyokomi.core.dto.PlayerTalkDto;
+import com.kyokomi.core.dto.PlayerTalkDto.TalkDirection;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.core.sprite.MenuRectangle;
 import com.kyokomi.core.sprite.PlayerSprite;
 import com.kyokomi.core.sprite.PlayerStatusRectangle;
 import com.kyokomi.core.sprite.MenuRectangle.MenuDirection;
+import com.kyokomi.core.sprite.TalkLayer;
 import com.kyokomi.srpgquest.GameManager;
 import com.kyokomi.srpgquest.map.common.MapPoint;
 import com.kyokomi.srpgquest.sprite.CursorRectangle;
@@ -44,6 +47,7 @@ public class MapBattleScene extends KeyListenScene
 	implements IOnSceneTouchListener{
 	
 	enum LayerZIndex {
+		TALK_LAYER(80),
 		CUTIN_LAYER(70),
 		TEXT_LAYER(60),
 		EFFETCT_LAYER(50),
@@ -76,6 +80,8 @@ public class MapBattleScene extends KeyListenScene
 	private MenuRectangle mMenuRectangle;
 	private PlayerStatusRectangle mPlayerStatusRect;
 	private PlayerStatusRectangle mEnemyStatusRect;
+	
+	private TalkLayer mTalkLayer;
 	
 	public MapBattleScene(MultiSceneActivity baseActivity) {
 		super(baseActivity);
@@ -116,6 +122,10 @@ public class MapBattleScene extends KeyListenScene
 		// ゲーム開始
 		gameManager = new GameManager(this);
 		gameManager.mapInit(10, 10, 1f); // 10 x 10 スケール1倍のグリッドマップ
+			
+		// プレイヤー情報ができてから呼び出さないといけないので注意
+		// 会話レイヤーを生成
+		initTalk();
 		
 		// Sceneのタッチリスナーを登録
 		setOnSceneTouchListener(this);
@@ -586,6 +596,57 @@ public class MapBattleScene extends KeyListenScene
 			}
 		}));
 	}
+	// --------------- 会話パート用 --------------------
+	private void initTalk() {
+		
+		// 会話プレイヤー顔リストを作成
+		SparseArray<TiledSprite> actorFaces = new SparseArray<TiledSprite>();
+		int count = players.size();
+		for (int i = 0; i < count; i++) {
+			PlayerSprite player = players.valueAt(i);
+			actorFaces.put(player.getPlayerId(), 
+					getResourceFaceSprite(player.getPlayerId(), player.getFaceFileName()));
+		}
+		count = enemys.size();
+		for (int i = 0; i < count; i++) {
+			PlayerSprite enemy = enemys.valueAt(i);
+			actorFaces.put(enemy.getPlayerId(), 
+					getResourceFaceSprite(enemy.getPlayerId(), enemy.getFaceFileName()));
+		}
+		
+		// TODO: "id, name, faceIndex, talkDirection"
+		PlayerSprite player = players.valueAt(0);
+		PlayerSprite enemy = enemys.valueAt(0);
+		// 会話内容を作成
+		List<PlayerTalkDto> talks = new ArrayList<PlayerTalkDto>();
+		talks.add(new PlayerTalkDto(player.getPlayerId(), 
+				player.getActorPlayer().getName(), 0, TalkDirection.TALK_DIRECT_LEFT,
+				"突然だけどここからチュートリアルです。"));
+		talks.add(new PlayerTalkDto(enemy.getPlayerId(), 
+				enemy.getActorPlayer().getName(), 0, TalkDirection.TALK_DIRECT_RIGHT,
+				"私が対戦相手になります。"));
+		talks.add(new PlayerTalkDto(player.getPlayerId(), 
+				player.getActorPlayer().getName(), 3, TalkDirection.TALK_DIRECT_LEFT,
+				"キャラクターをタップするとメニューがでるので、\n移動と攻撃で倒される前に倒します。"));
+		talks.add(new PlayerTalkDto(player.getPlayerId(), 
+				player.getActorPlayer().getName(), 2, TalkDirection.TALK_DIRECT_LEFT,
+				"待機すると敵のターンとなるよくあるターン制のSRPGです。"));
+		talks.add(new PlayerTalkDto(enemy.getPlayerId(), 
+				enemy.getActorPlayer().getName(), 1, TalkDirection.TALK_DIRECT_RIGHT,
+				"それじゃあ始めるわよ。"));
+		mTalkLayer = new TalkLayer(this);
+		mTalkLayer.initTalk(actorFaces, talks);
+		mTalkLayer.hide();
+		mTalkLayer.setZIndex(LayerZIndex.TALK_LAYER.getValue());
+		attachChild(mTalkLayer);
+	}
+	
+	private TiledSprite getResourceFaceSprite(int tag, String faceFileName) {
+		TiledSprite tiledSprite = getResourceTiledSprite(faceFileName, 4, 2);
+		tiledSprite.setTag(tag);
+		return tiledSprite;
+	}
+	
 	// --------------- ステータスウィンドウ --------------
 	public void showPlayerStatusWindow(int playerId) {
 		if (mPlayerStatusRect != null) {
@@ -655,8 +716,20 @@ public class MapBattleScene extends KeyListenScene
 		float y = pSceneTouchEvent.getY();
 		
 		if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
-			// タッチイベント振り分け処理を呼ぶ
-			gameManager.onTouchMapItemEvent(x, y);
+			
+			// TODO: 一旦会話はGameManager外にする
+			if (mTalkLayer != null && mTalkLayer.contains(x, y) && mTalkLayer.isNextTalk()) {
+				if (!mTalkLayer.nextTalk()) {
+					// 次の会話がなくなれば、会話レイヤーを開放
+					detachEntity(mTalkLayer);
+					// ゲーム開始
+					gameManager.gameStart();
+				}
+			} else {
+				
+				// タッチイベント振り分け処理を呼ぶ
+				gameManager.onTouchMapItemEvent(x, y);
+			}
 		}
 		return false;
 	}

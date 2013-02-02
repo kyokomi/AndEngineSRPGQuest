@@ -106,10 +106,12 @@ public class TalkLayer extends Rectangle {
 				baseScene.getBaseActivity().getVertexBufferObjectManager());
 		nameText.setColor(Color.GREEN);
 		
-		// 会話表示
 		nextTalk();
 	}
 	
+	public boolean isShow() {
+		return isVisible();
+	}
 	public void show() {
 		setVisible(true);
 	}
@@ -120,12 +122,31 @@ public class TalkLayer extends Rectangle {
 	public void resetTalk() {
 		this.talkIndex = 0;
 	}
-	public boolean nextTalk() {
+	/**
+	 * 次の会話が存在するかチェック.
+	 * @return true: あり / false: なし
+	 */
+	public boolean isNextTalk() {
 		// これ以上会話がないときはfalseを返却
 		if (talks.size() <= talkIndex) {
 			return false;
 		}
-		
+		return true;
+	}
+	/**
+	 * 次の会話を取得して表示します.
+	 * 非表示の場合は、次の会話を表示しないで表示のみを行います。
+	 * 次の会話がなくなると何もしないでfalseを返します。
+	 * @return
+	 */
+	public boolean nextTalk() {
+		if (!isShow()) {
+			show();
+			return true;
+		}
+		if (!isNextTalk()) {
+			return false; 
+		}
 		// とりあえず表示
 		show();
 		
@@ -177,7 +198,8 @@ public class TalkLayer extends Rectangle {
 		
 		// TODO: アニメーション効果入れる?
 		
-		return true;
+		// 次の会話があるか返します
+		return isNextTalk();
 	}
 	
 	private boolean createTextBackground(float height, float y) {

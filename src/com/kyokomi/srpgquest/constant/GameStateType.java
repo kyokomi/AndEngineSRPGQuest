@@ -4,6 +4,8 @@ public enum GameStateType {
 	
 	/** 起動時. */
 	INIT(0),
+	/** 開始時. */
+	START(1),
 	
 	/** プレイヤーターン. */
 	PLAYER_TURN(10),
@@ -23,8 +25,7 @@ public enum GameStateType {
 	/** エネミーキャラ攻撃先選択中. */
 	ENEMY_ATTACK(23),
 	
-	/** アニメーション中. */
-	ANIMATION(30), // TODO: 未使用
+	/** 終了. */
 	END(99),
 	;
 	
