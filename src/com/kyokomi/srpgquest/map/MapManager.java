@@ -501,9 +501,9 @@ public class MapManager {
 	 * プレイヤーターン終了判定.
 	 * @return
 	 */
-	public boolean checkPlayerTurnEnd() {
+	public boolean checkPlayerTurnEnd(MapDataType pMapDataType) {
 		boolean isAllWait = true;
-		List<MapItem> playerMapItemList = mMapItemManager.getObjectMapItemList(MapDataType.PLAYER);
+		List<MapItem> playerMapItemList = mMapItemManager.getObjectMapItemList(pMapDataType);
 		for (MapItem mapItem : playerMapItemList) {
 			if (mapItem instanceof ActorPlayerMapItem) {
 				if (((ActorPlayerMapItem) mapItem).isWaitDone() == false) {

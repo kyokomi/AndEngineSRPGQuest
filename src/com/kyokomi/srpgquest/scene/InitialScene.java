@@ -135,7 +135,7 @@ public class InitialScene extends KeyListenScene implements ButtonSprite.OnClick
 		
 		switch (pButtonSprite.getTag()) {
 		case INITIAL_START:
-			showScene(new MainScene(getBaseActivity()));
+			showScene(new MapBattleScene(getBaseActivity()));
 			break;
 		case INITIAL_RANKING:
 			showScene(new SandboxScene(getBaseActivity()));

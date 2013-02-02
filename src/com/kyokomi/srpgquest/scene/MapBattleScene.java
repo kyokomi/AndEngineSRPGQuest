@@ -6,6 +6,7 @@ import java.util.List;
 import org.andengine.entity.IEntity;
 import org.andengine.entity.modifier.AlphaModifier;
 import org.andengine.entity.modifier.DelayModifier;
+import org.andengine.entity.modifier.FadeInModifier;
 import org.andengine.entity.modifier.IEntityModifier;
 import org.andengine.entity.modifier.LoopEntityModifier;
 import org.andengine.entity.modifier.MoveModifier;
@@ -17,6 +18,7 @@ import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.sprite.ButtonSprite;
+import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.sprite.TiledSprite;
 import org.andengine.entity.text.Text;
 import org.andengine.input.touch.TouchEvent;
@@ -42,6 +44,7 @@ public class MapBattleScene extends KeyListenScene
 	implements IOnSceneTouchListener{
 	
 	enum LayerZIndex {
+		CUTIN_LAYER(70),
 		TEXT_LAYER(60),
 		EFFETCT_LAYER(50),
 		POPUP_LAYER(40),
@@ -104,16 +107,19 @@ public class MapBattleScene extends KeyListenScene
 		// グリッド線表示
 		testShowGrid();
 		
-		// ゲーム開始
-		gameManager = new GameManager(this);
-		gameManager.mapInit(10, 10, 1f);
-		
-		// Sceneのタッチリスナーを登録
-		setOnSceneTouchListener(this);
-		
+		// カットイン初期化
+		initCutInSprite();
+	
 		// メニューを作っておく
 		createSelectMenuSprite();
 
+		// ゲーム開始
+		gameManager = new GameManager(this);
+		gameManager.mapInit(10, 10, 1f); // 10 x 10 スケール1倍のグリッドマップ
+		
+		// Sceneのタッチリスナーを登録
+		setOnSceneTouchListener(this);
+			
 		// FPS表示
 		initFps(getWindowWidth() - 100, getWindowHeight() - 20, getFont());
 	}
@@ -537,7 +543,49 @@ public class MapBattleScene extends KeyListenScene
 		// 非表示にする
 		hideSelectMenu();
 	}
+	// --------------- カットイン系 --------------
+	private Sprite mPlayerTurnCutInSprite;
+	private Sprite mEnemyTurnCutInSprite;
+	private Sprite mPlayerWinCutInSprite;
+	private Sprite mGameOverCutInSprite;
 	
+	private void initCutInSprite() {
+		mPlayerTurnCutInSprite = getResourceSprite("player_turn.png");
+		attachChildCutInSprite(mPlayerTurnCutInSprite);
+		mEnemyTurnCutInSprite = getResourceSprite("enemy_turn.png");
+		attachChildCutInSprite(mEnemyTurnCutInSprite);
+		mPlayerWinCutInSprite = getResourceSprite("player_win.png");
+		attachChildCutInSprite(mPlayerWinCutInSprite);
+		mGameOverCutInSprite = getResourceSprite("game_over.png");
+		attachChildCutInSprite(mGameOverCutInSprite);
+	}
+	private void attachChildCutInSprite(Sprite sprite) {
+		placeToCenter(sprite);
+		sprite.setAlpha(0.0f);
+		sprite.setZIndex(LayerZIndex.CUTIN_LAYER.getValue());
+		attachChild(sprite);
+	}
+	public void showPlayerTurn(IAnimationCallback animationCallback) {
+		showCutInSprite(mPlayerTurnCutInSprite, animationCallback);
+	}
+	public void showEnemyTurn(IAnimationCallback animationCallback) {
+		showCutInSprite(mEnemyTurnCutInSprite, animationCallback);
+	}
+	public void showPlayerWin(IAnimationCallback animationCallback) {
+		showCutInSprite(mPlayerWinCutInSprite, animationCallback);
+	}
+	public void showGameOver(IAnimationCallback animationCallback) {
+		showCutInSprite(mGameOverCutInSprite, animationCallback);
+	}
+	private void showCutInSprite(final IEntity pEntity, final IAnimationCallback animationCallback) {
+		pEntity.registerEntityModifier(new FadeInModifier(2.0f, new IEntityModifier.IEntityModifierListener() {
+			@Override public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {}
+			@Override public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+				animationCallback.doAction(); // コールバック呼び出し
+				pEntity.setAlpha(0.0f);
+			}
+		}));
+	}
 	// --------------- ステータスウィンドウ --------------
 	public void showPlayerStatusWindow(int playerId) {
 		if (mPlayerStatusRect != null) {

@@ -2,6 +2,9 @@ package com.kyokomi.srpgquest;
 
 import java.util.List;
 
+import org.andengine.engine.handler.timer.ITimerCallback;
+import org.andengine.engine.handler.timer.TimerHandler;
+
 import com.kyokomi.core.dto.ActorPlayerDto;
 import com.kyokomi.srpgquest.constant.GameStateType;
 import com.kyokomi.srpgquest.constant.MapDataType;
@@ -27,12 +30,12 @@ public class GameManager {
 	
 	private final static float GRID_SIZE = 40;
 	
-	private MapBattleScene baseScene;
+	private MapBattleScene mBaseScene;
 	
 	private GameStateType mGameState;
 	
-	private SparseArray<ActorPlayerDto> playerList;
-	private SparseArray<ActorPlayerDto> enemyList;
+	private SparseArray<ActorPlayerDto> mPlayerList;
+	private SparseArray<ActorPlayerDto> mEnemyList;
 	
 	/** マップ管理. */
 	private MapManager mMapManager;
@@ -43,19 +46,49 @@ public class GameManager {
 	/** 選択したプレイヤーテンポラリ. */
 	private ActorPlayerMapItem mSelectActorPlayer;
 	
+	/** 敵のターンタイマー. */
+	private TimerHandler mEnemyTurnUpdateHandler;
+	
+	public TimerHandler getEnemyTurnUpdateHandler() {
+		return mEnemyTurnUpdateHandler;
+	}
+	
 	/**
 	 * コンストラクタ.
 	 * @param mainActivity
 	 */
 	public GameManager(MapBattleScene baseScene) {
-		this.baseScene = baseScene;
+		this.mBaseScene = baseScene;
 
 		// 初期化
 		mBattleLogic = new BattleLogic();
-		playerList = new SparseArray<ActorPlayerDto>();
-		enemyList = new SparseArray<ActorPlayerDto>();
+		mPlayerList = new SparseArray<ActorPlayerDto>();
+		mEnemyList = new SparseArray<ActorPlayerDto>();
 		
 		changeGameState(GameStateType.INIT);
+		
+		mEnemyTurnUpdateHandler = new TimerHandler(1.0f, true, new ITimerCallback() {
+			@Override
+			public void onTimePassed(final TimerHandler pTimerHandler) {
+				Log.d(TAG, "mEnemyTurnUpdateHandler " + mGameState);
+				if (mGameState == GameStateType.ENEMY_TURN) {
+					
+					// モンスターのリストをチェックし行動可能なモンスターを探す
+					int count = mEnemyList.size();
+					for (int i = 0; i < count; i++) {
+						ActorPlayerDto enemy = mEnemyList.valueAt(i);
+						ActorPlayerMapItem enemyMapItem = mMapManager.getPlayerIdToActorMapItem(
+								enemy.getPlayerId(), MapDataType.ENEMY);
+						
+						Log.d(TAG, "Enemy isAttackDone["+ enemyMapItem.isAttackDone() + "] isMoveDoen["+ enemyMapItem.isMoveDone() + "]");
+						
+						// 行動させる
+						changeGameState(GameStateType.ENEMY_SELECT);
+						doEnemyAction(enemy, enemyMapItem);
+					}
+				}
+			}
+		});
 	}
 	
 	/**
@@ -93,7 +126,7 @@ public class GameManager {
 		
 		changeGameState(GameStateType.PLAYER_TURN);
 		
-		baseScene.sortChildren();
+		mBaseScene.sortChildren();
 	}
 	// -----------------------------------------------------
 	// 座標計算とか
@@ -187,7 +220,7 @@ public class GameManager {
 				ActorPlayerMapItem actorPlayerMapItem = (ActorPlayerMapItem) mapItem;
 				
 				// 敵のステータスは非表示
-				baseScene.hideEnemyStatusWindow();
+				mBaseScene.hideEnemyStatusWindow();
 				
 				// 攻撃もしくは移動が完了していなければ行動可能とする
 				if (!actorPlayerMapItem.isWaitDone()) {
@@ -195,16 +228,16 @@ public class GameManager {
 					showSelectMenu(actorPlayerMapItem);
 				} else {
 					// アニメーション停止
-					baseScene.stopWalkingPlayerAnimation(mSelectActorPlayer.getPlayerId());
+					mBaseScene.stopWalkingPlayerAnimation(mSelectActorPlayer.getPlayerId());
 					// プレイヤーのステータスは表示
-					baseScene.showPlayerStatusWindow(actorPlayerMapItem.getPlayerId());
+					mBaseScene.showPlayerStatusWindow(actorPlayerMapItem.getPlayerId());
 				}
 			} else if (touchMapDataType == MapDataType.ENEMY) {
 				ActorPlayerMapItem actorEnemyMapItem = (ActorPlayerMapItem) mapItem;
 				// プレイヤーのステータス非表示
-				baseScene.hidePlayerStatusWindow();
+				mBaseScene.hidePlayerStatusWindow();
 				// 敵のステータス表示
-				baseScene.showEnemyStatusWindow(actorEnemyMapItem.getPlayerId());
+				mBaseScene.showEnemyStatusWindow(actorEnemyMapItem.getPlayerId());
 			}
 			break;
 		
@@ -232,7 +265,7 @@ public class GameManager {
 					mSelectActorPlayer.setAttackDone(true);
 					if (mSelectActorPlayer.isWaitDone()) {
 						// アニメーション停止
-						baseScene.stopWalkingPlayerAnimation(mSelectActorPlayer.getPlayerId());
+						mBaseScene.stopWalkingPlayerAnimation(mSelectActorPlayer.getPlayerId());
 					}
 					// 攻撃終了後 倒れたアクターをマップ上から削除とかカーソルを初期化など
 					mMapManager.attackEndChangeMapItem(mSelectActorPlayer, enemy, isDead);
@@ -245,7 +278,7 @@ public class GameManager {
 				showSelectMenu();
 			}
 			// カーソル消去
-			baseScene.hideCursorSprite();
+			mBaseScene.hideCursorSprite();
 			break;
 		
 		/* 移動選択中 */
@@ -259,15 +292,15 @@ public class GameManager {
 							mSelectActorPlayer, mapPoint);
 					
 					// 移動先のカーソルの色を変える
-					baseScene.selectCursor(mapPoint);
+					mBaseScene.selectCursor(mapPoint);
 					
 					// 移動リストを引数にScene側の移動アニメーションを呼び出す
-					baseScene.movePlayerAnimation(mSelectActorPlayer.getPlayerId(), moveMapPointList, 
+					mBaseScene.movePlayerAnimation(mSelectActorPlayer.getPlayerId(), moveMapPointList, 
 							new MapBattleScene.IAnimationCallback() {
 						@Override
 						public void doAction() {
 							// カーソルを消す
-							baseScene.hideCursorSprite();
+							mBaseScene.hideCursorSprite();
 							
 							// 移動結果をマップ情報に反映
 							// プレイヤーのステータスを移動済みにする
@@ -280,7 +313,7 @@ public class GameManager {
 								showSelectMenu();
 							} else {
 								// アニメーション停止
-								baseScene.stopWalkingPlayerAnimation(mSelectActorPlayer.getPlayerId());
+								mBaseScene.stopWalkingPlayerAnimation(mSelectActorPlayer.getPlayerId());
 								
 								changeGameState(GameStateType.PLAYER_TURN);
 							}	
@@ -305,27 +338,27 @@ public class GameManager {
 	// プレイヤー追加とか
 	//---------------------------------------------------------
 	private void addPlayer(int mapPointX, int mapPointY, int playerId, int playerImageId) {
-		if (playerList.indexOfKey(playerId) >= 0) {
+		if (mPlayerList.indexOfKey(playerId) >= 0) {
 			// すでに追加済み
 			return;
 		}
  		ActorPlayerDto player = createActorPlayer(playerId, playerImageId);
-		playerList.put(playerId, player);
+		mPlayerList.put(playerId, player);
 		mMapManager.addPlayer(mapPointX, mapPointY, player);
 		// Scene側でSpriteを生成
-		baseScene.createPlayerSprite(player,
+		mBaseScene.createPlayerSprite(player,
 				calcGridPosition(mapPointX, mapPointY));
 	}
 	private void addEnemy(int mapPointX, int mapPointY, int enemyId, int enemyImageId) {
-		if (enemyList.indexOfKey(enemyId) >= 0) {
+		if (mEnemyList.indexOfKey(enemyId) >= 0) {
 			// すでに追加済み
 			return;
 		}
 		ActorPlayerDto enemy = createActorPlayer(enemyId, enemyImageId);
-		enemyList.put(enemyId, enemy);
+		mEnemyList.put(enemyId, enemy);
 		mMapManager.addEnemy(mapPointX, mapPointY, enemy);
 		// Scene側でSpriteを生成
-		baseScene.createEnemySprite(enemy, 
+		mBaseScene.createEnemySprite(enemy, 
 				calcGridPosition(mapPointX, mapPointY));
 	}
 	private ActorPlayerDto createActorPlayer(int playerId, int imageResId) {
@@ -354,7 +387,7 @@ public class GameManager {
 	}
 	private void addObstacle(int mapPointX, int mapPointY) {
 		mMapManager.addObstacle(mapPointX, mapPointY);
-		baseScene.createObstacleSprite(calcGridPosition(mapPointX, mapPointY), 16 * 12 + 0);
+		mBaseScene.createObstacleSprite(calcGridPosition(mapPointX, mapPointY), 16 * 12 + 0);
 	}
 	//---------------------------------------------------------
 	// カーソル表示関連
@@ -376,9 +409,9 @@ public class GameManager {
 		}
 		for (MapItem mapItem : mapItems) {
 			MapPoint mapItemPoint = calcGridPosition(mapItem.getMapPointX(), mapItem.getMapPointY());
-			baseScene.createMoveCursorSprite(mapItemPoint);
+			mBaseScene.createMoveCursorSprite(mapItemPoint);
 		}
-		baseScene.sortChildren();
+		mBaseScene.sortChildren();
 		return true;
 	}
 	
@@ -395,9 +428,9 @@ public class GameManager {
 		List<MapItem> mapItems = mMapManager.actorPlayerFindAttackDist(mapPoint);
 		for (MapItem mapItem : mapItems) {
 			MapPoint mapItemPoint = calcGridPosition(mapItem.getMapPointX(), mapItem.getMapPointY());
-			baseScene.createAttackCursorSprite(mapItemPoint);
+			mBaseScene.createAttackCursorSprite(mapItemPoint);
 		}
-		baseScene.sortChildren();
+		mBaseScene.sortChildren();
 	}
 	
 	// ----------------------------------------------------------
@@ -425,10 +458,10 @@ public class GameManager {
 				// 待機状態にする
 				mSelectActorPlayer.setWaitDone(true);
 				// アニメーション停止
-				baseScene.stopWalkingPlayerAnimation(mSelectActorPlayer.getPlayerId());
+				mBaseScene.stopWalkingPlayerAnimation(mSelectActorPlayer.getPlayerId());
 				
 				changeGameState(GameStateType.PLAYER_TURN);
-				baseScene.hideCursorSprite();
+				mBaseScene.hideCursorSprite();
 				break;
 			case MENU_CANCEL: // キャンセル
 				break;
@@ -457,15 +490,15 @@ public class GameManager {
 				"isMoveDone=[" + mSelectActorPlayer.isMoveDone() + "]");
 		
 		changeGameState(GameStateType.PLAYER_SELECT);
-		baseScene.showSelectMenu(mSelectActorPlayer.isAttackDone(), mSelectActorPlayer.isMoveDone(), 
+		mBaseScene.showSelectMenu(mSelectActorPlayer.isAttackDone(), mSelectActorPlayer.isMoveDone(), 
 				getMapItemToMapPoint(mSelectActorPlayer));
 		// プレイヤーのステータスも非表示
-		baseScene.showPlayerStatusWindow(mSelectActorPlayer.getPlayerId());
+		mBaseScene.showPlayerStatusWindow(mSelectActorPlayer.getPlayerId());
 	}
 	private void hideSelectMenu() {
-		baseScene.hideSelectMenu();
+		mBaseScene.hideSelectMenu();
 		// プレイヤーのステータスも非表示
-		baseScene.hidePlayerStatusWindow();
+		mBaseScene.hidePlayerStatusWindow();
 	}
 	
 	// ----------------------------------------------------------
@@ -477,46 +510,81 @@ public class GameManager {
 	 */
 	private void changeGameState(GameStateType pGameStateType) {
 		Log.d(TAG, "GameState [" + mGameState + "] => [" + pGameStateType + "]");
+
+		// 初期化の場合
+		if (pGameStateType == GameStateType.INIT) {
+			// 何かステータス関連で初期処理があればここでやる
+			mGameState = pGameStateType;
 		
-		if (pGameStateType == GameStateType.PLAYER_TURN) {
-			// プレイヤー勝利判定
-			if (!isBeingEnemy()) {
-				// プレイヤー処理
-				// TODO: 勝利のカットインを入れてコールバックで次のシナリオへ
-				Log.d(TAG, "Player Win");
+		} else if (pGameStateType == GameStateType.ENEMY_TURN) {
+			// 敵の勝利判定
+			if (!isBeingPlayer()) {
+				// 敵勝利
+				// 敗北のカットインを入れてコールバックでタイトル画面に戻す
+				mBaseScene.showGameOver(new MapBattleScene.IAnimationCallback() {
+					@Override
+					public void doAction() {
+						// タイトル画面に戻る
+						mBaseScene.getBaseActivity().backToInitial();
+					}
+				});
+				Log.d(TAG, "Player Lose");
 				mGameState = GameStateType.END;
-				return ;
+			} else {
+				// ターン終了判定
+				if (mMapManager.checkPlayerTurnEnd(MapDataType.ENEMY)) {
+					
+					// プレイヤーターン開始
+					mBaseScene.showPlayerTurn(new MapBattleScene.IAnimationCallback() {
+						@Override
+						public void doAction() {
+							// 全プレイヤーを行動可能にしてアニメーションを再開
+							mMapManager.refreshAllActorWait(MapDataType.PLAYER);
+							int count = mPlayerList.size();
+							for (int i = 0; i < count; i++) {
+								mBaseScene.startWalkingPlayerAnimation(mPlayerList.valueAt(i).getPlayerId());
+							}
+							// ターン終了=> プレイヤーターン
+							mGameState = GameStateType.PLAYER_TURN;
+						}
+					});
+					// タイマー停止
+					mBaseScene.unregisterUpdateHandler(mEnemyTurnUpdateHandler);
+					Log.d(TAG, "EnemyTurn END");
+				} else {
+					mGameState = pGameStateType;
+				}
 			}
 			
-			// プレイヤーターンエンド判定
-			if (mMapManager.checkPlayerTurnEnd()) {
-				// ターン終了=> 敵のターン
-				mGameState = GameStateType.ENEMY_TURN;
-				// 敵のターン処理を実行
-				changeEnemyTurn();
+		} else if (pGameStateType == GameStateType.PLAYER_TURN) {
+			
+			// プレイヤー勝利判定
+			if (!isBeingEnemy()) {
+				// 勝利のカットインを入れてコールバックで次のシナリオへ
+				mBaseScene.showPlayerWin(new MapBattleScene.IAnimationCallback() {
+					@Override
+					public void doAction() {
+						// TODO: 一旦タイトル画面に戻る
+						mBaseScene.getBaseActivity().backToInitial();
+					}
+				});
+				Log.d(TAG, "Player Win");
+				mGameState = GameStateType.END;
 				
-				// 敵の勝利判定
-				if (!isBeingPlayer()) {
-					// 敵勝利
-					// TODO: 敗北のカットインを入れてコールバックでタイトル画面に戻す
-					Log.d(TAG, "Player Lose");
-					mGameState = GameStateType.END;
-					return ;
-				}
-				
-				// プレイヤーターン開始
-				// TODO: アニメーション呼び出し
-				
-				// 全プレイヤーを行動可能にしてアニメーションを再開
-				mMapManager.refreshAllActorWait(MapDataType.PLAYER);
-				int count = playerList.size();
-				for (int i = 0; i < count; i++) {
-					baseScene.startWalkingPlayerAnimation(playerList.valueAt(i).getPlayerId());
+			} else {
+				// プレイヤーターンエンド判定
+				if (mMapManager.checkPlayerTurnEnd(MapDataType.PLAYER)) {
+					// ターン終了=> 敵のターン
+					mGameState = GameStateType.ENEMY_TURN;
+					// 敵のターン処理を実行
+					changeEnemyTurn();
+							
+				} else {
+					mGameState = pGameStateType;
 				}
 			}
-			mGameState = GameStateType.PLAYER_TURN;
 		} else {
-			mGameState = pGameStateType;			
+			mGameState = pGameStateType;
 		}
 	}
 	
@@ -544,20 +612,22 @@ public class GameManager {
 		// 最初の位置と違う場合、移動する
 		if (enemyMovePoint != null && !enemyMovePoint.isMuchMapPoint(getMapItemToMapPoint(enemyMapItem))) {
 			
+			changeGameState(GameStateType.ENEMY_MOVE);
+			
 			// 移動List作成
 			List<MapPoint> moveMapPointList = mMapManager.actorPlayerCreateMovePointList(
 					enemyMapItem, enemyMovePoint);
 			if (moveMapPointList != null) {
 				// 移動先のカーソルの色を変える
-				baseScene.selectCursor(enemyMovePoint);
+				mBaseScene.selectCursor(enemyMovePoint);
 				
 				// 移動リストを引数にScene側の移動アニメーションを呼び出す
-				baseScene.moveEnemyAnimation(enemyMapItem.getPlayerId(), moveMapPointList, 
+				mBaseScene.moveEnemyAnimation(enemyMapItem.getPlayerId(), moveMapPointList, 
 						new MapBattleScene.IAnimationCallback() {
 					@Override
 					public void doAction() {
 						// カーソルを消す
-						baseScene.hideCursorSprite();
+						mBaseScene.hideCursorSprite();
 						
 						// 移動結果をマップ情報に反映
 						// プレイヤーのステータスを移動済みにする
@@ -567,45 +637,53 @@ public class GameManager {
 						
 						// 行動可能であれば攻撃する
 						if (!enemyMapItem.isWaitDone()) {
+							
+							changeGameState(GameStateType.ENEMY_ATTACK);
+							
 							// 攻撃範囲表示
 							showAttackDistCursor(enemyMapItem);
 										
 							// 攻撃範囲にプレイヤーが存在する場合
+							// TODO: 判定仮
 							if (true) {
 								boolean isDead = battleStart(enemyMapItem, attackTarget);
 								// 攻撃済みにする
 								enemyMapItem.setAttackDone(true);
 								if (enemyMapItem.isWaitDone()) {
 									// アニメーション停止
-									baseScene.stopWalkingEnemyAnimation(enemyMapItem.getPlayerId());
+									mBaseScene.stopWalkingEnemyAnimation(enemyMapItem.getPlayerId());
 								}
 								// 攻撃終了後 倒れたアクターをマップ上から削除とかカーソルを初期化など
 								mMapManager.attackEndChangeMapItem(enemyMapItem, attackTarget, isDead);
 							}						
 						} else {
 							// アニメーション停止
-							baseScene.stopWalkingEnemyAnimation(enemyMapItem.getPlayerId());
+							mBaseScene.stopWalkingEnemyAnimation(enemyMapItem.getPlayerId());
 						}	
 
 						// 待機
 						enemyMapItem.setWaitDone(true);
+						changeGameState(GameStateType.ENEMY_TURN);
 					}
-				});
+				}); // コールバックEND
+				
 			} else {
 				// 待機
 				enemyMapItem.setWaitDone(true);
+				changeGameState(GameStateType.ENEMY_TURN);
 			}
 		} else {
 			// 待機
 			enemyMapItem.setWaitDone(true);
+			changeGameState(GameStateType.ENEMY_TURN);
 		}
 	}
 	
 	private boolean isBeingPlayer() {
-		return isBeingActor(playerList);
+		return isBeingActor(mPlayerList);
 	}
 	private boolean isBeingEnemy() {
-		return isBeingActor(enemyList);
+		return isBeingActor(mEnemyList);
 	}
 	private boolean isBeingActor(SparseArray<ActorPlayerDto> actorArray) {
 		boolean isBeingActor = false;
@@ -650,19 +728,19 @@ public class GameManager {
 		// TODO: [将来対応]キャラが攻撃モーションと敵の方向を向く,敵キャラがダメージモーション
 		
 		// ダメージを表示
-		baseScene.showDamageText(damage, getMapItemToMapPoint(toPlayerMapItem));
+		mBaseScene.showDamageText(damage, getMapItemToMapPoint(toPlayerMapItem));
 		// ステータスウィンドウへの反映と死亡時はマップ上から消す
 		if (toPlayerMapItem.getMapDataType() == MapDataType.ENEMY) {
-			baseScene.refreshEnemyStatusWindow(toPlayerMapItem.getPlayerId());
+			mBaseScene.refreshEnemyStatusWindow(toPlayerMapItem.getPlayerId());
 			if (isDead) {
-				baseScene.removeEnemy(toPlayerMapItem.getPlayerId());
-				enemyList.remove(toPlayerMapItem.getPlayerId());
+				mBaseScene.removeEnemy(toPlayerMapItem.getPlayerId());
+				mEnemyList.remove(toPlayerMapItem.getPlayerId());
 			}
 		} else if (toPlayerMapItem.getMapDataType() == MapDataType.PLAYER) {
-			baseScene.refreshPlayerStatusWindow(toPlayerMapItem.getPlayerId());
+			mBaseScene.refreshPlayerStatusWindow(toPlayerMapItem.getPlayerId());
 			if (isDead) {
-				baseScene.removePlayer(toPlayerMapItem.getPlayerId());
-				playerList.remove(toPlayerMapItem.getPlayerId());
+				mBaseScene.removePlayer(toPlayerMapItem.getPlayerId());
+				mPlayerList.remove(toPlayerMapItem.getPlayerId());
 			}
 		}
 		return isDead;
@@ -675,10 +753,10 @@ public class GameManager {
 		ActorPlayerDto player = null;
 		switch (actorMapItem.getMapDataType()) {
 		case PLAYER:
-			player = playerList.get(actorMapItem.getPlayerId());
+			player = mPlayerList.get(actorMapItem.getPlayerId());
 			break;
 		case ENEMY:
-			player = enemyList.get(actorMapItem.getPlayerId());
+			player = mEnemyList.get(actorMapItem.getPlayerId());
 			break;
 		default:
 			break;
@@ -686,87 +764,6 @@ public class GameManager {
 		return player;
 	}
 
-//	private void checkTouchNotEnd() {
-//		View v = mMapManager.isSelectPlayerEnd();
-//		if (v != null) {
-//			touchedPlayer(v);
-//		}
-//	}
-//	// --------- ターン
-//	
-//	public void actionEnd(MapDataType mapDataType) {
-//		switch (mapDataType) {
-//		case PLAYER:
-//			mGameState = GameStateType.PLAYER_TURN;
-//			break;
-//		case ENEMY:
-//			mGameState = GameStateType.ENEMY_TURN;
-//			break;
-//		default:
-//			// 例外
-//			break;
-//		}
-//	}
-//	/**
-//	 * ゲームステータス更新.
-//	 * @return true:変化あり / false:変化なし
-//	 */
-//	public boolean updateGameState() {
-//		boolean isUpdate = false;
-//		
-//		if (mGameState == GameStateType.PLAYER_TURN) {
-//			List<CharacterSpriteView> players = mMapManager.getPlayerList();
-//			if (players == null || players.isEmpty() || players.size() == 0) {
-//				// エネミー勝利
-//				enemyWin();
-//				isUpdate = true;
-//				return isUpdate;
-//			}
-//			List<CharacterSpriteView> enemys = mMapManager.getEnemyList();
-//			if (enemys == null || enemys.isEmpty() || enemys.size() == 0) {
-//				// プレイヤー勝利
-//				playerWin();
-//				isUpdate = true;
-//				return isUpdate;
-//			}
-//			
-//			for (CharacterSpriteView player : players) {
-//				if (!player.isMoveDone() || !player.isAttackDone()) {
-//					return isUpdate;
-//				}
-//			}
-//			// エネミーターン
-//			isUpdate = true;
-//			changeEnemyTurn();
-//			
-//		} else if (mGameState == GameStateType.ENEMY_TURN) {
-//			List<CharacterSpriteView> players = mMapManager.getPlayerList();
-//			if (players == null || players.isEmpty() || players.size() == 0) {
-//				// エネミー勝利
-//				enemyWin();
-//				isUpdate = true;
-//				return isUpdate;
-//			}
-//			List<CharacterSpriteView> enemys = mMapManager.getEnemyList();
-//			if (enemys == null || enemys.isEmpty() || enemys.size() == 0) {
-//				// プレイヤー勝利
-//				playerWin();
-//				isUpdate = true;
-//				return isUpdate;
-//			}
-//			
-//			for (CharacterSpriteView enemy : enemys) {
-//				if (!enemy.isMoveDone() || !enemy.isAttackDone()) {
-//					return isUpdate;
-//				}
-//			}
-//			// プレイヤーターン
-//			isUpdate = true;
-//			changePlayerTurn();
-//		}
-//		return isUpdate;
-//	}
-//	
 //	private void changePlayerTurn() {
 //		gameLog("PlayerTurn");
 //		
@@ -799,25 +796,19 @@ public class GameManager {
 
 		// 全エネミーを行動可能にする
 		mMapManager.refreshAllActorWait(MapDataType.ENEMY);
-		int count = enemyList.size();
+		int count = mEnemyList.size();
 		for (int i = 0; i < count; i++) {
-			baseScene.startWalkingEnemyAnimation(enemyList.valueAt(i).getPlayerId());
+			mBaseScene.startWalkingEnemyAnimation(mEnemyList.valueAt(i).getPlayerId());
 		}
 		
 		// 敵のターンアニメーション
-		// TODO: baseを呼ぶ
-		
-		// モンスターのリストを取得
-		for (int i = 0; i < count; i++) {
-			ActorPlayerDto enemy = enemyList.valueAt(i);
-			ActorPlayerMapItem enemyMapItem = mMapManager.getPlayerIdToActorMapItem(
-					enemy.getPlayerId(), MapDataType.ENEMY);
-			
-			Log.d(TAG, "Enemy isAttackDone["+ enemyMapItem.isAttackDone() + "] isMoveDoen["+ enemyMapItem.isMoveDone() + "]");
-			// 行動させる
-			doEnemyAction(enemy, enemyMapItem);
-			// TODO: 普通にループしてるとアニメーションのコールバックが終わる前に次のキャラが動いていまう。クリア判定とかもいっちゃう
-		}
+		mBaseScene.showEnemyTurn(new MapBattleScene.IAnimationCallback() {
+			@Override
+			public void doAction() {
+				// 敵のターンのタイマーを開始
+				mBaseScene.registerUpdateHandler(mEnemyTurnUpdateHandler);
+			}
+		});
 	}
 	
 //	private void playerWin() {
