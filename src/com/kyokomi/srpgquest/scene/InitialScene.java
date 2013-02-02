@@ -13,6 +13,7 @@ import org.andengine.util.modifier.ease.EaseBackInOut;
 import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.core.utils.ResourceUtil;
+import com.kyokomi.pazuruquest.scene.PazuruQuestScene;
 
 import android.view.KeyEvent;
 
@@ -74,8 +75,8 @@ public class InitialScene extends KeyListenScene implements ButtonSprite.OnClick
 						EaseBackInOut.getInstance())));
 		
 		ButtonSprite btnRanking = getBaseActivity().getResourceUtil().getButtonSprite(
-				"initial_btn_02.png", 
-				"initial_btn_02_p.png");
+				"initial_btn_01.png", 
+				"initial_btn_01_p.png");
 		placeToCenterX(btnRanking, 110);
 		btnRanking.setY(btnRanking.getY() + 400);
 		btnRanking.setTag(INITIAL_RANKING);
@@ -92,8 +93,8 @@ public class InitialScene extends KeyListenScene implements ButtonSprite.OnClick
 						EaseBackInOut.getInstance())));
 		
 		ButtonSprite btnRecommend = getBaseActivity().getResourceUtil().getButtonSprite(
-				"initial_btn_03.png", 
-				"initial_btn_03_p.png");
+				"initial_btn_01.png", 
+				"initial_btn_01_p.png");
 		placeToCenterX(btnRecommend, 180);
 		btnRecommend.setY(btnRecommend.getY() + 400);
 		btnRecommend.setTag(INITIAL_FEEDBACK);
@@ -141,7 +142,7 @@ public class InitialScene extends KeyListenScene implements ButtonSprite.OnClick
 			showScene(new SandboxScene(getBaseActivity()));
 			break;
 		case INITIAL_FEEDBACK:
-			showScene(new MapBattleScene(getBaseActivity()));
+			showScene(new PazuruQuestScene(getBaseActivity()));
 			break;
 		}
 	}
