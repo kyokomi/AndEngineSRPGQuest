@@ -293,19 +293,6 @@ public class SandboxScene extends KeyListenScene
 		mFont = createFont(Typeface.DEFAULT, 16, Color.WHITE);
 	}
 	
-	private Font createFont(Typeface typeface, int fontSize, Color color) {
-		Texture texture = new BitmapTextureAtlas(
-				this.getBaseActivity().getTextureManager(), 512, 512, 
-				TextureOptions.BILINEAR_PREMULTIPLYALPHA);
-		
-		Font font = new Font(this.getBaseActivity().getFontManager(), 
-				texture, typeface, fontSize, true, color);
-		
-		this.getBaseActivity().getTextureManager().loadTexture(texture);
-		this.getBaseActivity().getFontManager().loadFont(font);
-		
-		return font;
-	}
 	/**
 	 * 文字列入力ダイアログ生成サンプル.
 	 */

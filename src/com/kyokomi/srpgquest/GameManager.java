@@ -21,6 +21,7 @@ import com.kyokomi.srpgquest.map.common.MapPoint;
 import com.kyokomi.srpgquest.map.item.ActorPlayerMapItem;
 import com.kyokomi.srpgquest.map.item.MapItem;
 import com.kyokomi.srpgquest.scene.MapBattleScene;
+import com.kyokomi.srpgquest.scene.MapBattleScene.SoundType;
 
 import android.util.Log;
 import android.util.SparseArray;
@@ -229,6 +230,8 @@ public class GameManager {
 						
 			// プレイヤーキャラ選択が可能なので行動可能であればウィンドウ表示
 			if (touchMapDataType == MapDataType.PLAYER) {
+				mBaseScene.playSound(SoundType.BTN_PRESSED_SOUND);
+				
 				ActorPlayerMapItem actorPlayerMapItem = (ActorPlayerMapItem) mapItem;
 				
 				// 敵のステータスは非表示
@@ -245,6 +248,8 @@ public class GameManager {
 					mBaseScene.showPlayerStatusWindow(actorPlayerMapItem.getPlayerId());
 				}
 			} else if (touchMapDataType == MapDataType.ENEMY) {
+				mBaseScene.playSound(SoundType.BTN_PRESSED_SOUND);
+				
 				ActorPlayerMapItem actorEnemyMapItem = (ActorPlayerMapItem) mapItem;
 				// プレイヤーのステータス非表示
 				mBaseScene.hidePlayerStatusWindow();
@@ -265,6 +270,8 @@ public class GameManager {
 		case PLAYER_ATTACK:
 			// 攻撃を選択したときは敵しかタップイベントに反応しない
 			if (touchMapDataType == MapDataType.ATTACK_DIST) {
+				mBaseScene.playSound(SoundType.BTN_PRESSED_SOUND);
+				
 				// 敵が存在するカーソルかチェック
 				ActorPlayerMapItem enemy = mMapManager.getMapPointToActorPlayer(mapPoint);
 				if (enemy != null) {
@@ -297,6 +304,8 @@ public class GameManager {
 		case PLAYER_MOVE:
 			// 移動を選択したときは移動可能カーソルにしか反応しない
 			if (touchMapDataType == MapDataType.MOVE_DIST) {
+				mBaseScene.playSound(SoundType.BTN_PRESSED_SOUND);
+				
 				if (mSelectActorPlayer != null) {
 					
 					// 移動List作成
@@ -457,16 +466,19 @@ public class GameManager {
 		if (mSelectActorPlayer != null) {
 			switch (SelectMenuType.findTag(pressedBtnTag)) {
 			case MENU_ATTACK: // 攻撃
+				mBaseScene.playSound(SoundType.BTN_PRESSED_SOUND);
 				changeGameState(GameStateType.PLAYER_ATTACK);
 				showAttackDistCursor(mSelectActorPlayer);
 				break;
 			case MENU_MOVE: // 移動
+				mBaseScene.playSound(SoundType.BTN_PRESSED_SOUND);
 				changeGameState(GameStateType.PLAYER_MOVE);
 				if (!showMoveDistCursor(mSelectActorPlayer)) {
 					changeGameState(GameStateType.PLAYER_TURN);
 				}
 				break;
 			case MENU_WAIT: // 待機
+				mBaseScene.playSound(SoundType.BTN_PRESSED_SOUND);
 				// 待機状態にする
 				mSelectActorPlayer.setWaitDone(true);
 				// アニメーション停止
@@ -476,6 +488,7 @@ public class GameManager {
 				mBaseScene.hideCursorSprite();
 				break;
 			case MENU_CANCEL: // キャンセル
+				mBaseScene.playSound(SoundType.BTN_PRESSED_SOUND);
 				break;
 			default:
 				break;
@@ -621,8 +634,7 @@ public class GameManager {
 		mBaseScene.showPlayerWin(new MapBattleScene.IAnimationCallback() {
 			@Override
 			public void doAction() {
-				// TODO: 一旦タイトル画面に戻る
-				mBaseScene.getBaseActivity().backToInitial();
+				mBaseScene.clearMapBattle();
 			}
 		});
 		// カットイン中に操作させないためにコールバックに入れない
@@ -635,7 +647,7 @@ public class GameManager {
 			@Override
 			public void doAction() {
 				// タイトル画面に戻る
-				mBaseScene.getBaseActivity().backToInitial();
+				mBaseScene.gameOverMapBattle();
 			}
 		});
 		// カットイン中に操作させないためにコールバックに入れない

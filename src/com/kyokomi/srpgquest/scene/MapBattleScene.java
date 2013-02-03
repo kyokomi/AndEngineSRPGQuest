@@ -1,8 +1,11 @@
 package com.kyokomi.srpgquest.scene;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.andengine.audio.music.Music;
+import org.andengine.audio.sound.Sound;
 import org.andengine.entity.IEntity;
 import org.andengine.entity.modifier.AlphaModifier;
 import org.andengine.entity.modifier.DelayModifier;
@@ -17,15 +20,20 @@ import org.andengine.entity.primitive.Line;
 import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.Scene;
+import org.andengine.entity.shape.IAreaShape;
 import org.andengine.entity.sprite.ButtonSprite;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.sprite.TiledSprite;
 import org.andengine.entity.text.Text;
+import org.andengine.entity.text.TextOptions;
 import org.andengine.input.touch.TouchEvent;
+import org.andengine.opengl.font.Font;
+import org.andengine.util.HorizontalAlign;
 import org.andengine.util.color.Color;
 import org.andengine.util.modifier.IModifier;
 import org.andengine.util.modifier.ease.EaseBackInOut;
 
+import android.graphics.Typeface;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 
@@ -85,6 +93,26 @@ public class MapBattleScene extends KeyListenScene
 	
 	private TalkLayer mTalkLayer;
 	
+	// カットイン
+	/** 勝利条件カットイン. */
+	private Rectangle mClearConditionCutInRect;
+	/** プレイヤーターンカットイン. */
+	private Sprite mPlayerTurnCutInSprite;
+	/** エネミーターンカットイン. */
+	private Sprite mEnemyTurnCutInSprite;
+	/** プレイヤー勝利カットイン. */
+	private Sprite mPlayerWinCutInSprite;
+	/** ゲームオーバーカットイン. */
+	private Sprite mGameOverCutInSprite;
+	
+	// ----- SE, BGM -----
+	private Sound mBtnPressedSound;
+	private Sound mAttackSound;
+	private Music mTutorialBGM;
+	private Music mBattleBGM;
+	private Music mClearBGM;
+	private Music mGameOverBGM;
+	
 	public MapBattleScene(MultiSceneActivity baseActivity) {
 		super(baseActivity);
 		init();
@@ -92,11 +120,69 @@ public class MapBattleScene extends KeyListenScene
 	
 	@Override
 	public void prepareSoundAndMusic() {
-			
+		// 効果音をロード
+		try {
+			mAttackSound = createSoundFromFileName("SE_ATTACK_ZANGEKI_01.wav");
+			mBtnPressedSound = createSoundFromFileName("btn_se1.wav");
+			mTutorialBGM = createMusicFromFileName("tutorial_bgm1.mp3");
+			mBattleBGM = createMusicFromFileName("battle_bgm1.mp3");
+			mClearBGM = createMusicFromFileName("clear_bgm1.mp3");
+			mGameOverBGM = createMusicFromFileName("game_over_bgm1.mp3");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}	
 	}
 
+	// ------- BGM関連 -----------
+	public enum SoundType {
+		ATTACK_SOUND,
+		BTN_PRESSED_SOUND
+	}
+	public void playSound(SoundType soundType) {
+		switch (soundType) {
+		case ATTACK_SOUND:
+			mAttackSound.play();
+			break;
+		case BTN_PRESSED_SOUND:
+			mBtnPressedSound.play();
+			break;
+		default:
+			break;
+		}
+		
+	}
+	private void playMusic(Music music) {
+		if (music.isPlaying()) {
+			return;
+		}
+		if (mTutorialBGM.isPlaying()) {
+			mTutorialBGM.stop();
+		}
+		if (mBattleBGM.isPlaying()) {
+			mBattleBGM.stop();
+		}
+		if (mClearBGM.isPlaying()) {
+			mClearBGM.stop();
+		}
+		if (mGameOverBGM.isPlaying()) {
+			mGameOverBGM.stop();
+		}
+		music.setLooping(true);
+		music.play();
+	}
+	private void releseMusic() {
+		mTutorialBGM.release();
+		mBattleBGM.release();
+		mClearBGM.release();
+		mGameOverBGM.release();
+	}
+	
 	@Override
 	public boolean dispatchKeyEvent(KeyEvent e) {
+		// バックボタンが押された時
+		if (e.getAction() == KeyEvent.ACTION_DOWN && e.getKeyCode() == KeyEvent.KEYCODE_BACK) { 
+			releseMusic();
+		}
 		return false;
 	}
 
@@ -120,6 +206,7 @@ public class MapBattleScene extends KeyListenScene
 		
 		// カットイン初期化
 		initCutInSprite();
+		initClearConditionCutIn();
 	
 		// メニューを作っておく
 		createSelectMenuSprite();
@@ -132,12 +219,16 @@ public class MapBattleScene extends KeyListenScene
 		// 会話レイヤーを生成
 		initTalk();
 		
+		// BGM再生開始
+		playMusic(mTutorialBGM);
+		
 		// Sceneのタッチリスナーを登録
 		setOnSceneTouchListener(this);
 			
 		// FPS表示
 		initFps(getWindowWidth() - 100, getWindowHeight() - 20, getFont());
 	}
+	
 	/**
 	 * 背景表示.
 	 */
@@ -155,6 +246,63 @@ public class MapBattleScene extends KeyListenScene
 		mDamageText.setColor(Color.TRANSPARENT);
 		mDamageText.setZIndex(LayerZIndex.TEXT_LAYER.getValue());
 		attachChild(mDamageText);
+	}
+	
+	// --------------- カットイン系 --------------
+	private void initClearConditionCutIn() {
+		Font blueFont = createFont(Typeface.SANS_SERIF, 36, Color.BLUE);
+		Font redFont = createFont(Typeface.SANS_SERIF, 36, Color.RED);
+		mClearConditionCutInRect = new Rectangle(0, 0, getWindowWidth(), getWindowHeight(), 
+				getBaseActivity().getVertexBufferObjectManager());
+		mClearConditionCutInRect.setColor(Color.BLACK);
+		mClearConditionCutInRect.setAlpha(0.7f);
+		mClearConditionCutInRect.setVisible(false);
+		mClearConditionCutInRect.setZIndex(LayerZIndex.CUTIN_LAYER.getValue());
+		attachChild(mClearConditionCutInRect);
+		
+		Text winConditionTitle = new Text(16, 16, blueFont, "- 勝利条件 -", 
+				new TextOptions(HorizontalAlign.CENTER), 
+				getBaseActivity().getVertexBufferObjectManager());
+		placeToCenterX(winConditionTitle, 20);
+		mClearConditionCutInRect.attachChild(winConditionTitle);
+		
+		Text winConditionDetial = new Text(16, 16, getFont(), "全ての敵を倒せ",
+				new TextOptions(HorizontalAlign.CENTER),
+				getBaseActivity().getVertexBufferObjectManager());
+		placeToCenterX(winConditionDetial, winConditionTitle.getY() + winConditionTitle.getHeight() + 20);
+		mClearConditionCutInRect.attachChild(winConditionDetial);
+		
+		Text gameOverConditionTitle = new Text(16, 16, redFont, "- 敗北条件 -",
+				new TextOptions(HorizontalAlign.CENTER),
+				getBaseActivity().getVertexBufferObjectManager());
+		placeToCenterX(gameOverConditionTitle, winConditionDetial.getY() + winConditionDetial.getHeight() + 50);
+		mClearConditionCutInRect.attachChild(gameOverConditionTitle);
+		
+		Text gameOverConditionDetial = new Text(16, 16, getFont(), "プレイヤーキャラの全滅",
+				new TextOptions(HorizontalAlign.CENTER),
+				getBaseActivity().getVertexBufferObjectManager());
+		placeToCenterX(gameOverConditionDetial, gameOverConditionTitle.getY() + gameOverConditionTitle.getHeight() + 20);
+		mClearConditionCutInRect.attachChild(gameOverConditionDetial);
+	}
+	public void showClearCondition() {
+		mClearConditionCutInRect.setVisible(true);
+		registerTouchArea(mClearConditionCutInRect);
+	}
+	public void hideClearCondition() {
+		mClearConditionCutInRect.setVisible(false);
+		unregisterTouchArea(mClearConditionCutInRect);
+	}
+	
+	private void initCutInSprite() {
+		mPlayerTurnCutInSprite = getResourceSprite("player_turn.png");
+		attachChildCutInSprite(mPlayerTurnCutInSprite);
+		mEnemyTurnCutInSprite = getResourceSprite("enemy_turn.png");
+		attachChildCutInSprite(mEnemyTurnCutInSprite);
+		mPlayerWinCutInSprite = getResourceSprite("player_win.png");
+		attachChildCutInSprite(mPlayerWinCutInSprite);
+		mGameOverCutInSprite = getResourceSprite("game_over.jpg");
+		mGameOverCutInSprite.setSize(getWindowWidth(), getWindowHeight());
+		attachChildCutInSprite(mGameOverCutInSprite);
 	}
 	
 	// ----------------------- actor layer ---------------------------
@@ -448,6 +596,8 @@ public class MapBattleScene extends KeyListenScene
 	 */
 	public void showDamageText(final int damage, final MapPoint mapPoint) {
 		
+		playSound(SoundType.ATTACK_SOUND);
+		
 		mDamageText.setScale(0.5f);
 		mDamageText.setX(mapPoint.getX());
 		mDamageText.setY(mapPoint.getY());
@@ -567,41 +717,30 @@ public class MapBattleScene extends KeyListenScene
 		// 非表示にする
 		hideSelectMenu();
 	}
-	// --------------- カットイン系 --------------
-	private Sprite mPlayerTurnCutInSprite;
-	private Sprite mEnemyTurnCutInSprite;
-	private Sprite mPlayerWinCutInSprite;
-	private Sprite mGameOverCutInSprite;
-	
-	private void initCutInSprite() {
-		mPlayerTurnCutInSprite = getResourceSprite("player_turn.png");
-		attachChildCutInSprite(mPlayerTurnCutInSprite);
-		mEnemyTurnCutInSprite = getResourceSprite("enemy_turn.png");
-		attachChildCutInSprite(mEnemyTurnCutInSprite);
-		mPlayerWinCutInSprite = getResourceSprite("player_win.png");
-		attachChildCutInSprite(mPlayerWinCutInSprite);
-		mGameOverCutInSprite = getResourceSprite("game_over.png");
-		attachChildCutInSprite(mGameOverCutInSprite);
-	}
-	private void attachChildCutInSprite(Sprite sprite) {
+	// ---------------- カットイン関連 ----------------------
+	private void attachChildCutInSprite(IAreaShape sprite) {
 		placeToCenter(sprite);
 		sprite.setAlpha(0.0f);
 		sprite.setZIndex(LayerZIndex.CUTIN_LAYER.getValue());
 		attachChild(sprite);
 	}
 	public void showPlayerTurn(IAnimationCallback animationCallback) {
+		playMusic(mBattleBGM);
 		showCutInSprite(mPlayerTurnCutInSprite, animationCallback);
 	}
 	public void showEnemyTurn(IAnimationCallback animationCallback) {
+		playMusic(mBattleBGM);
 		showCutInSprite(mEnemyTurnCutInSprite, animationCallback);
 	}
 	public void showPlayerWin(IAnimationCallback animationCallback) {
+		playMusic(mClearBGM);
 		showCutInSprite(mPlayerWinCutInSprite, animationCallback);
 	}
 	public void showGameOver(IAnimationCallback animationCallback) {
+		playMusic(mGameOverBGM);
 		showCutInSprite(mGameOverCutInSprite, animationCallback);
 	}
-	private void showCutInSprite(final IEntity pEntity, final IAnimationCallback animationCallback) {
+	private void showCutInSprite(final IAreaShape pEntity, final IAnimationCallback animationCallback) {
 		pEntity.registerEntityModifier(new FadeInModifier(2.0f, new IEntityModifier.IEntityModifierListener() {
 			@Override public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {}
 			@Override public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
@@ -653,6 +792,8 @@ public class MapBattleScene extends KeyListenScene
 		mTalkLayer.hide();
 		mTalkLayer.setZIndex(LayerZIndex.TALK_LAYER.getValue());
 		attachChild(mTalkLayer);
+		
+		mTalkLayer.nextTalk();
 	}
 	
 	private TiledSprite getResourceFaceSprite(int tag, String faceFileName) {
@@ -733,21 +874,46 @@ public class MapBattleScene extends KeyListenScene
 			
 			// TODO: 一旦会話はGameManager外にする
 			if (mTalkLayer != null && mTalkLayer.contains(x, y) && mTalkLayer.isNextTalk()) {
+				
+				playSound(SoundType.BTN_PRESSED_SOUND);
+				
 				if (!mTalkLayer.nextTalk()) {
 					// 次の会話がなくなれば、会話レイヤーを開放
 					detachEntity(mTalkLayer);
-					// ゲーム開始
-					gameManager.gameStart();
+					
+					// 勝利条件表示
+					showClearCondition();
 				}
-			} else {
+			} else if (mClearConditionCutInRect != null && 
+					mClearConditionCutInRect.isVisible() && 
+					mClearConditionCutInRect.contains(x, y)) {
 				
+				playSound(SoundType.BTN_PRESSED_SOUND);
+				
+				// 勝利条件を非表示にする
+				hideClearCondition();
+				// ゲーム開始
+				gameManager.gameStart();
+				
+			} else {
 				// タッチイベント振り分け処理を呼ぶ
 				gameManager.onTouchMapItemEvent(x, y);
 			}
 		}
 		return false;
 	}
-		
+	
+	// ---- クリア時の処理 ----
+	public void clearMapBattle() {
+		// TODO: 次のステージへ？
+		releseMusic();
+		getBaseActivity().backToInitial();
+	}
+	public void gameOverMapBattle() {
+		// TODO: タイトルへ？
+		releseMusic();
+		getBaseActivity().backToInitial();
+	}
 	// ---- グリッド表示 ----
 	
 	private void testShowGrid() {

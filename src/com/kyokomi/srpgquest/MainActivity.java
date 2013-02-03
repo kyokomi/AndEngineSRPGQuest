@@ -1,5 +1,6 @@
 package com.kyokomi.srpgquest;
 
+import org.andengine.audio.music.MusicFactory;
 import org.andengine.audio.sound.SoundFactory;
 import org.andengine.engine.camera.Camera;
 import org.andengine.engine.options.EngineOptions;
@@ -46,8 +47,9 @@ public class MainActivity extends MultiSceneActivity {
 				 // 描画範囲
 				camera);
 		
-		// 効果音の使用を許可する
+		// 効果音とBGMの使用を許可する
 		eo.getAudioOptions().setNeedsSound(true);
+		eo.getAudioOptions().setNeedsMusic(true);
 		
 		return eo;
 	}
@@ -59,7 +61,9 @@ public class MainActivity extends MultiSceneActivity {
 	protected Scene onCreateScene() {
 		// サウンドファイルの格納場所を指定
 		SoundFactory.setAssetBasePath("mfx/");
-		
+		// サウンドファイルの格納場所を指定
+		MusicFactory.setAssetBasePath("mfx/");
+				
 		InitialScene initialScene = new InitialScene(this);
 		// 遷移管理用配列に追加
 		getSceneArray().add(initialScene);

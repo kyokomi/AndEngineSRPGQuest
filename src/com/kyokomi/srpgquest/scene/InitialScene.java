@@ -2,6 +2,7 @@ package com.kyokomi.srpgquest.scene;
 
 import java.io.IOException;
 
+import org.andengine.audio.music.Music;
 import org.andengine.audio.sound.Sound;
 import org.andengine.entity.modifier.DelayModifier;
 import org.andengine.entity.modifier.MoveModifier;
@@ -29,12 +30,17 @@ public class InitialScene extends KeyListenScene implements ButtonSprite.OnClick
 	private static final int INITIAL_RANKING = 2;
 	private static final int INITIAL_FEEDBACK = 3;
 	
+	/** タイトル画面のBGM. */
+	private Music titleBGM;
 	/** ボタンが押された時のサウンド. */
 	private Sound btnPressedSound;
 	
 	public InitialScene(MultiSceneActivity baseActivity) {
 		super(baseActivity);
 		init();
+		
+		titleBGM.setLooping(true);
+		titleBGM.play();
 	}
 
 	@Override
@@ -146,6 +152,7 @@ public class InitialScene extends KeyListenScene implements ButtonSprite.OnClick
 		// 効果音をロード
 		try {
 			btnPressedSound = createSoundFromFileName("clock00.wav");
+			titleBGM = createMusicFromFileName("title_bgm1.mp3");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -178,6 +185,9 @@ public class InitialScene extends KeyListenScene implements ButtonSprite.OnClick
 	}
 
 	private void showScene(KeyListenScene scene) {
+		titleBGM.stop();
+		titleBGM.release();
+		
 		ResourceUtil.getInstance(getBaseActivity()).resetAllTexture();
 		getBaseActivity().getEngine().setScene(scene);
 		getBaseActivity().appendScene(scene);

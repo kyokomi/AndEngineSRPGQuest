@@ -2,6 +2,8 @@ package com.kyokomi.core.scene;
 
 import java.io.IOException;
 
+import org.andengine.audio.music.Music;
+import org.andengine.audio.music.MusicFactory;
 import org.andengine.audio.sound.Sound;
 import org.andengine.audio.sound.SoundFactory;
 import org.andengine.entity.Entity;
@@ -202,7 +204,13 @@ public abstract class KeyListenScene extends Scene {
 				getBaseActivity(), 
 				fileName);
 	}
-	
+	// ------- BGM -------
+	protected Music createMusicFromFileName(String fileName) throws IOException {
+		return MusicFactory.createMusicFromAsset(
+				getBaseActivity().getMusicManager(),
+				getBaseActivity(),
+				fileName);
+	}
 	// ------- Intent ------
 	/**
 	 * TWEET送信.
@@ -259,7 +267,7 @@ public abstract class KeyListenScene extends Scene {
 		return mBaseFont;
 	}
 	
-	private Font createFont(Typeface typeface, int fontSize, Color color) {
+	protected Font createFont(Typeface typeface, int fontSize, Color color) {
 		Texture texture = new BitmapTextureAtlas(
 				this.getBaseActivity().getTextureManager(), 512, 512, 
 				TextureOptions.BILINEAR_PREMULTIPLYALPHA);
