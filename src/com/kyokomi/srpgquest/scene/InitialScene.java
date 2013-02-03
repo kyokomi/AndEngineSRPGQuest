@@ -185,8 +185,9 @@ public class InitialScene extends KeyListenScene implements ButtonSprite.OnClick
 	}
 
 	private void showScene(KeyListenScene scene) {
-		titleBGM.stop();
-		titleBGM.release();
+		if(!titleBGM.isReleased()) {
+			titleBGM.release();
+		}
 		
 		ResourceUtil.getInstance(getBaseActivity()).resetAllTexture();
 		getBaseActivity().getEngine().setScene(scene);

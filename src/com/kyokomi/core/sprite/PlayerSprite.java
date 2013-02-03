@@ -112,29 +112,29 @@ public class PlayerSprite extends Rectangle {
 		// playerキャラを追加 攻撃と防御のスプライトもセットで読み込んでおく
 		String baseFileName = "actor" + mActorPlayer.getImageResId();
 		player        = baseScene.getResourceAnimatedSprite(baseFileName + "_0_s.png", 3, 4);
-		playerDefense = baseScene.getResourceAnimatedSprite(baseFileName + "_2_s.png", 3, 4);
-		playerAttack  = baseScene.getResourceAnimatedSprite(baseFileName + "_3_s.png", 3, 4);
-		playerCutIn   = baseScene.getResourceSprite(baseFileName + "_cutin_s.jpg");
+//		playerDefense = baseScene.getResourceAnimatedSprite(baseFileName + "_2_s.png", 3, 4);
+//		playerAttack  = baseScene.getResourceAnimatedSprite(baseFileName + "_3_s.png", 3, 4);
+//		playerCutIn   = baseScene.getResourceSprite(baseFileName + "_cutin_s.jpg");
 		playerFace    = baseScene.getResourceTiledSprite(getFaceFileName(), 4, 2);
 		
 		attachChild(player);
-		attachChild(playerDefense);
-		attachChild(playerAttack);
+//		attachChild(playerDefense);
+//		attachChild(playerAttack);
 
 		// カットイン
-		playerCutIn.setPosition(baseScene.getWindowWidth() / 2, 
-				baseScene.getWindowHeight() / 2 - playerCutIn.getHeight() / 2);
-		playerCutIn.setAlpha(0.0f);
-		attachChild(playerCutIn);
+//		playerCutIn.setPosition(baseScene.getWindowWidth() / 2, 
+//				baseScene.getWindowHeight() / 2 - playerCutIn.getHeight() / 2);
+//		playerCutIn.setAlpha(0.0f);
+//		attachChild(playerCutIn);
 
 		// デフォルト表示
-		showPlayer(PlayerSpriteType.PLAYER_TYPE_DEFENSE);
+		showPlayer(PlayerSpriteType.PLAYER_TYPE_NORMAL);
 		setPlayerScale(scale);
-		setPlayerPosition(80, 200);
-		playerDefense.setCurrentTileIndex(0);
+//		setPlayerPosition(80, 200);
+//		playerDefense.setCurrentTileIndex(0);
 		
 		// 武器設定
-		initWeaponAndEffect(baseScene, scale);
+		//initWeaponAndEffect(baseScene, scale);
 		
 		// タグ設定
 		setTag(mActorPlayer.getPlayerId());
@@ -167,36 +167,60 @@ public class PlayerSprite extends Rectangle {
 		setPlayerScale(pScale);
 	}
 	public void setPlayerScale(float scale) {
-		player.setScale(scale);
-		playerDefense.setScale(scale);
-		playerAttack.setScale(scale);
+		if (player != null) {
+			player.setScale(scale);
+		}
+		if (playerDefense != null) {
+			playerDefense.setScale(scale);
+		}
+		if (playerAttack != null) {
+			playerAttack.setScale(scale);
+		}
 	}
 	@Override
 	public void setPosition(IEntity pOtherEntity) {
 		setPlayerPosition(pOtherEntity);
 	}
 	public void setPlayerPosition(IEntity pOtherEntity) {
-		player.setPosition(pOtherEntity.getX(), pOtherEntity.getY());
-		playerDefense.setPosition(pOtherEntity.getX(), pOtherEntity.getY());
-		playerAttack.setPosition(pOtherEntity.getX(), pOtherEntity.getY());
+		if (player != null) {
+			player.setPosition(pOtherEntity.getX(), pOtherEntity.getY());
+		}
+		if (playerDefense != null) {
+			playerDefense.setPosition(pOtherEntity.getX(), pOtherEntity.getY());
+		}
+		if (playerAttack != null) {
+			playerAttack.setPosition(pOtherEntity.getX(), pOtherEntity.getY());
+		}
 	}
 	@Override
 	public void setPosition(float pX, float pY) {
 		setPlayerPosition(pX, pY);
 	}
 	public void setPlayerPosition(float x, float y) {
-		player.setPosition(x, y);
-		playerDefense.setPosition(x, y);
-		playerAttack.setPosition(x, y);
+		if (player != null) {
+			player.setPosition(x, y);
+		}
+		if (playerDefense != null) {
+			playerDefense.setPosition(x, y);
+		}
+		if (playerAttack != null) {
+			playerAttack.setPosition(x, y);
+		}
 	}
 	@Override
 	public void setSize(float pWidth, float pHeight) {
 		setPlayerSize(pWidth, pHeight);
 	}
 	public void setPlayerSize(float w, float h) {
-		player.setSize(w, h);
-		playerDefense.setSize(w, h);
-		playerAttack.setSize(w, h);
+		if (player != null) {
+			player.setSize(w, h);
+		}
+		if (playerDefense != null) {	
+			playerDefense.setSize(w, h);
+		}
+		if (playerAttack != null) {
+			playerAttack.setSize(w, h);
+		}
 	}
 	
 	/**
@@ -204,9 +228,15 @@ public class PlayerSprite extends Rectangle {
 	 * @param pFlippedHorizontal
 	 */
 	public void setPlayerFlippedHorizontal(boolean pFlippedHorizontal) {
-		player.setFlippedHorizontal(pFlippedHorizontal);
-		playerDefense.setFlippedHorizontal(pFlippedHorizontal);
-		playerAttack.setFlippedHorizontal(pFlippedHorizontal);
+		if (player != null) {
+			player.setFlippedHorizontal(pFlippedHorizontal);
+		}
+		if (playerDefense != null) {
+			playerDefense.setFlippedHorizontal(pFlippedHorizontal);
+		}
+		if (playerAttack != null) {	
+			playerAttack.setFlippedHorizontal(pFlippedHorizontal);
+		}
 	}
 	
 //	@Override
@@ -243,9 +273,16 @@ public class PlayerSprite extends Rectangle {
 		default:
 			break;
 		}
-		player.setAlpha(normal);
-		playerAttack.setAlpha(attack);
-		playerDefense.setAlpha(defense);
+		
+		if (player != null) {
+			player.setAlpha(normal);
+		}
+		if (playerAttack != null) {
+			playerAttack.setAlpha(attack);
+		}
+		if (playerDefense != null) {
+			playerDefense.setAlpha(defense);
+		}
 	}
 	
 	// ----------------------------------------------
@@ -260,6 +297,9 @@ public class PlayerSprite extends Rectangle {
 	}
 	
 	private void attackWeaponLeft() {
+		if (weapon == null) {
+			return;
+		}
 		weapon.setRotation(0f);
 		weapon.setPosition(
 				playerAttack.getX() - 
@@ -281,6 +321,9 @@ public class PlayerSprite extends Rectangle {
 	 * スケールとか解像度関係なくやれるようにする
 	 */
 	public void attack2(IEntityModifier.IEntityModifierListener callBack) {
+		if (playerAttack == null) {
+			return;
+		}
 		
 		showPlayer(PlayerSpriteType.PLAYER_TYPE_ATTACK);
 		
@@ -339,7 +382,9 @@ public class PlayerSprite extends Rectangle {
 	 * @deprecated scaleを変えたりするとずれるので廃止予定
 	 */
 	public void attack() {
-		
+		if (playerAttack == null) {
+			return;
+		}
 		showPlayer(PlayerSpriteType.PLAYER_TYPE_ATTACK);
 		
 		// 攻撃
@@ -397,6 +442,10 @@ public class PlayerSprite extends Rectangle {
 	 */
 	public void move(float duration, List<MapPoint> moveMapPointList, 
 			IEntityModifier.IEntityModifierListener pEntityModifierListener) {
+		if (player == null) {
+			return;
+		}
+		
 		List<IEntityModifier> modifierList = new ArrayList<IEntityModifier>();
 		float moveStartX = player.getX();
 		float moveStartY = player.getY();
@@ -457,38 +506,40 @@ public class PlayerSprite extends Rectangle {
 			return;
 		}
 		
-		playerCutIn.registerEntityModifier(new SequenceEntityModifier(
-				new MoveModifier(duration / 3, 
-					-x, x / 2 - playerCutIn.getWidth() / 2, 
-					playerCutIn.getY(), playerCutIn.getY(),  
-					new IEntityModifier.IEntityModifierListener() {
-						@Override
-						public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
-							playerCutIn.setAlpha(1.0f);
-							isCutInMoved = true;
+		if (playerCutIn != null) {
+			playerCutIn.registerEntityModifier(new SequenceEntityModifier(
+					new MoveModifier(duration / 3, 
+						-x, x / 2 - playerCutIn.getWidth() / 2, 
+						playerCutIn.getY(), playerCutIn.getY(),  
+						new IEntityModifier.IEntityModifierListener() {
+							@Override
+							public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
+								playerCutIn.setAlpha(1.0f);
+								isCutInMoved = true;
+							}
+							@Override
+							public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+							}
 						}
-						@Override
-						public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+					),
+					new DelayModifier(duration / 3), 
+					new MoveModifier(duration / 3, 
+						x / 2 - playerCutIn.getWidth() / 2, x, 
+						playerCutIn.getY(), playerCutIn.getY(),  
+						new IEntityModifier.IEntityModifierListener() {
+							@Override
+							public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
+							}
+							@Override
+							public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+								playerCutIn.setAlpha(0.0f);
+								isCutInMoved = false;
+							}
 						}
-					}
-				),
-				new DelayModifier(duration / 3), 
-				new MoveModifier(duration / 3, 
-					x / 2 - playerCutIn.getWidth() / 2, x, 
-					playerCutIn.getY(), playerCutIn.getY(),  
-					new IEntityModifier.IEntityModifierListener() {
-						@Override
-						public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
-						}
-						@Override
-						public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
-							playerCutIn.setAlpha(0.0f);
-							isCutInMoved = false;
-						}
-					}
-				),
-				new DelayModifier(0, callBack)
-			));
+					),
+					new DelayModifier(0, callBack)
+				));
+		}
 	}
 	// ----------------------------------------------
 	// 汎用ポジション設定
@@ -497,69 +548,79 @@ public class PlayerSprite extends Rectangle {
 	 * プレイヤーデフォルトポジション設定.
 	 */
 	public void setPlayerToDefaultPosition() {
-		player.animate(
-				new long[]{100, 100, 100}, 
-				new int[]{lastMoveCurrentIndex, lastMoveCurrentIndex+1, lastMoveCurrentIndex+2}, 
-				true);
-		showPlayer(PlayerSpriteType.PLAYER_TYPE_NORMAL);
+		if (player != null) {
+			player.animate(
+					new long[]{100, 100, 100}, 
+					new int[]{lastMoveCurrentIndex, lastMoveCurrentIndex+1, lastMoveCurrentIndex+2}, 
+					true);
+			showPlayer(PlayerSpriteType.PLAYER_TYPE_NORMAL);
+		}
 	}
 	/**
 	 * プレイヤーデフォルトポジション設定.
 	 */
 	public void setPlayerToDefaultPositionStop() {
-		player.stopAnimation(lastMoveCurrentIndex);
-		showPlayer(PlayerSpriteType.PLAYER_TYPE_NORMAL);
+		if (player != null) {
+			player.stopAnimation(lastMoveCurrentIndex);
+			showPlayer(PlayerSpriteType.PLAYER_TYPE_NORMAL);
+		}
 	}
 	
 	/**
 	 * プレイヤー攻撃ポジション設定.
 	 */
 	public void setPlayerToAttackPosition() {
-		playerAttack.animate(
-				new long[]{100, 100, 100}, 
-				new int[]{6, 7, 8}, 
-				false);
-		showPlayer(PlayerSpriteType.PLAYER_TYPE_ATTACK);
+		if (playerAttack != null) {
+			playerAttack.animate(
+					new long[]{100, 100, 100}, 
+					new int[]{6, 7, 8}, 
+					false);
+			showPlayer(PlayerSpriteType.PLAYER_TYPE_ATTACK);
 		
-		setPlayerPosition(playerAttack.getX(), playerAttack.getY());
+			setPlayerPosition(playerAttack.getX(), playerAttack.getY());
+		}
 	}
 	
 	/**
 	 * プレイヤージャンプポジション設定.
 	 */
 	public void setPlayerToJumpPositon() {
-		playerDefense.animate(
-				new long[]{200, 300}, 
-				new int[]{0, 3}, 
-				false);
-		showPlayer(PlayerSpriteType.PLAYER_TYPE_DEFENSE);
+		if (playerDefense != null) {
+			playerDefense.animate(
+					new long[]{200, 300}, 
+					new int[]{0, 3}, 
+					false);
+			showPlayer(PlayerSpriteType.PLAYER_TYPE_DEFENSE);
 		
-		// 上に飛ぶ感じのアニメーション
-		playerDefense.registerEntityModifier(new SequenceEntityModifier(
-			new MoveModifier(0.2f, 
-					playerDefense.getX(), playerDefense.getX(), 
-					playerDefense.getY(), playerDefense.getY() - 100),
-			new DelayModifier(0.1f),
-			new MoveModifier(0.2f, 
-					playerDefense.getX(), playerDefense.getX(), 
-					playerDefense.getY() - 100, playerDefense.getY())) {
-				@Override
-				public void onModifierFinished(
-						IModifier<IEntity> pModifier, IEntity pItem) {
-					super.onModifierFinished(pModifier, pItem);
-					setPlayerPosition(playerDefense.getX(), playerDefense.getY());
-				}
-			});
+			// 上に飛ぶ感じのアニメーション
+			playerDefense.registerEntityModifier(new SequenceEntityModifier(
+				new MoveModifier(0.2f, 
+						playerDefense.getX(), playerDefense.getX(), 
+						playerDefense.getY(), playerDefense.getY() - 100),
+				new DelayModifier(0.1f),
+				new MoveModifier(0.2f, 
+						playerDefense.getX(), playerDefense.getX(), 
+						playerDefense.getY() - 100, playerDefense.getY())) {
+					@Override
+					public void onModifierFinished(
+							IModifier<IEntity> pModifier, IEntity pItem) {
+						super.onModifierFinished(pModifier, pItem);
+						setPlayerPosition(playerDefense.getX(), playerDefense.getY());
+					}
+				});
+		}
 	}
 				
 	/**
 	 * プレイヤースライディングポジション設定.
 	 */
 	public void setPlayerToSlidePositon() {
-		playerDefense.animate(
-				new long[]{200, 100}, 
-				new int[]{0, 11}, 
-				false);
-		showPlayer(PlayerSpriteType.PLAYER_TYPE_DEFENSE);
+		if (playerDefense != null) { 
+			playerDefense.animate(
+					new long[]{200, 100}, 
+					new int[]{0, 11}, 
+					false);
+			showPlayer(PlayerSpriteType.PLAYER_TYPE_DEFENSE);
+		}
 	}
 }

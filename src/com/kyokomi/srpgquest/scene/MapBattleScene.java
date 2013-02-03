@@ -118,6 +118,19 @@ public class MapBattleScene extends KeyListenScene
 		init();
 	}
 	
+	/**
+	 * 再開時
+	 */
+	public void onResume() {
+		// TODO: 本当はどのBGMが中断中か調べて再生するけど一旦バトルで
+		playMusic(mBattleBGM);
+	}
+	/**
+	 * バックグラウンド時
+	 */
+	public void onPause() {
+		stopPlayMusic();
+	}
 	@Override
 	public void prepareSoundAndMusic() {
 		// 効果音をロード
@@ -155,26 +168,45 @@ public class MapBattleScene extends KeyListenScene
 		if (music.isPlaying()) {
 			return;
 		}
-		if (mTutorialBGM.isPlaying()) {
-			mTutorialBGM.stop();
-		}
-		if (mBattleBGM.isPlaying()) {
-			mBattleBGM.stop();
-		}
-		if (mClearBGM.isPlaying()) {
-			mClearBGM.stop();
-		}
-		if (mGameOverBGM.isPlaying()) {
-			mGameOverBGM.stop();
-		}
+		stopPlayMusic();
+		
 		music.setLooping(true);
 		music.play();
 	}
+	private Music getPlayMusic() {
+		if (mTutorialBGM.isPlaying()) {
+			return mTutorialBGM;
+		}
+		if (mBattleBGM.isPlaying()) {
+			return mBattleBGM;
+		}
+		if (mClearBGM.isPlaying()) {
+			return mClearBGM;
+		}
+		if (mGameOverBGM.isPlaying()) {
+			return mGameOverBGM;
+		}
+		return null;
+	}
+	private void stopPlayMusic() {
+		Music music = getPlayMusic();
+		if (music != null) {
+			music.pause();
+		}
+	}
 	private void releseMusic() {
-		mTutorialBGM.release();
-		mBattleBGM.release();
-		mClearBGM.release();
-		mGameOverBGM.release();
+		if (!mTutorialBGM.isReleased()) {
+			mTutorialBGM.release();
+		}
+		if (!mBattleBGM.isReleased()) {
+			mBattleBGM.release();
+		}
+		if (!mClearBGM.isReleased()) {
+			mClearBGM.release();
+		}
+		if (!mGameOverBGM.isReleased()) {
+			mGameOverBGM.release();
+		}
 	}
 	
 	@Override
@@ -221,7 +253,7 @@ public class MapBattleScene extends KeyListenScene
 		
 		// BGM再生開始
 		playMusic(mTutorialBGM);
-		
+				
 		// Sceneのタッチリスナーを登録
 		setOnSceneTouchListener(this);
 			
@@ -313,9 +345,9 @@ public class MapBattleScene extends KeyListenScene
 	 * @param imageId
 	 * @param mapPoint
 	 */
-	public void createPlayerSprite(ActorPlayerDto playerActor, MapPoint mapPoint) {
+	public void createPlayerSprite(ActorPlayerDto playerActor, MapPoint mapPoint, float size) {
 		PlayerSprite player = new PlayerSprite(playerActor, this, 
-				0, 0, getWindowWidth(), getWindowHeight(), 1.0f,
+				0, 0, size, size, 1.0f,
 				getBaseActivity().getVertexBufferObjectManager());
 		
 		player.setPlayerToDefaultPosition();
@@ -336,9 +368,9 @@ public class MapBattleScene extends KeyListenScene
 	 * @param imageId
 	 * @param mapPoint
 	 */
-	public void createEnemySprite(ActorPlayerDto enemyActor, MapPoint mapPoint) {
+	public void createEnemySprite(ActorPlayerDto enemyActor, MapPoint mapPoint, float size) {
 		PlayerSprite enemy = new PlayerSprite(enemyActor, this, 
-				0, 0, getWindowWidth(), getWindowHeight(), 1.0f,
+				0, 0, size, size, 1.0f,
 				getBaseActivity().getVertexBufferObjectManager());
 		
 		enemy.setPlayerToDefaultPosition();

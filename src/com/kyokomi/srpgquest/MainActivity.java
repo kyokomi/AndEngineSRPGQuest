@@ -14,6 +14,7 @@ import com.kyokomi.core.utils.ResourceUtil;
 import com.kyokomi.srpgquest.R;
 import com.kyokomi.srpgquest.scene.InitialScene;
 import com.kyokomi.srpgquest.scene.MainScene;
+import com.kyokomi.srpgquest.scene.MapBattleScene;
 
 import android.view.KeyEvent;
 
@@ -141,6 +142,19 @@ public class MainActivity extends MultiSceneActivity {
 		// MainScene実行中なら一時停止
 		if (getEngine().getScene() instanceof MainScene) {
 			((MainScene) getEngine().getScene()).showMenu();
+		}
+		// MapBattle実行中なら一時停止
+		if (getEngine().getScene() instanceof MapBattleScene) {
+			((MapBattleScene) getEngine().getScene()).onPause();
+		}
+	}
+	@Override
+	protected synchronized void onResume() {
+		super.onResume();
+		
+		// MapBattle実行中なら一時停止
+		if (getEngine().getScene() instanceof MapBattleScene) {
+			((MapBattleScene) getEngine().getScene()).onResume();
 		}
 	}
 }

@@ -86,8 +86,10 @@ public class GameManager {
 						}
 						// 行動させる
 						changeGameState(GameStateType.ENEMY_SELECT);
-						doEnemyAction(enemy, enemyMapItem);
-						break;
+						if (doEnemyAction(enemy, enemyMapItem)) {
+							// 行動した場合は次のスレッドまで待つ
+							break;
+						}
 					}
 				}
 			}
@@ -115,6 +117,13 @@ public class GameManager {
 		int enemyImageId = 34;
 		addEnemy(15, 10, enemyId, enemyImageId);
 		addEnemy(19, 2, 3, enemyImageId);
+		// 負荷原因はRectangleが画面全体にあったため（透明だけどオブジェクトは存在しているので重かった）
+//		addEnemy(6, 2, 4, enemyImageId);
+//		addEnemy(6, 3, 5, enemyImageId);
+//		addEnemy(6, 4, 6, enemyImageId);
+//		addEnemy(6, 5, 7, enemyImageId);
+//		addEnemy(6, 6, 8, enemyImageId);
+//		addEnemy(6, 7, 9, enemyImageId);
 		
 		// 障害物配置
 		addObstacle(3, 5);
@@ -380,7 +389,7 @@ public class GameManager {
 		mMapManager.addPlayer(mapPointX, mapPointY, player);
 		// Scene側でSpriteを生成
 		mBaseScene.createPlayerSprite(player,
-				calcGridPosition(mapPointX, mapPointY));
+				calcGridPosition(mapPointX, mapPointY), GRID_SIZE);
 	}
 	private void addEnemy(int mapPointX, int mapPointY, int enemyId, int enemyImageId) {
 		if (mEnemyList.indexOfKey(enemyId) >= 0) {
@@ -392,7 +401,7 @@ public class GameManager {
 		mMapManager.addEnemy(mapPointX, mapPointY, enemy);
 		// Scene側でSpriteを生成
 		mBaseScene.createEnemySprite(enemy, 
-				calcGridPosition(mapPointX, mapPointY));
+				calcGridPosition(mapPointX, mapPointY), GRID_SIZE);
 	}
 	private ActorPlayerDto createActorPlayer(int playerId, int imageResId) {
 		ActorPlayerDto actorPlayer = new ActorPlayerDto();
@@ -683,19 +692,19 @@ public class GameManager {
 	 * 敵の行動.
 	 * @param enemy
 	 */
-	public void doEnemyAction(ActorPlayerDto enemy, final ActorPlayerMapItem enemyMapItem) {
+	public boolean doEnemyAction(ActorPlayerDto enemy, final ActorPlayerMapItem enemyMapItem) {
 		
 		// 攻撃対象のプレイヤーを探索
 		final ActorPlayerMapItem attackTarget = mMapManager.findAttackPlayerMapitem(enemyMapItem);
 		if (attackTarget == null) {
 			// 攻撃対象がいない
-			return;
+			return false;
 		}
 		
 		// 移動検索
 		if (!showMoveDistCursor(enemyMapItem)) {
 			// 移動カーソル作成失敗
-			return ;
+			return false;
 		}
 		
 		// 攻撃対象へ攻撃するための移動先を探索
@@ -759,12 +768,15 @@ public class GameManager {
 					}
 				}); // コールバックEND
 				
+				return true;
+				
 			} else {
 				// カーソルを消す
 				mBaseScene.hideCursorSprite();
 				// 待機
 				enemyMapItem.setWaitDone(true);
 				changeGameState(GameStateType.ENEMY_TURN);
+				return false;
 			}
 		} else {
 			// カーソルを消す
@@ -772,6 +784,7 @@ public class GameManager {
 			// 待機
 			enemyMapItem.setWaitDone(true);
 			changeGameState(GameStateType.ENEMY_TURN);
+			return false;
 		}
 	}
 	
