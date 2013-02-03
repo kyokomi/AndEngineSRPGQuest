@@ -20,7 +20,7 @@ import org.andengine.util.modifier.IModifier;
 import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.core.utils.CollidesUtil;
-import com.kyokomi.pazuruquest.scene.layer.PanelLayer;
+import com.kyokomi.pazuruquest.layer.PanelLayer;
 
 import android.graphics.Point;
 import android.graphics.PointF;
@@ -127,31 +127,37 @@ public class PazuruQuestScene extends KeyListenScene
 	}
 	
 	private boolean isPanelToMoveWindowX(int x) {
-		return true;
-//		int panelX = getPanelToWindowX(x);
-//		int windowX = getWindowToPanelX(panelX);
-//		int startX = windowX + PANEL_SIZE / 10;
-//		int endX = startX + (PANEL_SIZE - PANEL_SIZE / 5) ;
-//		
-//		if (x > startX && x < endX) { 
-//			return true;
-//		} else {
-//			return false;
-//		}
+//		return true;
+		int panelX = getPanelToWindowX(x);
+		int windowX = getWindowToPanelX(panelX);
+		int startX = windowX + PANEL_SIZE / 5;
+		int endX = windowX + PANEL_SIZE - (PANEL_SIZE / 5) ;
+		
+//		int startX = windowX + PANEL_SIZE + (PANEL_SIZE / 2);
+//		int endX = windowX - (PANEL_SIZE / 2) ;
+		Log.d(TAG, "x = " + x + " start = " + startX + " end = " + endX);
+		if (x < startX || x > endX) { 
+			return true;
+		} else {
+			return false;
+		}
 	}
 	private boolean isPanelToMoveWindowY(int y) {
 		
-		return true;
-//		int panelY = getPanelToWindowY(y);
-//		int windowY = getWindowToPanelY(panelY);
-//		int startY = windowY + PANEL_SIZE / 10;
-//		int endY = startY + (PANEL_SIZE - PANEL_SIZE / 5);
-//		
-//		if (y > startY && y < endY) { 
-//			return true;
-//		} else {
-//			return false;
-//		}
+//		return true;
+		int panelY = getPanelToWindowY(y);
+		int windowY = getWindowToPanelY(panelY);
+		int startY = windowY + PANEL_SIZE / 5;
+		int endY = windowY + PANEL_SIZE - (PANEL_SIZE / 5);
+
+//		int startY = windowY + PANEL_SIZE + (PANEL_SIZE / 2);
+//		int endY = windowY - (PANEL_SIZE / 2);
+		Log.d(TAG, "y = "+ y + " start = " + startY + " end = " + endY);
+		if (y < startY || y > endY) { 
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	// ステート管理定数
@@ -202,17 +208,8 @@ public class PazuruQuestScene extends KeyListenScene
 		mBackgroundLayer.setPosition(PANEL_BASE_X, PANEL_BASE_Y);
 		mBackgroundLayer.setZIndex(0);
 		attachChild(mBackgroundLayer);
-//		mTouchLayer = new Rectangle(0, 0, 
-//				PANEL_COUNT_X * (PANEL_SIZE + 1), 
-//				PANEL_COUNT_Y * (PANEL_SIZE + 1), 
-//				getBaseActivity().getVertexBufferObjectManager());
-//		mTouchLayer.setColor(Color.TRANSPARENT);
-//		mTouchLayer.setPosition(PANEL_BASE_X, PANEL_BASE_Y);
-//		mTouchLayer.setZIndex(1);
-//		attachChild(mTouchLayer);
 		
 	    // 乱数シードの初期設定処理(現在時刻に応じた乱数シードを設定することで毎回実行するたびに異なる乱数が生成される）
-//	    srand((unsigned)time(NULL));
 		Random rand = new Random(new Date().getTime());
 	    
 	    // ゲーム管理用の初期化
@@ -282,7 +279,7 @@ public class PazuruQuestScene extends KeyListenScene
 		return null;
 	}
 	private PanelLayer mMovingLayer1;
-	private PanelLayer mMovingLayer2;
+//	private PanelLayer mMovingLayer2;
 	/**
 	 * 画面タッチ時のイベント.
 	 */
@@ -331,14 +328,146 @@ public class PazuruQuestScene extends KeyListenScene
  		if (!mBackgroundLayer.contains(x, y)) {
  			return;
  		}
- 		
+
  		// 移動する
 	    if (mMovingLayer1 != null) {
-    		if (isPanelToMoveWindowX((int)x) && isPanelToMoveWindowY((int)y)) {
-    	    	mMovingLayer1.setPosition(
-    	    			getWindowToPanelX(getPanelToWindowX((int)x)),
-    	    			getWindowToPanelY(getPanelToWindowY((int)y)));    			
+			float beforeX = getWindowToPanelX(getPanelToWindowX((int)mMovingLayer1.getX()));
+			float beforeY = getWindowToPanelX(getPanelToWindowX((int)mMovingLayer1.getY()));
+	    	mMovingLayer1.setPosition(x, y);
+	    	/*
+	    	boolean isMoved = false;
+	    	// 2点間の距離で移動を判定
+			int count = mBackgroundLayer.getChildCount();
+			for (int i = 0; i < count; i++) {
+				if (mBackgroundLayer.getChildByIndex(i) instanceof PanelLayer == false) {
+					continue;
+				}
+				PanelLayer sprite = (PanelLayer) mBackgroundLayer.getChildByIndex(i);
+				float distanceX = CollidesUtil.getDistanceXBetween(mMovingLayer1, sprite);
+				float distanceY = CollidesUtil.getDistanceYBetween(mMovingLayer1, sprite);
+				if (distanceX < (PANEL_SIZE / 2) || distanceY < (PANEL_SIZE / 2)) {
+					// 移動させる
+					isMoved = true;
+					Log.d(TAG, "ChangeMove OK");
+//					sprite.setPosition(beforeX, beforeY);
+					// 交換
+					animationMovePanel(sprite, beforeX, beforeY, new IEntityModifierListener() {
+						@Override
+						public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
+						}
+						@Override
+						public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+						}
+					});
+					break;
+				}
+			}
+			if (!isMoved) {
+				mMovingLayer1.setPosition(beforeX, beforeY);
+			}
+			*/
+    		if (isPanelToMoveWindowX((int)x) || isPanelToMoveWindowY((int)y)) {
+    			float moveX = getWindowToPanelX(getPanelToWindowX((int)x));
+    	    	float moveY = getWindowToPanelY(getPanelToWindowY((int)y));
+    	    	mMovingLayer1.setPosition(moveX, moveY);
+    			// 移動したとき
+    			if (beforeX != moveX || beforeY != moveY) {
+    				
+    				Log.d(TAG, String.format("before=[%f,%f] move=[%f,%f] back=[%f,%f]", 
+    						beforeX, beforeY, moveX, moveY,
+    						mBackgroundLayer.getX(), mBackgroundLayer.getY()));
+    				
+        	    	// 同じポジションにいるやつと交換
+        	    	if (mBackgroundLayer.contains(moveX, moveY)) {
+        	    		Log.d(TAG, "mBackgroundLayer.contains(moveX, moveY) OK");
+        				int count = mBackgroundLayer.getChildCount();
+        				for (int i = 0; i < count; i++) {
+        					if (mBackgroundLayer.getChildByIndex(i) instanceof PanelLayer) {
+        						PanelLayer sprite = (PanelLayer) mBackgroundLayer.getChildByIndex(i);
+        		    	    	int modifierCnt = sprite.getEntityModifierCount();
+        		    	    	if (modifierCnt > 0) {
+        		    	    		continue; // 移動中は無視
+        		    	    	}
+        		    	    	
+        						float spriteX = getWindowToPanelX(getPanelToWindowX((int)sprite.getX()));
+        		    	    	float spriteY = getWindowToPanelY(getPanelToWindowY((int)sprite.getY()));
+        						if(mMovingLayer1 != sprite && spriteX == moveX && spriteY == moveY) {
+        							Log.d(TAG, "ChangeMove OK");
+//	        							sprite.setPosition(beforeX, beforeY);
+        							// 交換
+        							animationMovePanel(sprite, beforeX, beforeY, new IEntityModifierListener() {
+        								@Override
+        								public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
+        								}
+        								@Override
+        								public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+        								}
+        							});
+        							break;
+        						}
+        					}
+        				}
+        			}
+    			}
+    		} else {
+    			mMovingLayer1.setPosition(beforeX, beforeY);
     		}
+    		
+    		// END
+    	
+//
+//			float beforeX = getWindowToPanelX(getPanelToWindowX((int)mMovingLayer1.getX()));
+//			float beforeY = getWindowToPanelX(getPanelToWindowX((int)mMovingLayer1.getY()));
+//	    	mMovingLayer1.setPosition(x, y);
+//	    	
+//    		if (isPanelToMoveWindowX((int)x) || isPanelToMoveWindowY((int)y)) {
+//    			float moveX = getWindowToPanelX(getPanelToWindowX((int)x));
+//    	    	float moveY = getWindowToPanelY(getPanelToWindowY((int)y));
+//    	    	mMovingLayer1.setPosition(moveX, moveY);
+//    			// 移動したとき
+//    			if (beforeX != moveX || beforeY != moveY) {
+//    				
+//    				Log.d(TAG, String.format("before=[%f,%f] move=[%f,%f] back=[%f,%f]", 
+//    						beforeX, beforeY, moveX, moveY,
+//    						mBackgroundLayer.getX(), mBackgroundLayer.getY()));
+//    				
+//        	    	// 同じポジションにいるやつと交換
+//        	    	if (mBackgroundLayer.contains(moveX, moveY)) {
+//        	    		Log.d(TAG, "mBackgroundLayer.contains(moveX, moveY) OK");
+//        				int count = mBackgroundLayer.getChildCount();
+//        				for (int i = 0; i < count; i++) {
+//        					if (mBackgroundLayer.getChildByIndex(i) instanceof PanelLayer) {
+//        						PanelLayer sprite = (PanelLayer) mBackgroundLayer.getChildByIndex(i);
+//        		    	    	int modifierCnt = sprite.getEntityModifierCount();
+//        		    	    	if (modifierCnt > 0) {
+//        		    	    		continue; // 移動中は無視
+//        		    	    	}
+//        		    	    	
+//        						float spriteX = getWindowToPanelX(getPanelToWindowX((int)sprite.getX()));
+//        		    	    	float spriteY = getWindowToPanelY(getPanelToWindowY((int)sprite.getY()));
+//        						if(mMovingLayer1 != sprite && spriteX == moveX && spriteY == moveY) {
+//        							Log.d(TAG, "ChangeMove OK");
+////        							sprite.setPosition(beforeX, beforeY);
+//        							// 交換
+//        							animationMovePanel(sprite, beforeX, beforeY, new IEntityModifierListener() {
+//        								@Override
+//        								public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
+//        								}
+//        								@Override
+//        								public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+//        								}
+//        							});
+//        							break;
+//        						}
+//        					}
+//        				}
+//        			}
+//    			}
+//    		} else {
+//    			mMovingLayer1.setPosition(beforeX, beforeY);
+//    		}
+//    		// END
+    		
 	    }
 	}
 
@@ -374,18 +503,18 @@ public class PazuruQuestScene extends KeyListenScene
 //	    int py1 = (int)(panelPos1.y - mPanelBaseY) / (PANEL_SIZE + 1);
 //	    int px2 = (int)(panelPos2.x - mPanelBaseX) / (PANEL_SIZE + 1);
 //	    int py2 = (int)(panelPos2.y - mPanelBaseY) / (PANEL_SIZE + 1);
-		final Point panelPos1 = mMovingLayer1.getPanelPoint();
-		final Point panelPos2 = mMovingLayer2.getPanelPoint();
-		final int px1 = panelPos1.x;
-		final int py1 = panelPos1.y;
-		final int px2 = panelPos2.x;
-		final int py2 = panelPos2.y;
+//		final Point panelPos1 = mMovingLayer1.getPanelPoint();
+//		final Point panelPos2 = mMovingLayer2.getPanelPoint();
+//		final int px1 = panelPos1.x;
+//		final int py1 = panelPos1.y;
+//		final int px2 = panelPos2.x;
+//		final int py2 = panelPos2.y;
 		
 	    // 差分を計算することで1枚目と2枚目のパネルが上下か左右に隣り合っていることを確認
-	    int dx = px2 - px1;
-	    int dy = py2 - py1;
-	    
-	    if ((dx ==0 && Math.abs(dy) == 1) || (Math.abs(dx) == 1 && dy ==0)) {
+//	    int dx = px2 - px1;
+//	    int dy = py2 - py1;
+//	    
+//	    if ((dx ==0 && Math.abs(dy) == 1) || (Math.abs(dx) == 1 && dy ==0)) {
 	    	
 	        // 0.4秒かけて１枚目のパネル位置と2枚目のパネル位置を交換
 //	    	animationChangePanel(mMovingLayer1, mMovingLayer2, new IEntityModifierListener() {
@@ -415,22 +544,22 @@ public class PazuruQuestScene extends KeyListenScene
 //	        anime2.toValue = [NSNumber valueWithCGPoint:panelPos1];
 //	        self.movingLayer2.position = panelPos1;
 //	        [self.movingLayer2 addAnimation:anime2 forKey:nil];
-	        
-	        return true;
-	    } else {
-	    	Log.d(TAG, "dx = " + dx + " dy =" + dy);
-	    }
+//	        
+//	        return true;
+//	    } else {
+//	    	Log.d(TAG, "dx = " + dx + " dy =" + dy);
+//	    }
 	    
 	    return false;
 	}
 	
-//	private void animationMovePanel(Rectangle pRectangle, PointF pMovePointF, 
-//			IEntityModifierListener pIEntityModifierListener) {
-//		pRectangle.registerEntityModifier(new MoveModifier(0.4f, 
-//				pRectangle.getX(), pMovePointF.x, 
-//				pRectangle.getY(), pMovePointF.y, 
-//				pIEntityModifierListener));
-//	}
+	private void animationMovePanel(PanelLayer pLayer, float moveX, float moveY, 
+			IEntityModifierListener pIEntityModifierListener) {
+		pLayer.registerEntityModifier(new MoveModifier(0.1f, 
+				pLayer.getX(), moveX, 
+				pLayer.getY(), moveY, 
+				pIEntityModifierListener));
+	}
 	private void animationChangePanel(PanelLayer pPanelLayer1, PanelLayer pPanelLayer2, 
 			IEntityModifierListener pIEntityModifierListener) {
 //		PointF panelPos1 = getLayerPoint(pPanelLayer1);

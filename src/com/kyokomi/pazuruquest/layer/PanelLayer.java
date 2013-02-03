@@ -1,4 +1,4 @@
-package com.kyokomi.pazuruquest.scene.layer;
+package com.kyokomi.pazuruquest.layer;
 
 import org.andengine.entity.primitive.Rectangle;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
