@@ -1,16 +1,11 @@
 package com.kyokomi.srpgquest;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.andengine.engine.handler.timer.ITimerCallback;
 import org.andengine.engine.handler.timer.TimerHandler;
-import org.andengine.entity.sprite.TiledSprite;
 
 import com.kyokomi.core.dto.ActorPlayerDto;
-import com.kyokomi.core.dto.PlayerTalkDto;
-import com.kyokomi.core.dto.PlayerTalkDto.TalkDirection;
 import com.kyokomi.srpgquest.constant.GameStateType;
 import com.kyokomi.srpgquest.constant.MapDataType;
 import com.kyokomi.srpgquest.constant.MoveDirectionType;
@@ -85,11 +80,14 @@ public class GameManager {
 						ActorPlayerMapItem enemyMapItem = mMapManager.getPlayerIdToActorMapItem(
 								enemy.getPlayerId(), MapDataType.ENEMY);
 						
-						Log.d(TAG, "Enemy isAttackDone["+ enemyMapItem.isAttackDone() + "] isMoveDoen["+ enemyMapItem.isMoveDone() + "]");
-						
+						Log.d(TAG, "Enemy[" + enemy.getPlayerId() + "] isAttackDone["+ enemyMapItem.isAttackDone() + "] isMoveDoen["+ enemyMapItem.isMoveDone() + "]");
+						if (enemyMapItem.isWaitDone()) {
+							continue;
+						}
 						// 行動させる
 						changeGameState(GameStateType.ENEMY_SELECT);
 						doEnemyAction(enemy, enemyMapItem);
+						break;
 					}
 				}
 			}
@@ -115,7 +113,8 @@ public class GameManager {
 		
 		int enemyId = 2;
 		int enemyImageId = 34;
-		addEnemy(5, 5, enemyId, enemyImageId);
+		addEnemy(15, 10, enemyId, enemyImageId);
+		addEnemy(19, 2, 3, enemyImageId);
 		
 		// 障害物配置
 		addObstacle(3, 5);
@@ -130,6 +129,19 @@ public class GameManager {
 		addObstacle(3, 2);
 		addObstacle(4, 2);
 		addObstacle(5, 2);
+		
+		addObstacle(13, 5);
+		addObstacle(13, 6);
+		addObstacle(13, 7);
+		addObstacle(14, 5);
+		addObstacle(15, 5);
+		addObstacle(15, 6);
+		addObstacle(15, 7);
+		addObstacle(15, 8);
+		addObstacle(15, 9);
+		addObstacle(14, 4);
+		addObstacle(15, 3);
+		addObstacle(16, 2);
 		
 		mBaseScene.sortChildren();
 	}
@@ -390,19 +402,29 @@ public class GameManager {
 		// TODO: DBとかから取得
 		if (playerId == 1) {
 			actorPlayer.setName("アスリーン");
+			actorPlayer.setLv(2);
+			actorPlayer.setExp(10);
+			
+			actorPlayer.setMovePoint(6);
+			actorPlayer.setAttackRange(1);
+			
+			actorPlayer.setHitPoint(100);
+			actorPlayer.setHitPointLimit(100);
+			actorPlayer.setAttackPoint(60);
+			actorPlayer.setDefencePoint(30);
 		} else {
 			actorPlayer.setName("ラーティ・クルス");
+			actorPlayer.setLv(1);
+			actorPlayer.setExp(10);
+			
+			actorPlayer.setMovePoint(5);
+			actorPlayer.setAttackRange(1);
+			
+			actorPlayer.setHitPoint(100);
+			actorPlayer.setHitPointLimit(100);
+			actorPlayer.setAttackPoint(40);
+			actorPlayer.setDefencePoint(10);
 		}
-		actorPlayer.setLv(1);
-		actorPlayer.setExp(10);
-		
-		actorPlayer.setMovePoint(5);
-		actorPlayer.setAttackRange(1);
-		
-		actorPlayer.setHitPoint(100);
-		actorPlayer.setHitPointLimit(100);
-		actorPlayer.setAttackPoint(60);
-		actorPlayer.setDefencePoint(10);
 		
 		return actorPlayer;
 	}
@@ -695,6 +717,7 @@ public class GameManager {
 						new MapBattleScene.IAnimationCallback() {
 					@Override
 					public void doAction() {
+						
 						// カーソルを消す
 						mBaseScene.hideCursorSprite();
 						
@@ -737,11 +760,15 @@ public class GameManager {
 				}); // コールバックEND
 				
 			} else {
+				// カーソルを消す
+				mBaseScene.hideCursorSprite();
 				// 待機
 				enemyMapItem.setWaitDone(true);
 				changeGameState(GameStateType.ENEMY_TURN);
 			}
 		} else {
+			// カーソルを消す
+			mBaseScene.hideCursorSprite();
 			// 待機
 			enemyMapItem.setWaitDone(true);
 			changeGameState(GameStateType.ENEMY_TURN);

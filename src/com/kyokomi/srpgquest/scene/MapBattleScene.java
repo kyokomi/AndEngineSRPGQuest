@@ -213,7 +213,7 @@ public class MapBattleScene extends KeyListenScene
 
 		// ゲーム開始
 		gameManager = new GameManager(this);
-		gameManager.mapInit(10, 10, 1f); // 10 x 10 スケール1倍のグリッドマップ
+		gameManager.mapInit(20, 12, 1f); // 10 x 10 スケール1倍のグリッドマップ
 			
 		// プレイヤー情報ができてから呼び出さないといけないので注意
 		// 会話レイヤーを生成
