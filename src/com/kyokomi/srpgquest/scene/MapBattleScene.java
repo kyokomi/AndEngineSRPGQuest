@@ -77,6 +77,8 @@ public class MapBattleScene extends KeyListenScene
 	
 	private Text mDamageText;
 	
+	private Sprite mBackgroundSprite;
+	
 	private MenuRectangle mMenuRectangle;
 	private PlayerStatusRectangle mPlayerStatusRect;
 	private PlayerStatusRectangle mEnemyStatusRect;
@@ -97,7 +99,7 @@ public class MapBattleScene extends KeyListenScene
 	public boolean dispatchKeyEvent(KeyEvent e) {
 		return false;
 	}
-	
+
 	@Override
 	public void init() {
 		// 初期化
@@ -106,7 +108,10 @@ public class MapBattleScene extends KeyListenScene
 		cursorList = new ArrayList<CursorRectangle>();
 		// デフォルトフォント初期化
 		initFont(16);
-	
+
+		// 背景
+		initBackground();
+		
 		// ダメージテキスト初期化
 		initDamageText();
 		
@@ -132,6 +137,15 @@ public class MapBattleScene extends KeyListenScene
 			
 		// FPS表示
 		initFps(getWindowWidth() - 100, getWindowHeight() - 20, getFont());
+	}
+	/**
+	 * 背景表示.
+	 */
+	private void initBackground() {
+		mBackgroundSprite = getResourceSprite("main_bg.jpg");
+		mBackgroundSprite.setSize(getWindowWidth(), getWindowHeight());
+		mBackgroundSprite.setZIndex(-1);
+		attachChild(mBackgroundSprite);
 	}
 	
 	// --------------------- ダメージテキスト ------------------------

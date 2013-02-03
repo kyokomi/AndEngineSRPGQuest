@@ -7,6 +7,7 @@ import org.andengine.audio.sound.SoundFactory;
 import org.andengine.entity.Entity;
 import org.andengine.entity.IEntity;
 import org.andengine.entity.scene.Scene;
+import org.andengine.entity.shape.IAreaShape;
 import org.andengine.entity.sprite.AnimatedSprite;
 import org.andengine.entity.sprite.ButtonSprite;
 import org.andengine.entity.sprite.Sprite;
@@ -68,7 +69,7 @@ public abstract class KeyListenScene extends Scene {
 	 * @param sp Sprite画像
 	 * @return 座標が画面中央になったSprite
 	 */
-	public Sprite placeToCenter(Sprite sp) {
+	public IAreaShape placeToCenter(IAreaShape sp) {
 		sp.setPosition(
 				baseActivity.getEngine().getCamera().getWidth() / 2.0f - sp.getWidth() / 2.0f, 
 				baseActivity.getEngine().getCamera().getHeight() / 2.0f - sp.getHeight() / 2.0f);
@@ -82,7 +83,7 @@ public abstract class KeyListenScene extends Scene {
 	 * @param y y座標
 	 * @return x座標が画面中央になったSprite
 	 */
-	public Sprite placeToCenterX(Sprite sp, float y) {
+	public IAreaShape placeToCenterX(IAreaShape sp, float y) {
 		sp.setPosition(baseActivity.getEngine().getCamera().getWidth() / 2.0f - sp.getWidth() / 2.0f, y);
 		return sp;
 	}
@@ -94,7 +95,7 @@ public abstract class KeyListenScene extends Scene {
 	 * @param x x座標
 	 * @return y座標が画面中央になったSprite
 	 */
-	public Sprite placeToCenterY(Sprite sp, float x) {
+	public IAreaShape placeToCenterY(IAreaShape sp, float x) {
 		sp.setPosition(x, baseActivity.getEngine().getCamera().getHeight() / 2.0f - sp.getHeight() / 2.0f);
 		return sp;
 	}

@@ -8,10 +8,15 @@ import org.andengine.entity.modifier.MoveModifier;
 import org.andengine.entity.modifier.SequenceEntityModifier;
 import org.andengine.entity.sprite.ButtonSprite;
 import org.andengine.entity.sprite.Sprite;
+import org.andengine.entity.text.Text;
+import org.andengine.entity.text.TextOptions;
+import org.andengine.util.HorizontalAlign;
+import org.andengine.util.color.Color;
 import org.andengine.util.modifier.ease.EaseBackInOut;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.scene.KeyListenScene;
+import com.kyokomi.core.sprite.TextButton;
 import com.kyokomi.core.utils.ResourceUtil;
 import com.kyokomi.pazuruquest.scene.PazuruQuestScene;
 
@@ -34,10 +39,11 @@ public class InitialScene extends KeyListenScene implements ButtonSprite.OnClick
 
 	@Override
 	public void init() {
-//		Sprite bg = getBaseActivity().getResourceUtil().getSprite(
-//				"initial_bg.png");
-//		bg.setPosition(0, 0);
-//		attachChild(bg);
+		Sprite bg = getBaseActivity().getResourceUtil().getSprite(
+				"bg_jan.jpg");
+		bg.setPosition(0, 0);
+		bg.setSize(getWindowWidth(), getWindowHeight());
+		attachChild(bg);
 		
 //		Sprite titleSprite = getBaseActivity().getResourceUtil().getSprite(
 //				"initial_title.png");
@@ -55,6 +61,8 @@ public class InitialScene extends KeyListenScene implements ButtonSprite.OnClick
 //						EaseBackInOut.getInstance())));
 		
 		// ボタンの追加
+//		TextButton btnStart = new TextButton(text, 0f, 0f, 0f, 0f, 
+//				getBaseActivity().getVertexBufferObjectManager(), this);
 		ButtonSprite btnStart = getBaseActivity().getResourceUtil().getButtonSprite(
 				"initial_btn_01.png", 
 				"initial_btn_01_p.png");
@@ -66,6 +74,14 @@ public class InitialScene extends KeyListenScene implements ButtonSprite.OnClick
 		// ボタンをタップ可能にする
 		registerTouchArea(btnStart);
 		
+//		Text text = new Text(16, 16, getFont(), 
+//				"SRPG", 
+//				new TextOptions(HorizontalAlign.CENTER), 
+//				getBaseActivity().getVertexBufferObjectManager());
+//		text.setColor(Color.BLACK);
+//		text.setPosition(btnStart.getX() - text.getWidth() + 10, btnStart.getY());
+//		attachChild(text);
+		
 		btnStart.registerEntityModifier(new SequenceEntityModifier(
 				new DelayModifier(1.0f), new MoveModifier(1.0f, 
 						btnStart.getX(), 
@@ -74,40 +90,54 @@ public class InitialScene extends KeyListenScene implements ButtonSprite.OnClick
 						btnStart.getY() - 400,
 						EaseBackInOut.getInstance())));
 		
-		ButtonSprite btnRanking = getBaseActivity().getResourceUtil().getButtonSprite(
+		ButtonSprite btnSandBox = getBaseActivity().getResourceUtil().getButtonSprite(
 				"initial_btn_01.png", 
 				"initial_btn_01_p.png");
-		placeToCenterX(btnRanking, 110);
-		btnRanking.setY(btnRanking.getY() + 400);
-		btnRanking.setTag(INITIAL_RANKING);
-		btnRanking.setOnClickListener(this);
-		attachChild(btnRanking);
-		registerTouchArea(btnRanking);
+		placeToCenterX(btnSandBox, 110);
+		btnSandBox.setY(btnSandBox.getY() + 400);
+		btnSandBox.setTag(INITIAL_RANKING);
+		btnSandBox.setOnClickListener(this);
+		attachChild(btnSandBox);
+		registerTouchArea(btnSandBox);
 		
-		btnRanking.registerEntityModifier(new SequenceEntityModifier(
+//		Text sandBoxText = new Text(16, 16, getFont(), "SandBox", 
+//				new TextOptions(HorizontalAlign.CENTER),
+//				getBaseActivity().getVertexBufferObjectManager());
+//		sandBoxText.setColor(Color.BLACK);
+//		sandBoxText.setPosition(btnSandBox.getX() - sandBoxText.getWidth() + 10, btnSandBox.getY());
+//		attachChild(sandBoxText);
+//		
+		btnSandBox.registerEntityModifier(new SequenceEntityModifier(
 				new DelayModifier(1.2f), new MoveModifier(1.0f, 
-						btnRanking.getX(), 
-						btnRanking.getX(), 
-						btnRanking.getY(),
-						btnRanking.getY() - 400,
+						btnSandBox.getX(), 
+						btnSandBox.getX(), 
+						btnSandBox.getY(),
+						btnSandBox.getY() - 400,
 						EaseBackInOut.getInstance())));
 		
-		ButtonSprite btnRecommend = getBaseActivity().getResourceUtil().getButtonSprite(
+		ButtonSprite btnPazuru = getBaseActivity().getResourceUtil().getButtonSprite(
 				"initial_btn_01.png", 
 				"initial_btn_01_p.png");
-		placeToCenterX(btnRecommend, 180);
-		btnRecommend.setY(btnRecommend.getY() + 400);
-		btnRecommend.setTag(INITIAL_FEEDBACK);
-		btnRecommend.setOnClickListener(this);
-		attachChild(btnRecommend);
-		registerTouchArea(btnRecommend);
+		placeToCenterX(btnPazuru, 180);
+		btnPazuru.setY(btnPazuru.getY() + 400);
+		btnPazuru.setTag(INITIAL_FEEDBACK);
+		btnPazuru.setOnClickListener(this);
+		attachChild(btnPazuru);
+		registerTouchArea(btnPazuru);
 		
-		btnRecommend.registerEntityModifier(new SequenceEntityModifier(
+//		Text pazuruBoxText = new Text(16, 16, getFont(), "パズル", 
+//				new TextOptions(HorizontalAlign.CENTER),
+//				getBaseActivity().getVertexBufferObjectManager());
+//		pazuruBoxText.setColor(Color.BLACK);
+//		pazuruBoxText.setPosition(btnPazuru.getX() - pazuruBoxText.getWidth() + 10, btnPazuru.getY());
+//		attachChild(pazuruBoxText);
+		
+		btnPazuru.registerEntityModifier(new SequenceEntityModifier(
 				new DelayModifier(1.4f), new MoveModifier(1.0f, 
-						btnRecommend.getX(), 
-						btnRecommend.getX(), 
-						btnRecommend.getY(),
-						btnRecommend.getY() - 400,
+						btnPazuru.getX(), 
+						btnPazuru.getX(), 
+						btnPazuru.getY(),
+						btnPazuru.getY() - 400,
 						EaseBackInOut.getInstance())));
 	}
 
@@ -144,7 +174,7 @@ public class InitialScene extends KeyListenScene implements ButtonSprite.OnClick
 		case INITIAL_FEEDBACK:
 			showScene(new PazuruQuestScene(getBaseActivity()));
 			break;
-		}
+		}	
 	}
 
 	private void showScene(KeyListenScene scene) {
@@ -152,4 +182,5 @@ public class InitialScene extends KeyListenScene implements ButtonSprite.OnClick
 		getBaseActivity().getEngine().setScene(scene);
 		getBaseActivity().appendScene(scene);
 	}
+
 }
