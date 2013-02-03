@@ -388,7 +388,7 @@ public class MainScene extends KeyListenScene
 							if (obj.collidesWith(player)) {
 								
 								// プレイヤーのｘ座標と障害物のx座標中心間の距離
-								float distanceBetweenCenterXOfPlayerAndObstacle = CollidesUtil.getDistanceBetween(player, obj);
+								float distanceBetweenCenterXOfPlayerAndObstacle = CollidesUtil.getDistanceXBetween(player, obj);
 								
 								// 衝突を許容する距離
 								ObstacleType objTag = ObstacleType.getObstacleType(obj.getTag());

@@ -1,5 +1,6 @@
 package com.kyokomi.core.utils;
 
+import org.andengine.entity.shape.IAreaShape;
 import org.andengine.entity.sprite.Sprite;
 
 public class CollidesUtil {
@@ -47,10 +48,36 @@ public class CollidesUtil {
 	 * @param sprite2 右側
 	 * @return x座標中心間の距離
 	 */
-	public static float getDistanceBetween(Sprite sprite1, Sprite sprite2) {
+	public static float getDistanceXBetween(IAreaShape sprite1, IAreaShape sprite2) {
 		return Math.abs((sprite2.getX() + sprite2.getWidth() / 2) - (sprite1.getX() + sprite1.getWidth() / 2));
 	}
-	
+	/**
+	 * Sprite同士のx座標中心間の距離を求める.
+	 * @param sprite1 左側
+	 * @param sprite2 右側
+	 * @return x座標中心間の距離
+	 */
+	public static float getDistanceXBetween(float sprite1X, float sprite1Width, IAreaShape sprite2) {
+		return Math.abs((sprite2.getX() + sprite2.getWidth() / 2) - (sprite1X + sprite1Width / 2));
+	}
+	/**
+	 * Sprite同士のy座標中心間の距離を求める.
+	 * @param sprite1 左側
+	 * @param sprite2 右側
+	 * @return y座標中心間の距離
+	 */
+	public static float getDistanceYBetween(IAreaShape sprite1, IAreaShape sprite2) {
+		return Math.abs((sprite2.getY() + sprite2.getHeight() / 2) - (sprite1.getY() + sprite1.getHeight() / 2));
+	}
+	/**
+	 * Sprite同士のy座標中心間の距離を求める.
+	 * @param sprite1 左側
+	 * @param sprite2 右側
+	 * @return y座標中心間の距離
+	 */
+	public static float getDistanceYBetween(float sprite1Y, float sprite1Height, IAreaShape sprite2) {
+		return Math.abs((sprite2.getY() + sprite2.getHeight() / 2) - (sprite1Y + sprite1Height / 2));
+	}
 	/**
 	 * 衝突の許容値を考慮した距離を求める.
 	 * @param sprite1 左側
