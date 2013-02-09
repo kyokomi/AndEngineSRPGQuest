@@ -1,6 +1,8 @@
 package com.kyokomi.pazuruquest.scene;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 
 import org.andengine.engine.handler.timer.ITimerCallback;
@@ -8,7 +10,10 @@ import org.andengine.engine.handler.timer.TimerHandler;
 import org.andengine.entity.IEntity;
 import org.andengine.entity.modifier.IEntityModifier;
 import org.andengine.entity.modifier.IEntityModifier.IEntityModifierListener;
+import org.andengine.entity.modifier.AlphaModifier;
 import org.andengine.entity.modifier.MoveModifier;
+import org.andengine.entity.modifier.ParallelEntityModifier;
+import org.andengine.entity.modifier.ScaleModifier;
 import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.Scene;
@@ -16,10 +21,10 @@ import org.andengine.entity.sprite.Sprite;
 import org.andengine.input.touch.TouchEvent;
 import org.andengine.util.color.Color;
 import org.andengine.util.modifier.IModifier;
+import org.andengine.util.modifier.ParallelModifier;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.scene.KeyListenScene;
-import com.kyokomi.core.utils.CollidesUtil;
 import com.kyokomi.pazuruquest.layer.PanelLayer;
 
 import android.graphics.Point;
@@ -85,7 +90,7 @@ public class PazuruQuestScene extends KeyListenScene
 	}
 	
 	private Rectangle mBackgroundLayer;
-//	private Rectangle mTouchLayer;
+	
 	// ----------------------------------------------------------------------------
 	private static final int PANEL_SIZE = 78;
 	private static final int PANEL_BASE_X = 10;
@@ -127,37 +132,32 @@ public class PazuruQuestScene extends KeyListenScene
 	}
 	
 	private boolean isPanelToMoveWindowX(int x) {
-//		return true;
-		int panelX = getPanelToWindowX(x);
-		int windowX = getWindowToPanelX(panelX);
-		int startX = windowX + PANEL_SIZE / 5;
-		int endX = windowX + PANEL_SIZE - (PANEL_SIZE / 5) ;
-		
-//		int startX = windowX + PANEL_SIZE + (PANEL_SIZE / 2);
-//		int endX = windowX - (PANEL_SIZE / 2) ;
-		Log.d(TAG, "x = " + x + " start = " + startX + " end = " + endX);
-		if (x < startX || x > endX) { 
-			return true;
-		} else {
-			return false;
-		}
+		return true;
+//		int panelX = getPanelToWindowX(x);
+//		int windowX = getWindowToPanelX(panelX);
+//		int startX = windowX + PANEL_SIZE / 5;
+//		int endX = windowX + PANEL_SIZE - (PANEL_SIZE / 5) ;
+//		
+//		Log.d(TAG, "x = " + x + " start = " + startX + " end = " + endX);
+//		if (x < startX || x > endX) { 
+//			return true;
+//		} else {
+//			return false;
+//		}
 	}
 	private boolean isPanelToMoveWindowY(int y) {
-		
-//		return true;
-		int panelY = getPanelToWindowY(y);
-		int windowY = getWindowToPanelY(panelY);
-		int startY = windowY + PANEL_SIZE / 5;
-		int endY = windowY + PANEL_SIZE - (PANEL_SIZE / 5);
-
-//		int startY = windowY + PANEL_SIZE + (PANEL_SIZE / 2);
-//		int endY = windowY - (PANEL_SIZE / 2);
-		Log.d(TAG, "y = "+ y + " start = " + startY + " end = " + endY);
-		if (y < startY || y > endY) { 
-			return true;
-		} else {
-			return false;
-		}
+		return true;
+//		int panelY = getPanelToWindowY(y);
+//		int windowY = getWindowToPanelY(panelY);
+//		int startY = windowY + PANEL_SIZE / 5;
+//		int endY = windowY + PANEL_SIZE - (PANEL_SIZE / 5);
+//
+//		Log.d(TAG, "y = "+ y + " start = " + startY + " end = " + endY);
+//		if (y < startY || y > endY) { 
+//			return true;
+//		} else {
+//			return false;
+//		}
 	}
 
 	// ステート管理定数
@@ -177,11 +177,6 @@ public class PazuruQuestScene extends KeyListenScene
 	// ------------------------------------------
 	// レイヤ関連
 	// ------------------------------------------
-	// パネル交換用レイヤ
-//	private CALayer *movingLayer1;
-//	private CALayer *movingLayer2;
-//	// 削除対象レイヤ
-//	private NSMutableSet *deletingLayers;
 //	// 追加レイヤ
 //	private NSMutableArray *panelLayers;
 
@@ -194,9 +189,16 @@ public class PazuruQuestScene extends KeyListenScene
 	private int score;
 	// タイムカウント
 	private int timeCount;
-
+	
+	private PanelLayer[][] panelMap;
+	
+    // 乱数シードの初期設定処理(現在時刻に応じた乱数シードを設定することで毎回実行するたびに異なる乱数が生成される）
+	private final Random rand = new Random(new Date().getTime());
+	
 	// ビューが表示される直前の初期化処理
 	private void viewWillAppear() {
+		
+		panelMap = new PanelLayer[PANEL_COUNT_X][PANEL_COUNT_Y];
 		
 		initPanelBase(0, 0);
 		
@@ -209,61 +211,59 @@ public class PazuruQuestScene extends KeyListenScene
 		mBackgroundLayer.setZIndex(0);
 		attachChild(mBackgroundLayer);
 		
-	    // 乱数シードの初期設定処理(現在時刻に応じた乱数シードを設定することで毎回実行するたびに異なる乱数が生成される）
-		Random rand = new Random(new Date().getTime());
-	    
 	    // ゲーム管理用の初期化
-	    state = PlayState.PlayStateChoose;
+		chegeState(PlayState.PlayStateChoose);
+	    
 	    isFinished = false;
-//	    deletingLayers = [[NSMutableSet alloc] init];
-//	    panelLayers = [[NSMutableArray alloc] init];
 	    score = 0;
 	    timeCount = 60;
+	    // TODO: 再プレイボタン
 //	    titleButton.hidden = true;
 	    
 	    // Y方向とX方向6マスのパネル画像を設定
 	    for (int y = 0; y < PANEL_COUNT_Y; y++) {
 	        for (int x = 0; x < PANEL_COUNT_X; x++) {
-	            // 新たなレイヤーを生成
-	        	PanelLayer layer = new PanelLayer(x, y, 0, 0, PANEL_SIZE, PANEL_SIZE, 
-	        			getBaseActivity().getVertexBufferObjectManager());
-	        	layer.setColor(Color.WHITE);
-	        	layer.setAlpha(0.5f);
-	            // レイヤの中心点の位置を設定
-	            layer.setPosition(getWindowToPanelX(x), getWindowToPanelY(y));
-	            
-	            // 表示するパネル画像をランダム値(0〜4)を取得
-	            int dice = rand.nextInt(5);
-	            // ランダム値をもとにパネル画像を読み込む
-	            String layerName = String.format("pazuru_%d", dice); // TODO: あとでローカライズ
-	            String imageName = String.format("%s.png", layerName);  // TODO: あとでローカライズ
-	            Log.d(TAG, imageName);
-	            Sprite imageSprite = getResourceSprite(imageName);
-	            imageSprite.setSize(PANEL_SIZE, PANEL_SIZE);
-	            layer.attachChild(imageSprite);
-	            layer.setTag(dice);
 	            
 	            // backViewのlayerに新しく作ったレイヤーを追加する
+	        	PanelLayer layer = createPanelLayer(x, y, 
+	            		getWindowToPanelX(x), getWindowToPanelY(y));
 	            mBackgroundLayer.attachChild(layer);
+	            panelMap[x][y] = layer;
 	        }
 	    }
 	    sortChildren();
+	    
+	    // TODO: プレイ時間
 //	    // タイムカウント
 //	    [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(timerProc:) userInfo:nil repeats:YES];
 	}
 	
-	private boolean checkTouchedSprite(Sprite sprite, TouchEvent pSceneTouchEvent) {
-		// タッチの座標を取得
-		float x = pSceneTouchEvent.getX();
-		float y = pSceneTouchEvent.getY();
-		
-		if (sprite.contains(x, y)){
-//		if ((x > sprite.getX() && x < sprite.getX() + sprite.getWidth()) && 
-//				(y > sprite.getY() && x < sprite.getY() + sprite.getHeight()) ) {
-			return true;
-		}
-		return false;
+	private PanelLayer createPanelLayer(int panelX, int panelY, float x, float y) {
+        // 新たなレイヤーを生成
+    	PanelLayer layer = new PanelLayer(panelX, panelY, 0, 0, PANEL_SIZE, PANEL_SIZE, 
+    			getBaseActivity().getVertexBufferObjectManager());
+    	layer.setColor(Color.WHITE);
+    	layer.setAlpha(0.5f);
+        // レイヤの中心点の位置を設定
+        layer.setPosition(x, y);
+        
+        // 表示するパネル画像をランダム値(0〜4)を取得
+        int dice = rand.nextInt(5);
+        // ランダム値をもとにパネル画像を読み込む
+        String layerName = String.format("pazuru_%d", dice); // TODO: あとでローカライズ
+        String imageName = String.format("%s.png", layerName);  // TODO: あとでローカライズ
+        Log.d(TAG, imageName);
+        Sprite imageSprite = getResourceSprite(imageName);
+        imageSprite.setSize(PANEL_SIZE, PANEL_SIZE);
+        layer.attachChild(imageSprite);
+        layer.setName(layerName);
+        layer.setImage(imageSprite);
+        
+        layer.setPanelPoint(new Point(panelX, panelY));
+        
+        return layer;
 	}
+	
 	private PanelLayer panelHitTest(float pX, float pY) {
 		if (mBackgroundLayer.contains(pX, pY)) {
 			int count = mBackgroundLayer.getChildCount();
@@ -278,8 +278,9 @@ public class PazuruQuestScene extends KeyListenScene
 		}
 		return null;
 	}
+	
 	private PanelLayer mMovingLayer1;
-//	private PanelLayer mMovingLayer2;
+	
 	/**
 	 * 画面タッチ時のイベント.
 	 */
@@ -331,143 +332,76 @@ public class PazuruQuestScene extends KeyListenScene
 
  		// 移動する
 	    if (mMovingLayer1 != null) {
-			float beforeX = getWindowToPanelX(getPanelToWindowX((int)mMovingLayer1.getX()));
-			float beforeY = getWindowToPanelX(getPanelToWindowX((int)mMovingLayer1.getY()));
-	    	mMovingLayer1.setPosition(x, y);
-	    	/*
-	    	boolean isMoved = false;
-	    	// 2点間の距離で移動を判定
-			int count = mBackgroundLayer.getChildCount();
-			for (int i = 0; i < count; i++) {
-				if (mBackgroundLayer.getChildByIndex(i) instanceof PanelLayer == false) {
-					continue;
-				}
-				PanelLayer sprite = (PanelLayer) mBackgroundLayer.getChildByIndex(i);
-				float distanceX = CollidesUtil.getDistanceXBetween(mMovingLayer1, sprite);
-				float distanceY = CollidesUtil.getDistanceYBetween(mMovingLayer1, sprite);
-				if (distanceX < (PANEL_SIZE / 2) || distanceY < (PANEL_SIZE / 2)) {
-					// 移動させる
-					isMoved = true;
-					Log.d(TAG, "ChangeMove OK");
-//					sprite.setPosition(beforeX, beforeY);
-					// 交換
-					animationMovePanel(sprite, beforeX, beforeY, new IEntityModifierListener() {
-						@Override
-						public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
-						}
-						@Override
-						public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
-						}
-					});
-					break;
-				}
+	    	mMovingLayer1.setPosition(x - mMovingLayer1.getWidth() / 2, y - mMovingLayer1.getHeight() /2);
+	    	// 移動前のパネル座標
+	    	int beforePanelX = mMovingLayer1.getPanelPoint().x;
+	    	int beforePanelY = mMovingLayer1.getPanelPoint().y;
+	    	// 移動前の画面座標
+			float beforeX = getWindowToPanelX(beforePanelX);
+			float beforeY = getWindowToPanelX(beforePanelY);
+			// 移動後のパネル座標（予定）
+	    	int panelX = getPanelToWindowX((int)x);
+			int panelY = getPanelToWindowX((int)y);
+
+			// 動いていない
+			if (Math.abs(beforePanelX - panelX) == 0 && Math.abs(beforePanelY - panelY) == 0) {
+				return;
 			}
-			if (!isMoved) {
-				mMovingLayer1.setPosition(beforeX, beforeY);
-			}
-			*/
+			
+//	    	// 斜め移動とかぶっ飛んだ移動を補正する
+//	    	if ((Math.abs(beforePanelX - panelX) == 1 && Math.abs(beforePanelY - panelY) == 0) == false ||
+//					(Math.abs(beforePanelX - panelX) == 0 &&  Math.abs(beforePanelY - panelY) == 1 ) == false) {
+//	    		
+//	    		int overX = beforePanelX - panelX;
+//	    		int overY = beforePanelY - panelY;
+//	    		// 移動幅が大きい方を候補にする
+//	    		if (Math.abs(overX) > Math.abs(overY)) {
+//	    			if (overX > 0) {
+//	    				panelX = beforePanelX + 1;
+//	    			} else if (overX < 0) {
+//	    				panelX = beforePanelX - 1;
+//	    			}
+//	    			panelY = beforePanelY;
+//	    		} else {
+//	    			if (overY > 0) {
+//	    				panelY = beforePanelY + 1;
+//	    			} else if (overY < 0){
+//	    				panelY = beforePanelY - 1;
+//	    			}
+//	    			panelX = beforePanelX;
+//	    		}
+//	    		Log.d(TAG, "補正 panelXY[" + panelX + ", " + panelY + "]");
+//	    	}
+			
+			// TODO: 移動判定補正（未使用）
     		if (isPanelToMoveWindowX((int)x) || isPanelToMoveWindowY((int)y)) {
-    			float moveX = getWindowToPanelX(getPanelToWindowX((int)x));
-    	    	float moveY = getWindowToPanelY(getPanelToWindowY((int)y));
-    	    	mMovingLayer1.setPosition(moveX, moveY);
+    			
     			// 移動したとき
-    			if (beforeX != moveX || beforeY != moveY) {
-    				
-    				Log.d(TAG, String.format("before=[%f,%f] move=[%f,%f] back=[%f,%f]", 
-    						beforeX, beforeY, moveX, moveY,
-    						mBackgroundLayer.getX(), mBackgroundLayer.getY()));
-    				
-        	    	// 同じポジションにいるやつと交換
-        	    	if (mBackgroundLayer.contains(moveX, moveY)) {
-        	    		Log.d(TAG, "mBackgroundLayer.contains(moveX, moveY) OK");
-        				int count = mBackgroundLayer.getChildCount();
-        				for (int i = 0; i < count; i++) {
-        					if (mBackgroundLayer.getChildByIndex(i) instanceof PanelLayer) {
-        						PanelLayer sprite = (PanelLayer) mBackgroundLayer.getChildByIndex(i);
-        		    	    	int modifierCnt = sprite.getEntityModifierCount();
-        		    	    	if (modifierCnt > 0) {
-        		    	    		continue; // 移動中は無視
-        		    	    	}
-        		    	    	
-        						float spriteX = getWindowToPanelX(getPanelToWindowX((int)sprite.getX()));
-        		    	    	float spriteY = getWindowToPanelY(getPanelToWindowY((int)sprite.getY()));
-        						if(mMovingLayer1 != sprite && spriteX == moveX && spriteY == moveY) {
-        							Log.d(TAG, "ChangeMove OK");
-//	        							sprite.setPosition(beforeX, beforeY);
-        							// 交換
-        							animationMovePanel(sprite, beforeX, beforeY, new IEntityModifierListener() {
-        								@Override
-        								public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
-        								}
-        								@Override
-        								public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
-        								}
-        							});
-        							break;
-        						}
-        					}
-        				}
-        			}
+    			if (beforePanelX != panelX || beforePanelY != panelY) {
+    				// 斜め移動は禁止
+    				if ((Math.abs(beforePanelX - panelX) == 1 &&  Math.abs(beforePanelY - panelY) == 0) ||
+    						(Math.abs(beforePanelX - panelX) == 0 &&  Math.abs(beforePanelY - panelY) == 1 )) {
+    					
+        				// 移動先にパネルが存在する場合
+        				PanelLayer temp = panelMap[panelX][panelY];
+        				if (temp != null) {
+    	    				mMovingLayer1.setPanelPoint(new Point(panelX, panelY));
+    	    				panelMap[panelX][panelY] = mMovingLayer1;
+    	    				temp.setPanelPoint(new Point(beforePanelX, beforePanelY));
+    	    				panelMap[beforePanelX][beforePanelY] = temp;
+    	    				
+    	    				animationMovePanel(temp, beforeX, beforeY, new IEntityModifierListener() {
+    							@Override
+    							public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
+    							}
+    							@Override
+    							public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+    							}
+    						});
+        				}    					
+    				}
     			}
-    		} else {
-    			mMovingLayer1.setPosition(beforeX, beforeY);
     		}
-    		
-    		// END
-    	
-//
-//			float beforeX = getWindowToPanelX(getPanelToWindowX((int)mMovingLayer1.getX()));
-//			float beforeY = getWindowToPanelX(getPanelToWindowX((int)mMovingLayer1.getY()));
-//	    	mMovingLayer1.setPosition(x, y);
-//	    	
-//    		if (isPanelToMoveWindowX((int)x) || isPanelToMoveWindowY((int)y)) {
-//    			float moveX = getWindowToPanelX(getPanelToWindowX((int)x));
-//    	    	float moveY = getWindowToPanelY(getPanelToWindowY((int)y));
-//    	    	mMovingLayer1.setPosition(moveX, moveY);
-//    			// 移動したとき
-//    			if (beforeX != moveX || beforeY != moveY) {
-//    				
-//    				Log.d(TAG, String.format("before=[%f,%f] move=[%f,%f] back=[%f,%f]", 
-//    						beforeX, beforeY, moveX, moveY,
-//    						mBackgroundLayer.getX(), mBackgroundLayer.getY()));
-//    				
-//        	    	// 同じポジションにいるやつと交換
-//        	    	if (mBackgroundLayer.contains(moveX, moveY)) {
-//        	    		Log.d(TAG, "mBackgroundLayer.contains(moveX, moveY) OK");
-//        				int count = mBackgroundLayer.getChildCount();
-//        				for (int i = 0; i < count; i++) {
-//        					if (mBackgroundLayer.getChildByIndex(i) instanceof PanelLayer) {
-//        						PanelLayer sprite = (PanelLayer) mBackgroundLayer.getChildByIndex(i);
-//        		    	    	int modifierCnt = sprite.getEntityModifierCount();
-//        		    	    	if (modifierCnt > 0) {
-//        		    	    		continue; // 移動中は無視
-//        		    	    	}
-//        		    	    	
-//        						float spriteX = getWindowToPanelX(getPanelToWindowX((int)sprite.getX()));
-//        		    	    	float spriteY = getWindowToPanelY(getPanelToWindowY((int)sprite.getY()));
-//        						if(mMovingLayer1 != sprite && spriteX == moveX && spriteY == moveY) {
-//        							Log.d(TAG, "ChangeMove OK");
-////        							sprite.setPosition(beforeX, beforeY);
-//        							// 交換
-//        							animationMovePanel(sprite, beforeX, beforeY, new IEntityModifierListener() {
-//        								@Override
-//        								public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
-//        								}
-//        								@Override
-//        								public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
-//        								}
-//        							});
-//        							break;
-//        						}
-//        					}
-//        				}
-//        			}
-//    			}
-//    		} else {
-//    			mMovingLayer1.setPosition(beforeX, beforeY);
-//    		}
-//    		// END
-    		
 	    }
 	}
 
@@ -475,82 +409,27 @@ public class PazuruQuestScene extends KeyListenScene
 		Log.d(TAG,"touchesEnded");
 	    if (state != PlayState.PlayStateChange) {
 	        Log.d(TAG, "たっちあうと！ " + state);
-	        state = PlayState.PlayStateChange;
 	        
-	        registerUpdateHandler(new TimerHandler(0.1f, new ITimerCallback() {
+	        registerUpdateHandler(new TimerHandler(0.01f, new ITimerCallback() {
 				@Override
 				public void onTimePassed(TimerHandler pTimerHandler) {
-					mMovingLayer1 = null;
-					finishChange();
+					if(mMovingLayer1 != null) {
+						
+						chegeState(PlayState.PlayStateChange);
+						
+						int beforePanelX = mMovingLayer1.getPanelPoint().x;
+				    	int beforePanelY = mMovingLayer1.getPanelPoint().y;
+						float beforeX = getWindowToPanelX(beforePanelX);
+						float beforeY = getWindowToPanelX(beforePanelY);
+						mMovingLayer1.setPosition(beforeX, beforeY);
+						mMovingLayer1 = null;
+						finishChange();
+					}
 				}
 			}));
 	        // TODO: 交換終了時の処理
 	        //[NSTimer scheduledTimerWithTimeInterval:0.1 target:self selector:@selector(finishChange:) userInfo:nil repeats:NO];
 	    }
-	}
-	
-	private PointF getLayerPoint(PanelLayer layer) {
-		return new PointF(layer.getX(), layer.getY());
-//		return layer.getMoveingAfterPointF();
-	}
-	// レイヤ交換
-	private boolean swapLayers() {
-//		final PointF panelPos1 = getLayerPoint(mMovingLayer1);
-//		final PointF panelPos2 = getLayerPoint(mMovingLayer2);
-//		
-//	    // 画面左上を(0,0)その右を(1,0)とするように変換
-//	    int px1 = (int)(panelPos1.x - mPanelBaseX) / (PANEL_SIZE + 1);
-//	    int py1 = (int)(panelPos1.y - mPanelBaseY) / (PANEL_SIZE + 1);
-//	    int px2 = (int)(panelPos2.x - mPanelBaseX) / (PANEL_SIZE + 1);
-//	    int py2 = (int)(panelPos2.y - mPanelBaseY) / (PANEL_SIZE + 1);
-//		final Point panelPos1 = mMovingLayer1.getPanelPoint();
-//		final Point panelPos2 = mMovingLayer2.getPanelPoint();
-//		final int px1 = panelPos1.x;
-//		final int py1 = panelPos1.y;
-//		final int px2 = panelPos2.x;
-//		final int py2 = panelPos2.y;
-		
-	    // 差分を計算することで1枚目と2枚目のパネルが上下か左右に隣り合っていることを確認
-//	    int dx = px2 - px1;
-//	    int dy = py2 - py1;
-//	    
-//	    if ((dx ==0 && Math.abs(dy) == 1) || (Math.abs(dx) == 1 && dy ==0)) {
-	    	
-	        // 0.4秒かけて１枚目のパネル位置と2枚目のパネル位置を交換
-//	    	animationChangePanel(mMovingLayer1, mMovingLayer2, new IEntityModifierListener() {
-//				@Override
-//				public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
-////					mMovingLayer1.setPanelPoint(new Point(px2, px2));
-////					mMovingLayer2.setPanelPoint(new Point(px1, py1));
-//				}
-//				@Override
-//				public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
-////					mMovingLayer1.setPanelPoint(new Point(px2, px2));
-////					mMovingLayer2.setPanelPoint(new Point(px1, py1));
-//				}
-//			});
-//	        CABasicAnimation *anime1 = [CABasicAnimation animationWithKeyPath:@"positon"];
-//	        anime1.duration = 0.4;
-//	        anime1.fromValue = [NSNumber valueWithCGPoint:panelPos1];
-//	        anime1.toValue = [NSNumber valueWithCGPoint:panelPos2];
-//	        // アニメーションが提供するのはあくまでも見た目の変更だけの機能であり、positionは明示的に指定する必要がある
-//	        self.movingLayer1.position = panelPos2;
-//	        [self.movingLayer1 addAnimation:anime1 forKey:nil];
-//	        
-//	        // 0.4秒かけて2枚目のパネル位置と1枚目のパネル位置を交換
-//	        CABasicAnimation *anime2 = [CABasicAnimation animationWithKeyPath:@"positon"];
-//	        anime2.duration = 0.4;
-//	        anime2.fromValue = [NSNumber valueWithCGPoint:panelPos2];
-//	        anime2.toValue = [NSNumber valueWithCGPoint:panelPos1];
-//	        self.movingLayer2.position = panelPos1;
-//	        [self.movingLayer2 addAnimation:anime2 forKey:nil];
-//	        
-//	        return true;
-//	    } else {
-//	    	Log.d(TAG, "dx = " + dx + " dy =" + dy);
-//	    }
-	    
-	    return false;
 	}
 	
 	private void animationMovePanel(PanelLayer pLayer, float moveX, float moveY, 
@@ -560,33 +439,11 @@ public class PazuruQuestScene extends KeyListenScene
 				pLayer.getY(), moveY, 
 				pIEntityModifierListener));
 	}
-	private void animationChangePanel(PanelLayer pPanelLayer1, PanelLayer pPanelLayer2, 
-			IEntityModifierListener pIEntityModifierListener) {
-//		PointF panelPos1 = getLayerPoint(pPanelLayer1);
-//		PointF panelPos2 = getLayerPoint(pPanelLayer2);
-		
-//		int x1 = getPanelX(pPanelLayer1.getPanelPoint().x);
-//		int y1 = getPanelY(pPanelLayer1.getPanelPoint().y);
-//		int x2 = getPanelX(pPanelLayer2.getPanelPoint().x);
-//		int y2 = getPanelY(pPanelLayer2.getPanelPoint().y);
-		
-		float x1 = pPanelLayer1.getX();
-		float y1 = pPanelLayer1.getY();
-		float x2 = pPanelLayer2.getX();
-		float y2 = pPanelLayer2.getY();
-		
-		pPanelLayer2.registerEntityModifier(new MoveModifier(0.2f, 
-				x2, x1, 
-				y2, y1, 
-				pIEntityModifierListener));
-		pPanelLayer1.registerEntityModifier(new MoveModifier(0.2f, 
-				x1, x2, 
-				y1, y2));
-	}
 
 	// パネルを消せるか判定
 	private void finishChange() {
-	    
+		Log.d(TAG, "------ finishChange -----");
+		
 	    // 連鎖カウントを初期化
 	    chainCount = 0;
 	    
@@ -594,11 +451,288 @@ public class PazuruQuestScene extends KeyListenScene
 	    if (!checkExplosion()) {
 	        
 	        // ステータスを選択可能に戻す
-	        state = PlayState.PlayStateChoose;
+	    	chegeState(PlayState.PlayStateChoose);
 	    }
 	}
 	
+	private List<PanelLayer> mDeleteLayers;
+	
 	private boolean checkExplosion() {
-		return false;
+		Log.d(TAG, "checkExplosion");
+		
+	    if (mMovingLayer1 != null) {
+	        // 2回目以降の連鎖時にこれらのレイヤが使われないようにnilをセットする
+	    	mMovingLayer1 = null;
+	    }
+	    
+	    /*
+	     * 上下左右に3個以上連なっている同じ種類のパネルに対して、それらのパネルをdeletingLayers変数に格納していく。
+	     *
+	     * tempListに左右に同じ種類のパネルが連なっている間、tempListにそれらのレイヤを追加していく。
+	     * 最終的にtempListに3個以上の要素が格納されていればdeletingLayersに格納し直す。
+	     *
+	     */
+	    mDeleteLayers = new ArrayList<PanelLayer>();
+	    List<PanelLayer> tempList = new ArrayList<PanelLayer>();
+	    for (int y = 0; y < PANEL_COUNT_Y; y++) {
+	        String currentName = "";
+	        for (int x = 0; x < PANEL_COUNT_X; x++) {
+	            PanelLayer layer = panelMap[x][y];
+	            if (layer == null) {
+	            	continue;
+	            }
+	            String layerName = layer.getName();
+	            if (layerName.equals(currentName)) {
+	            	tempList.add(layer);
+	            } else {
+	                currentName = layerName;
+	                // 消滅判定
+	                if (tempList.size() >= 3) {
+	                	mDeleteLayers.addAll(tempList);
+	                }
+	                tempList = new ArrayList<PanelLayer>();
+	                tempList.add(layer);
+	            }
+	        }
+	        // 消滅判定
+            if (tempList.size() >= 3) {
+            	mDeleteLayers.addAll(tempList);
+            }
+            tempList = new ArrayList<PanelLayer>();
+	    }
+	    
+	    for (int x = 0; x < PANEL_COUNT_X; x++) {
+	    	String currentName = "";
+	        for (int y = 0; y < PANEL_COUNT_Y; y++) {
+	            PanelLayer layer = panelMap[x][y];
+	            if (layer == null) {
+	            	continue;
+	            }
+	            String layerName = layer.getName();
+	            if (layerName.equals(currentName)) {
+	            	tempList.add(layer);
+	            } else {
+	                currentName = layerName;
+	                // 消滅判定
+	                if (tempList.size() >= 3) {
+	                	mDeleteLayers.addAll(tempList);
+	                }
+	                tempList = new ArrayList<PanelLayer>();
+	                tempList.add(layer);
+	            }
+	        }
+	        // 消滅判定
+            if (tempList.size() >= 3) {
+            	mDeleteLayers.addAll(tempList);
+            }
+            tempList = new ArrayList<PanelLayer>();
+	    }
+	    // 拡大と透明化のアニメーション
+	    for (PanelLayer layer : mDeleteLayers) {
+	    	layer.registerEntityModifier(new ParallelEntityModifier(
+	    			new ScaleModifier(0.3f, 1.0f, 1.5f),
+	    			new AlphaModifier(0.3f, 1.0f, 0.0f, new IEntityModifier.IEntityModifierListener() {
+				@Override
+				public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
+				}
+				@Override
+				public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+				}
+			})));
+	    	layer.getImage().registerEntityModifier(new AlphaModifier(0.3f, 1.0f, 0.0f));
+	    }
+	    
+	    // 消滅対象あり
+	    if (mDeleteLayers.size() > 0) {
+	    	// TODO: スコア
+	        // スコア設定
+//	        self.score += ([self.deletingLayers count] * 10 * (self.chainCount + 1));
+//	        self.scoreLabel.text = [NSString stringWithFormat:@"%05d", self.score];
+	        
+	    	// TODO: 連鎖
+	        // 連鎖カウントアップ
+//	        self.chainCount++;
+	        // アニメーション後(0.3秒後)にcheckChainを呼び出す
+//	        [NSTimer scheduledTimerWithTimeInterval:0.3 target:self selector:@selector(checkChain:) userInfo:nil repeats:NO];
+	    	
+	    	registerUpdateHandler(new TimerHandler(0.3f, new ITimerCallback() {
+				@Override
+				public void onTimePassed(TimerHandler pTimerHandler) {
+					// 消滅した分を詰めるためパネルを落下させる
+					finishExplosion();
+				}
+			}));
+	    	
+	    	return true;
+	        
+        // 消滅対象なし
+	    } else {
+	    	// 新しいパネルを降らせる
+	        return addNewLayers();
+	    }
+	}
+	
+	/**
+	 * 消滅完了時の処理.
+	 */
+	private void finishExplosion() {
+	    Log.d(TAG, "finishExplosion");
+
+	    for (PanelLayer layer : mDeleteLayers) {
+	    	panelMap[layer.getPanelPoint().x][layer.getPanelPoint().y] = null;
+	    }
+	    
+	    // 消滅対象のレイヤーを削除(削除は別スレッドで)
+		getBaseActivity().runOnUpdateThread(new Runnable() {
+			@Override
+			public void run() {
+				for (PanelLayer layer : mDeleteLayers) {
+					layer.detachChildren();
+			        layer.detachSelf();
+			    }
+			}
+		});
+	    
+	    /*
+	     * 消滅したパネルの上のパネルを下に落とす
+	     */
+	    boolean hasDropped = false;
+	    
+	    for (int x = 0; x < PANEL_COUNT_X; x++) {
+	        int count = 0;
+	        for (int y = 0; y < PANEL_COUNT_Y; y++) {
+	        	PanelLayer layer = panelMap[x][y];
+	        	if (layer != null) {
+	        		count++;
+	        	}
+	        }
+	        
+	        final int START_Y = PANEL_COUNT_Y - 1;
+	        int y = START_Y;
+	        for (int i = 0; i < count; i++) {
+	            while (y >= 0) {
+	            	PanelLayer layer = panelMap[x][y];
+	                y--;
+	                if (layer != null) {
+	                	// panelYが異なる場合
+	                    if (layer.getPanelPoint().y != (START_Y -i)) {
+	                        // 落下アニメーション(0.25秒)
+	                    	int panelX = layer.getPanelPoint().x;
+	                    	int panelY = layer.getPanelPoint().y;
+	                    	int movePanelY = (START_Y -i);
+	                    	int startX = getWindowToPanelX(panelX);
+	                    	int startY = getWindowToPanelY(panelY);
+	                    	int endY = getWindowToPanelY(movePanelY);
+	                    	layer.setPanelPoint(new Point(panelX, movePanelY));
+	                    	
+	                    	panelMap[panelX][movePanelY] = layer;
+	                    	panelMap[panelX][panelY] = null;
+	                    	
+	                        layer.registerEntityModifier(new MoveModifier(0.25f, startX, startX, startY, endY));
+	                        hasDropped = true;
+	                    }
+	                    break;
+	                }
+	            }
+	        }
+	    }
+	    
+	    // パネルを落とした場合、連鎖して消滅することがあるためpositon設定による暗黙的アニメーション後に再度checkExplosionを呼び出す
+	    if (hasDropped) {
+	    	registerUpdateHandler(new TimerHandler(0.25f, new ITimerCallback() {
+				@Override
+				public void onTimePassed(TimerHandler pTimerHandler) {
+					if (!checkExplosion()) {
+						chegeState(PlayState.PlayStateChoose);
+			    	}
+				}
+			}));
+	    } else {
+	        if (!addNewLayers()) {
+	        	chegeState(PlayState.PlayStateChoose);
+	        }
+	    }
+	}
+
+	private boolean addNewLayers() {
+		Log.d(TAG, "addNewLayers");
+		
+	    boolean hasAdded = false;
+	    final int START_Y = PANEL_COUNT_Y - 1;
+	    for (int x = 0; x < PANEL_COUNT_X; x++) {
+	    	int y = START_Y;
+	        for (; y >= 0; y--) {
+	            PanelLayer layer = panelMap[x][y];
+	            if (layer == null) {
+	                break;
+	            }
+	        }
+	        y += 1;
+	        if (y > 0) {
+	            hasAdded = true;
+	        }
+	        for (int i = 0; i < y; i++) {
+	        	// 上の方で生成する
+	        	final PanelLayer layer = createPanelLayer(x, y, 
+	        			getWindowToPanelX(x), getWindowToPanelY(i - y));
+	            
+	            // backViewのlayerに新しく作ったレイヤーを追加する
+	            mBackgroundLayer.attachChild(layer);
+
+	            int spaceCount = getPanelYCount(x);
+    	        if (spaceCount >= 0) {
+    	        	final int panelX = x;
+    	        	final int panelY = (START_Y - spaceCount);
+                	int startX = getWindowToPanelX(panelX);
+                	int startY = getWindowToPanelY(i - y);
+                	int endY = getWindowToPanelY(panelY);
+                	
+                	panelMap[panelX][panelY] = layer;
+                	
+                	// 落下アニメーション(0.25秒)                	
+    	            layer.registerEntityModifier(new MoveModifier(0.5f, startX, startX, startY, endY, 
+    	            		new IEntityModifier.IEntityModifierListener() {
+    					@Override
+    					public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
+    					}
+    					
+    					@Override
+    					public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+    						layer.setPanelPoint(new Point(panelX, panelY));
+    					}
+    				}));
+    	        }
+	        }
+	    }
+	    
+	    if (hasAdded) {
+	    	registerUpdateHandler(new TimerHandler(1.0f, new ITimerCallback() {
+				@Override
+				public void onTimePassed(TimerHandler pTimerHandler) {
+			    	if (!checkExplosion()) {
+			    		chegeState(PlayState.PlayStateChoose);
+			    	}
+				}
+			}));
+	    	return true;
+	    } else {
+	        return false;
+	    }
+	}
+	
+	private int getPanelYCount(int x) {
+		int count = 0;
+        for (int y = 0; y < PANEL_COUNT_Y; y++) {
+        	PanelLayer layer = panelMap[x][y];
+        	if (layer != null) {
+        		count++;
+        	}
+        }
+        return count;
+	}
+	
+	private void chegeState(PlayState pPlayState) {
+		Log.d(TAG, "ChangeState " + state + " >> " + pPlayState);
+		state = pPlayState;
 	}
 }

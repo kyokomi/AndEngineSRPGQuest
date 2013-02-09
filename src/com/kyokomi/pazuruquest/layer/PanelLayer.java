@@ -1,20 +1,35 @@
 package com.kyokomi.pazuruquest.layer;
 
 import org.andengine.entity.primitive.Rectangle;
+import org.andengine.entity.sprite.Sprite;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 
 import android.graphics.Point;
-import android.graphics.PointF;
 
 public class PanelLayer extends Rectangle {
 
-//	private PointF moveingBeforePointF;
+	private Sprite image;
+	private String name;
 	private Point panelPoint;
 	
 	public PanelLayer(int pPanelPointX, int pPanelPointY, float pX, float pY, float pWidth, float pHeight,
 			VertexBufferObjectManager pVertexBufferObjectManager) {
 		super(pX, pY, pWidth, pHeight, pVertexBufferObjectManager);
 		this.panelPoint = new Point(pPanelPointX, pPanelPointY);
+	}
+
+	public Sprite getImage() {
+		return image;
+	}
+	public void setImage(Sprite image) {
+		this.image = image;
+	}
+
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public Point getPanelPoint() {
@@ -24,25 +39,4 @@ public class PanelLayer extends Rectangle {
 	public void setPanelPoint(Point panelPoint) {
 		this.panelPoint = panelPoint;
 	}
-//	public void setMoveingBeforePointF(PointF moveingBeforePointF) {
-//		this.moveingBeforePointF = moveingBeforePointF;
-//	}
-//	public PointF getMoveingBeforePointF() {
-//		if(moveingBeforePointF == null) {
-//			PointF pointF = new PointF(getX(), getY());
-//			moveingBeforePointF = pointF;
-//		}
-//		return moveingBeforePointF;
-//	}
-//	
-//	public void setMoveingAfterPointF(PointF moveingAfterPointF) {
-//		this.moveingAfterPointF = moveingAfterPointF;
-//	}
-//	public PointF getMoveingAfterPointF() {
-////		if(moveingAfterPointF == null) {
-//			PointF pointF = new PointF(getX(), getY());
-//			moveingAfterPointF = pointF;
-////		}
-//		return moveingAfterPointF;
-//	}
 }
