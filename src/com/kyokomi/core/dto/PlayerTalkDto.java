@@ -1,5 +1,7 @@
 package com.kyokomi.core.dto;
 
+import com.kyokomi.srpgquest.constant.SelectMenuType;
+
 /**
  * プレイヤー会話内容DTO.
  * @author kyokomi
@@ -8,8 +10,26 @@ package com.kyokomi.core.dto;
 public class PlayerTalkDto {
 	
 	public enum TalkDirection {
-		TALK_DIRECT_LEFT,
-		TALK_DIRECT_RIGHT,
+		TALK_DIRECT_LEFT(1),
+		TALK_DIRECT_RIGHT(2),
+		;
+		private Integer value;
+		
+		private TalkDirection(Integer value) {
+			this.value = value;
+		}
+		public static TalkDirection get(Integer value) {
+			TalkDirection[] values = values();
+			for (TalkDirection type : values) {
+				if (type.getValue() == value) {
+					return type;
+				}
+			}
+			throw new RuntimeException("find not tag type.");
+		}
+		public Integer getValue() {
+			return value;
+		}
 	}
 	
 	private Integer playerId;

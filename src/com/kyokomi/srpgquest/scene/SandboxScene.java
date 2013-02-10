@@ -181,7 +181,7 @@ public class SandboxScene extends SrpgBaseScene
 	}
 	
 	@Override
-	public void prepareSoundAndMusic() {
+	public void initSoundAndMusic() {
 			
 	}
 

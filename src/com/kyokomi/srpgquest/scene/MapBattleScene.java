@@ -41,7 +41,6 @@ import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.dto.ActorPlayerDto;
 import com.kyokomi.core.dto.PlayerTalkDto;
 import com.kyokomi.core.dto.PlayerTalkDto.TalkDirection;
-import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.core.sprite.MenuRectangle;
 import com.kyokomi.core.sprite.PlayerSprite;
 import com.kyokomi.core.sprite.PlayerStatusRectangle;
@@ -106,7 +105,7 @@ public class MapBattleScene extends SrpgBaseScene
 	private Sprite mGameOverCutInSprite;
 	
 	// ----- SE, BGM -----
-	private Sound mBtnPressedSound;
+//	private Sound mBtnPressedSound;
 	private Sound mAttackSound;
 	private Music mTutorialBGM;
 	private Music mBattleBGM;
@@ -132,11 +131,11 @@ public class MapBattleScene extends SrpgBaseScene
 		stopPlayMusic();
 	}
 	@Override
-	public void prepareSoundAndMusic() {
+	public void initSoundAndMusic() {
 		// 効果音をロード
 		try {
 			mAttackSound = createSoundFromFileName("SE_ATTACK_ZANGEKI_01.wav");
-			mBtnPressedSound = createSoundFromFileName("btn_se1.wav");
+//			mBtnPressedSound = createSoundFromFileName("btn_se1.wav");
 			mTutorialBGM = createMusicFromFileName("tutorial_bgm1.mp3");
 			mBattleBGM = createMusicFromFileName("battle_bgm1.mp3");
 			mClearBGM = createMusicFromFileName("clear_bgm1.mp3");
@@ -157,7 +156,7 @@ public class MapBattleScene extends SrpgBaseScene
 			mAttackSound.play();
 			break;
 		case BTN_PRESSED_SOUND:
-			mBtnPressedSound.play();
+			getBtnPressedSound().play();
 			break;
 		default:
 			break;
@@ -213,7 +212,8 @@ public class MapBattleScene extends SrpgBaseScene
 	public boolean dispatchKeyEvent(KeyEvent e) {
 		// バックボタンが押された時
 		if (e.getAction() == KeyEvent.ACTION_DOWN && e.getKeyCode() == KeyEvent.KEYCODE_BACK) { 
-			releseMusic();
+//			releseMusic();
+			return true;
 		}
 		return false;
 	}
@@ -812,7 +812,7 @@ public class MapBattleScene extends SrpgBaseScene
 				"私が対戦相手になります。"));
 		talks.add(new PlayerTalkDto(player.getPlayerId(), 
 				player.getActorPlayer().getName(), 3, TalkDirection.TALK_DIRECT_LEFT,
-				"キャラクターをタップするとメニューがでるので、\n移動と攻撃で倒される前に倒します。"));
+				"キャラクターをタップするとメニューがでるので、 移動と攻撃で倒される前に倒します。"));
 		talks.add(new PlayerTalkDto(player.getPlayerId(), 
 				player.getActorPlayer().getName(), 2, TalkDirection.TALK_DIRECT_LEFT,
 				"待機すると敵のターンとなるよくあるターン制のSRPGです。"));
@@ -826,12 +826,6 @@ public class MapBattleScene extends SrpgBaseScene
 		attachChild(mTalkLayer);
 		
 		mTalkLayer.nextTalk();
-	}
-	
-	private TiledSprite getResourceFaceSprite(int tag, String faceFileName) {
-		TiledSprite tiledSprite = getResourceTiledSprite(faceFileName, 4, 2);
-		tiledSprite.setTag(tag);
-		return tiledSprite;
 	}
 	
 	// --------------- ステータスウィンドウ --------------
@@ -940,7 +934,8 @@ public class MapBattleScene extends SrpgBaseScene
 	public void clearMapBattle() {
 		// TODO: 次のステージへ？
 		releseMusic();
-		getBaseActivity().backToInitial();
+//		getBaseActivity().backToInitial();
+		showScene(new NovelScene(getBaseActivity(), 1, 2));
 	}
 	public void gameOverMapBattle() {
 		// TODO: タイトルへ？

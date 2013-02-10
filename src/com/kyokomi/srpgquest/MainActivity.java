@@ -29,6 +29,12 @@ import android.view.KeyEvent;
  */
 public class MainActivity extends MultiSceneActivity {
 
+	/** ゲーム制御クラス. */
+	private GameController mGameController;
+	public GameController getmGameController() {
+		return mGameController;
+	}	
+
 	// 画面サイズ
 	private int CAMERA_WIDTH = (int)(800 / 1.0);
 	private int CAMERA_HEIGHT = (int)(480 / 1.0);
@@ -64,7 +70,14 @@ public class MainActivity extends MultiSceneActivity {
 		SoundFactory.setAssetBasePath("mfx/");
 		// サウンドファイルの格納場所を指定
 		MusicFactory.setAssetBasePath("mfx/");
-				
+		
+		// TODO: ここでよい？ゲーム制御クラス生成
+		mGameController = new GameController();
+		if (mGameController.load()) {
+			// セーブデータがない場合はニューゲーム
+			mGameController.start();
+		}
+		
 		InitialScene initialScene = new InitialScene(this);
 		// 遷移管理用配列に追加
 		getSceneArray().add(initialScene);

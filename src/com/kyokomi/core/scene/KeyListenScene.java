@@ -25,6 +25,7 @@ import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.util.color.Color;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
+import com.kyokomi.core.utils.ResourceUtil;
 
 import android.content.Intent;
 import android.graphics.Typeface;
@@ -100,6 +101,16 @@ public abstract class KeyListenScene extends Scene {
 	public IAreaShape placeToCenterY(IAreaShape sp, float x) {
 		sp.setPosition(x, baseActivity.getEngine().getCamera().getHeight() / 2.0f - sp.getHeight() / 2.0f);
 		return sp;
+	}
+	
+	/**
+	 * Scene表示.
+	 * @param scene
+	 */
+	protected void showScene(KeyListenScene scene) {
+		ResourceUtil.getInstance(getBaseActivity()).resetAllTexture();
+		getBaseActivity().getEngine().setScene(scene);
+		getBaseActivity().appendScene(scene);
 	}
 	
 	// -------------------

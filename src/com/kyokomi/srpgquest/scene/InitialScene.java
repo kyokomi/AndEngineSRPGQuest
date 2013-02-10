@@ -51,24 +51,6 @@ public class InitialScene extends KeyListenScene implements ButtonSprite.OnClick
 		bg.setSize(getWindowWidth(), getWindowHeight());
 		attachChild(bg);
 		
-//		Sprite titleSprite = getBaseActivity().getResourceUtil().getSprite(
-//				"initial_title.png");
-//		placeToCenterX(titleSprite, 40);
-//		titleSprite.setY(titleSprite.getY() - 200);
-//		attachChild(titleSprite);
-//		
-//		titleSprite.registerEntityModifier(new SequenceEntityModifier(
-//				new DelayModifier(0.5f), 
-//				new MoveModifier(1.0f, 
-//						titleSprite.getX(), 
-//						titleSprite.getX(), 
-//						titleSprite.getY(),
-//						titleSprite.getY() + 200,
-//						EaseBackInOut.getInstance())));
-		
-		// ボタンの追加
-//		TextButton btnStart = new TextButton(text, 0f, 0f, 0f, 0f, 
-//				getBaseActivity().getVertexBufferObjectManager(), this);
 		ButtonSprite btnStart = getBaseActivity().getResourceUtil().getButtonSprite(
 				"initial_btn_01.png", 
 				"initial_btn_01_p.png");
@@ -79,15 +61,7 @@ public class InitialScene extends KeyListenScene implements ButtonSprite.OnClick
 		attachChild(btnStart);
 		// ボタンをタップ可能にする
 		registerTouchArea(btnStart);
-		
-//		Text text = new Text(16, 16, getFont(), 
-//				"SRPG", 
-//				new TextOptions(HorizontalAlign.CENTER), 
-//				getBaseActivity().getVertexBufferObjectManager());
-//		text.setColor(Color.BLACK);
-//		text.setPosition(btnStart.getX() - text.getWidth() + 10, btnStart.getY());
-//		attachChild(text);
-		
+				
 		btnStart.registerEntityModifier(new SequenceEntityModifier(
 				new DelayModifier(1.0f), new MoveModifier(1.0f, 
 						btnStart.getX(), 
@@ -106,13 +80,6 @@ public class InitialScene extends KeyListenScene implements ButtonSprite.OnClick
 		attachChild(btnSandBox);
 		registerTouchArea(btnSandBox);
 		
-//		Text sandBoxText = new Text(16, 16, getFont(), "SandBox", 
-//				new TextOptions(HorizontalAlign.CENTER),
-//				getBaseActivity().getVertexBufferObjectManager());
-//		sandBoxText.setColor(Color.BLACK);
-//		sandBoxText.setPosition(btnSandBox.getX() - sandBoxText.getWidth() + 10, btnSandBox.getY());
-//		attachChild(sandBoxText);
-//		
 		btnSandBox.registerEntityModifier(new SequenceEntityModifier(
 				new DelayModifier(1.2f), new MoveModifier(1.0f, 
 						btnSandBox.getX(), 
@@ -131,13 +98,6 @@ public class InitialScene extends KeyListenScene implements ButtonSprite.OnClick
 		attachChild(btnPazuru);
 		registerTouchArea(btnPazuru);
 		
-//		Text pazuruBoxText = new Text(16, 16, getFont(), "パズル", 
-//				new TextOptions(HorizontalAlign.CENTER),
-//				getBaseActivity().getVertexBufferObjectManager());
-//		pazuruBoxText.setColor(Color.BLACK);
-//		pazuruBoxText.setPosition(btnPazuru.getX() - pazuruBoxText.getWidth() + 10, btnPazuru.getY());
-//		attachChild(pazuruBoxText);
-		
 		btnPazuru.registerEntityModifier(new SequenceEntityModifier(
 				new DelayModifier(1.4f), new MoveModifier(1.0f, 
 						btnPazuru.getX(), 
@@ -145,6 +105,15 @@ public class InitialScene extends KeyListenScene implements ButtonSprite.OnClick
 						btnPazuru.getY(),
 						btnPazuru.getY() - 400,
 						EaseBackInOut.getInstance())));
+
+		ButtonSprite btnNovel = getBaseActivity().getResourceUtil().getButtonSprite(
+				"initial_btn_01.png", 
+				"initial_btn_01_p.png");
+		placeToCenterX(btnNovel, 250);
+		btnNovel.setTag(4);
+		btnNovel.setOnClickListener(this);
+		attachChild(btnNovel);
+		registerTouchArea(btnNovel);
 	}
 
 	@Override
@@ -181,17 +150,18 @@ public class InitialScene extends KeyListenScene implements ButtonSprite.OnClick
 		case INITIAL_FEEDBACK:
 			showScene(new PazuruQuestScene(getBaseActivity()));
 			break;
+		case 4:
+			showScene(new NovelScene(getBaseActivity(), 1, 1));
+			break;
 		}	
 	}
 
-	private void showScene(KeyListenScene scene) {
+	@Override
+	protected void showScene(KeyListenScene scene) {
 		if(!titleBGM.isReleased()) {
 			titleBGM.release();
 		}
-		
-		ResourceUtil.getInstance(getBaseActivity()).resetAllTexture();
-		getBaseActivity().getEngine().setScene(scene);
-		getBaseActivity().appendScene(scene);
+		super.showScene(scene);
 	}
 
 }

@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.sprite.TiledSprite;
+import org.andengine.entity.text.AutoWrap;
 import org.andengine.entity.text.Text;
 import org.andengine.entity.text.TextOptions;
 import org.andengine.opengl.font.Font;
@@ -100,6 +101,7 @@ public class TalkLayer extends Rectangle {
 				getSizeToStr("-", textMaxLength), 
 				new TextOptions(HorizontalAlign.LEFT), 
 				baseScene.getBaseActivity().getVertexBufferObjectManager());
+		talkText.setAutoWrap(AutoWrap.WORDS);
 		nameText = new Text(16, 16, font, 
 				getSizeToStr("-", textMaxLength), 
 				new TextOptions(HorizontalAlign.LEFT), 
