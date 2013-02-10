@@ -21,14 +21,12 @@ import org.andengine.entity.sprite.Sprite;
 import org.andengine.input.touch.TouchEvent;
 import org.andengine.util.color.Color;
 import org.andengine.util.modifier.IModifier;
-import org.andengine.util.modifier.ParallelModifier;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.pazuruquest.layer.PanelLayer;
 
 import android.graphics.Point;
-import android.graphics.PointF;
 import android.util.Log;
 import android.view.KeyEvent;
 

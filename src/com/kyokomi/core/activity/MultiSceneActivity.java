@@ -7,6 +7,7 @@ import org.andengine.ui.activity.SimpleLayoutGameActivity;
 
 import android.widget.Toast;
 
+import com.kyokomi.core.db.GameBaseDBOpenHelper;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.core.utils.ResourceUtil;
 
@@ -90,5 +91,13 @@ public abstract class MultiSceneActivity extends SimpleLayoutGameActivity {
 				Toast.makeText(getBaseContext(), text, Toast.LENGTH_SHORT).show();
 			}
 		});
+	}
+	// DB
+	private GameBaseDBOpenHelper mBaseDBOpenHelper; 
+	public GameBaseDBOpenHelper getBaseDBOpenHelper() {
+		return mBaseDBOpenHelper;
+	}
+	public void initBaseDB() {
+		this.mBaseDBOpenHelper = new GameBaseDBOpenHelper(this);
 	}
 }

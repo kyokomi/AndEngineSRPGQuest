@@ -935,6 +935,7 @@ public class MapBattleScene extends SrpgBaseScene
 		// TODO: 次のステージへ？
 		releseMusic();
 //		getBaseActivity().backToInitial();
+		// TODO: 次のシナリオをMScenarioで持たないといけない
 		showScene(new NovelScene(getBaseActivity(), 1, 2));
 	}
 	public void gameOverMapBattle() {

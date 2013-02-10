@@ -9,21 +9,18 @@ import org.andengine.entity.modifier.MoveModifier;
 import org.andengine.entity.modifier.SequenceEntityModifier;
 import org.andengine.entity.sprite.ButtonSprite;
 import org.andengine.entity.sprite.Sprite;
-import org.andengine.entity.text.Text;
-import org.andengine.entity.text.TextOptions;
-import org.andengine.util.HorizontalAlign;
-import org.andengine.util.color.Color;
 import org.andengine.util.modifier.ease.EaseBackInOut;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
+import com.kyokomi.core.dao.MScenarioDao;
+import com.kyokomi.core.dto.MScenarioDto;
 import com.kyokomi.core.scene.KeyListenScene;
-import com.kyokomi.core.sprite.TextButton;
-import com.kyokomi.core.utils.ResourceUtil;
 import com.kyokomi.pazuruquest.scene.PazuruQuestScene;
 
+import android.database.sqlite.SQLiteDatabase;
 import android.view.KeyEvent;
 
-public class InitialScene extends KeyListenScene implements ButtonSprite.OnClickListener{
+public class InitialScene extends SrpgBaseScene implements ButtonSprite.OnClickListener{
 
 	// TODO: enumでもよい？
 	private static final int INITIAL_START = 1;
@@ -151,17 +148,42 @@ public class InitialScene extends KeyListenScene implements ButtonSprite.OnClick
 			showScene(new PazuruQuestScene(getBaseActivity()));
 			break;
 		case 4:
-			showScene(new NovelScene(getBaseActivity(), 1, 1));
+//			getBaseActivity().runOnUiThread(new Runnable() {
+//				@Override
+//				public void run() {
+					SQLiteDatabase database = getBaseActivity().getBaseDBOpenHelper().getWritableDatabase();
+					MScenarioDao mScenarioDao = new MScenarioDao();
+					// TODO: セーブデータからscenarioNoとseqNoをとってくる
+					MScenarioDto scenarioDto = mScenarioDao.selectByScenarioNoAndSeqNo(database, 1, 1);
+					switch (scenarioDto.getSceneType()) {
+					case SCENE_TYPE_MAP:
+						// TODO: map側が未対応
+//						showScene(new MapBattleScene(getBaseActivity(), scenarioDto));
+						showScene(new MapBattleScene(getBaseActivity()));
+						break;
+					case SCENE_TYPE_NOVEL:
+						showScene(new NovelScene(getBaseActivity(), scenarioDto));
+						break;
+					default:
+						break;
+					}					
+//				}
+//			});
 			break;
 		}	
 	}
 
 	@Override
-	protected void showScene(KeyListenScene scene) {
+	public void showScene(KeyListenScene scene) {
 		if(!titleBGM.isReleased()) {
 			titleBGM.release();
 		}
 		super.showScene(scene);
+	}
+
+	@Override
+	public void initSoundAndMusic() {
+		
 	}
 
 }

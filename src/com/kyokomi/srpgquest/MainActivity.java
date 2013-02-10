@@ -13,9 +13,9 @@ import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.core.utils.ResourceUtil;
 import com.kyokomi.srpgquest.R;
 import com.kyokomi.srpgquest.scene.InitialScene;
-import com.kyokomi.srpgquest.scene.MainScene;
 import com.kyokomi.srpgquest.scene.MapBattleScene;
 
+import android.os.Bundle;
 import android.view.KeyEvent;
 
 
@@ -29,16 +29,16 @@ import android.view.KeyEvent;
  */
 public class MainActivity extends MultiSceneActivity {
 
-	/** ゲーム制御クラス. */
-	private GameController mGameController;
-	public GameController getmGameController() {
-		return mGameController;
-	}	
-
 	// 画面サイズ
 	private int CAMERA_WIDTH = (int)(800 / 1.0);
 	private int CAMERA_HEIGHT = (int)(480 / 1.0);
 	
+	@Override
+	protected void onCreate(Bundle pSavedInstanceState) {
+		super.onCreate(pSavedInstanceState);
+		// DB初期化
+		initBaseDB();
+	}
 	@Override
 	public EngineOptions onCreateEngineOptions() {
 		// サイズを指定し描画範囲をインスタンス化
@@ -71,12 +71,12 @@ public class MainActivity extends MultiSceneActivity {
 		// サウンドファイルの格納場所を指定
 		MusicFactory.setAssetBasePath("mfx/");
 		
-		// TODO: ここでよい？ゲーム制御クラス生成
-		mGameController = new GameController();
-		if (mGameController.load()) {
-			// セーブデータがない場合はニューゲーム
-			mGameController.start();
-		}
+//		// TODO: ここでよい？ゲーム制御クラス生成
+//		mGameController = new GameController();
+//		if (mGameController.load()) {
+//			// セーブデータがない場合はニューゲーム
+//			mGameController.start();
+//		}
 		
 		InitialScene initialScene = new InitialScene(this);
 		// 遷移管理用配列に追加
@@ -152,10 +152,6 @@ public class MainActivity extends MultiSceneActivity {
 	protected void onPause() {
 		super.onPause();
 		
-		// MainScene実行中なら一時停止
-		if (getEngine().getScene() instanceof MainScene) {
-			((MainScene) getEngine().getScene()).showMenu();
-		}
 		// MapBattle実行中なら一時停止
 		if (getEngine().getScene() instanceof MapBattleScene) {
 			((MapBattleScene) getEngine().getScene()).onPause();

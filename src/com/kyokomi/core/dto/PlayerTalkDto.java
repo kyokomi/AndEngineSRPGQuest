@@ -1,7 +1,5 @@
 package com.kyokomi.core.dto;
 
-import com.kyokomi.srpgquest.constant.SelectMenuType;
-
 /**
  * プレイヤー会話内容DTO.
  * @author kyokomi

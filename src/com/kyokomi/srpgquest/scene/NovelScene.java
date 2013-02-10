@@ -12,11 +12,14 @@ import org.andengine.entity.scene.Scene;
 import org.andengine.entity.sprite.TiledSprite;
 import org.andengine.input.touch.TouchEvent;
 
+import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
+import com.kyokomi.core.dao.MScenarioDao;
+import com.kyokomi.core.dto.MScenarioDto;
 import com.kyokomi.core.dto.PlayerTalkDto;
 import com.kyokomi.core.dto.PlayerTalkDto.TalkDirection;
 import com.kyokomi.core.sprite.TalkLayer;
@@ -30,10 +33,22 @@ public class NovelScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	private int scenarioNo;
 	private int talkNo;
 	
+	/**
+	 * @deprecated 廃止予定
+	 * @param baseActivity
+	 * @param scenarioNo
+	 * @param talkNo
+	 */
 	public NovelScene(MultiSceneActivity baseActivity, int scenarioNo, int talkNo) {
 		super(baseActivity);
 		this.scenarioNo = scenarioNo;
 		this.talkNo = talkNo;
+		init();
+	}
+	public NovelScene(MultiSceneActivity baseActivity, MScenarioDto pMScenario) {
+		super(baseActivity);
+		this.scenarioNo = pMScenario.getScenarioNo();
+		this.talkNo = pMScenario.getSeqNo();
 		init();
 	}
 	
@@ -143,12 +158,39 @@ public class NovelScene extends SrpgBaseScene implements IOnSceneTouchListener {
 					// 次の会話がなくなれば、会話レイヤーを開放
 					detachEntity(mTalkLayer);
 					
-					// TODO: 進行(次のマップへ)どこで管理する？
-					if (talkNo == 1) {
-						showScene(new MapBattleScene(getBaseActivity()));
-					} else if (talkNo == 2) {
-						getBaseActivity().backToInitial();
-					}
+//					getBaseActivity().runOnUiThread(new Runnable() {
+//						
+//						@Override
+//						public void run() {
+							SQLiteDatabase database = getBaseActivity().getBaseDBOpenHelper().getWritableDatabase();
+							MScenarioDao mScenarioDao = new MScenarioDao();
+							// 次のシナリオを取得
+							MScenarioDto scenarioDto = mScenarioDao.selectNextSeq(database, scenarioNo, talkNo);
+							if (scenarioDto == null) {
+								// TODO: マスターが無いときどうする・・・？
+								getBaseActivity().backToInitial();
+							}
+							switch (scenarioDto.getSceneType()) {
+							case SCENE_TYPE_MAP:
+								// TODO: map側が未対応
+//								showScene(new MapBattleScene(getBaseActivity(), scenarioDto));
+								showScene(new MapBattleScene(getBaseActivity()));
+								break;
+							case SCENE_TYPE_NOVEL:
+								showScene(new NovelScene(getBaseActivity(), scenarioDto));
+								break;
+							default:
+								break;
+							}	
+							
+//						}
+//					});
+//					// TODO: 進行(次のマップへ)どこで管理する？
+//					if (talkNo == 1) {
+//						showScene(new MapBattleScene(getBaseActivity()));
+//					} else if (talkNo == 2) {
+//						getBaseActivity().backToInitial();
+//					}
 				}
 			}
 		}
