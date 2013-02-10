@@ -11,11 +11,12 @@ import org.andengine.opengl.font.Font;
 import org.andengine.util.color.Color;
 
 import com.kyokomi.core.dto.ActorPlayerDto;
-import com.kyokomi.core.scene.KeyListenScene;
+import com.kyokomi.core.dto.ActorPlayerEquipDto;
+import com.kyokomi.core.dto.ActorPlayerSkillDto;
+import com.kyokomi.srpgquest.scene.SrpgBaseScene;
 
 /**
  * プレイヤーステータスウィンドウ.
- * TODO: PlayerSpriteに持ってもいいかもしれない
  * @author kyokomi
  *
  */
@@ -43,9 +44,10 @@ public class PlayerStatusRectangle extends Rectangle {
 	private Text mAccessoryNameText;
 	private TiledSprite mAccessoryIconSprite;
 	
+	/** リフレッシュ用に全テキストを管理. */
 	private List<Text> mTextList;
 	
-	public PlayerStatusRectangle(KeyListenScene pBaseScene, final PlayerSprite pPlayerSprite, final Font pFont, 
+	public PlayerStatusRectangle(SrpgBaseScene pBaseScene, final PlayerSprite pPlayerSprite, final Font pFont, 
 			float pX, float pY, float pWidth, float pHeight) {
 		super(pX, pY, pWidth, pHeight, pBaseScene.getBaseActivity().getVertexBufferObjectManager());
 		
@@ -59,13 +61,11 @@ public class PlayerStatusRectangle extends Rectangle {
 	/**
 	 * ウィンドウ初期化.
 	 * TODO: 文言はString.xmlに移動する
-	 * TODO: 装備クラスとスキルクラスから取ってくる
-	 * TODO: 再描画用のメソッドを作る
 	 * @param pBaseScene
 	 * @param pFont
 	 * @param pVertexBufferObjectManager
 	 */
-	private void init(KeyListenScene pBaseScene, Font pFont) {
+	private void init(SrpgBaseScene pBaseScene, Font pFont) {
 		
 		mTextList = new ArrayList<Text>();
 		
@@ -113,23 +113,24 @@ public class PlayerStatusRectangle extends Rectangle {
 				"[スキル]", 
 				pBaseScene.getBaseActivity().getVertexBufferObjectManager());
 		attachChildText(mSkillIconRectangle, mSkillHeaderText);
-		// スキルアイコン
-		List<Integer> skillIds = new ArrayList<Integer>(); // TODO: スキルもプレイヤー情報に持つ
-		skillIds.add(9 + 16 * 30);
-		skillIds.add(10 + 16 * 30);
-		skillIds.add(11 + 16 * 30);
-		skillIds.add(12 + 16 * 30);
-		
-		mSkillIconSpriteList = new ArrayList<TiledSprite>();
-		float x = mSkillHeaderText.getX();
-		float y = mSkillHeaderText.getY() + mSkillHeaderText.getHeight();
-		for (Integer skillId : skillIds) {
-			TiledSprite skillIcon = pBaseScene.getResourceTiledSprite("icon_set.png", 16, 48);
-			skillIcon.setCurrentTileIndex(skillId);
-			skillIcon.setPosition(x, y);
-			mSkillIconRectangle.attachChild(skillIcon);
-			mSkillIconSpriteList.add(skillIcon);
-			x += skillIcon.getWidth();
+		if (actor.getSkillDtoList() != null && !actor.getSkillDtoList().isEmpty()) {
+			// スキルアイコン
+//			List<Integer> skillIds = new ArrayList<Integer>();
+//			skillIds.add(9 + 16 * 30);
+//			skillIds.add(10 + 16 * 30);
+//			skillIds.add(11 + 16 * 30);
+//			skillIds.add(12 + 16 * 30);
+			mSkillIconSpriteList = new ArrayList<TiledSprite>();
+			float x = mSkillHeaderText.getX();
+			float y = mSkillHeaderText.getY() + mSkillHeaderText.getHeight();
+			for (ActorPlayerSkillDto skillDto : actor.getSkillDtoList()) {
+				TiledSprite skillIcon = pBaseScene.getIconSetTiledSprite();
+				skillIcon.setCurrentTileIndex(skillDto.getSkillImgResId());
+				skillIcon.setPosition(x, y);
+				mSkillIconRectangle.attachChild(skillIcon);
+				mSkillIconSpriteList.add(skillIcon);
+				x += skillIcon.getWidth();
+			}
 		}
 		
 		// 装備領域を作成
@@ -143,30 +144,34 @@ public class PlayerStatusRectangle extends Rectangle {
 				"[装備]", 
 				pBaseScene.getBaseActivity().getVertexBufferObjectManager());
 		attachChildText(mEquipIconRectangle, mEquipHeaderText);
-		// 武器アイコン
-		mWeaponIconSprite = pBaseScene.getResourceTiledSprite("icon_set.png", 16, 48);
-		mWeaponIconSprite.setCurrentTileIndex(3); // TODO: weaponImgResId
-		mWeaponIconSprite.setPosition(mEquipHeaderText.getX(), mEquipHeaderText.getY() + mEquipHeaderText.getHeight());
-		mEquipIconRectangle.attachChild(mWeaponIconSprite);
-		// 武器テキスト
-		mWeaponNameText = new Text(mWeaponIconSprite.getWidth() + mEquipHeaderText.getX(), 
-				mWeaponIconSprite.getY() + mWeaponIconSprite.getHeight() / 2, 
-				pFont, "レイピア", 
-				pBaseScene.getBaseActivity().getVertexBufferObjectManager());
-		mWeaponNameText.setY(mWeaponNameText.getY() - mWeaponNameText.getHeight() / 2);
-		attachChildText(mEquipIconRectangle, mWeaponNameText);
-		// アクセサリーアイコン
-		mAccessoryIconSprite = pBaseScene.getResourceTiledSprite("icon_set.png", 16, 48);
-		mAccessoryIconSprite.setCurrentTileIndex(33); // TODO: accessoryImgResId
-		mAccessoryIconSprite.setPosition(mWeaponIconSprite.getX(), mWeaponIconSprite.getY() + mWeaponIconSprite.getHeight());
-		mEquipIconRectangle.attachChild(mAccessoryIconSprite);
-		// アクセサリーテキスト
-		mAccessoryNameText = new Text(mAccessoryIconSprite.getWidth() + mAccessoryIconSprite.getX(), 
-				mAccessoryIconSprite.getY() + mAccessoryIconSprite.getHeight() / 2, 
-				pFont, "普通の指輪", 
-				pBaseScene.getBaseActivity().getVertexBufferObjectManager());
-		mAccessoryNameText.setY(mAccessoryNameText.getY() - mAccessoryNameText.getHeight() / 2);
-		attachChildText(mEquipIconRectangle, mAccessoryNameText);
+		
+		ActorPlayerEquipDto equipDto = actor.getEquipDto();
+		if (equipDto != null) {
+			// 武器アイコン
+			mWeaponIconSprite = pBaseScene.getIconSetTiledSprite();
+			mWeaponIconSprite.setCurrentTileIndex(equipDto.getWeaponImgResId());
+			mWeaponIconSprite.setPosition(mEquipHeaderText.getX(), mEquipHeaderText.getY() + mEquipHeaderText.getHeight());
+			mEquipIconRectangle.attachChild(mWeaponIconSprite);
+			// 武器テキスト
+			mWeaponNameText = new Text(mWeaponIconSprite.getWidth() + mEquipHeaderText.getX(), 
+					mWeaponIconSprite.getY() + mWeaponIconSprite.getHeight() / 2, 
+					pFont, equipDto.getWeaponName(), 
+					pBaseScene.getBaseActivity().getVertexBufferObjectManager());
+			mWeaponNameText.setY(mWeaponNameText.getY() - mWeaponNameText.getHeight() / 2);
+			attachChildText(mEquipIconRectangle, mWeaponNameText);
+			// アクセサリーアイコン
+			mAccessoryIconSprite = pBaseScene.getIconSetTiledSprite();
+			mAccessoryIconSprite.setCurrentTileIndex(equipDto.getAccessoryImgResId());
+			mAccessoryIconSprite.setPosition(mWeaponIconSprite.getX(), mWeaponIconSprite.getY() + mWeaponIconSprite.getHeight());
+			mEquipIconRectangle.attachChild(mAccessoryIconSprite);
+			// アクセサリーテキスト
+			mAccessoryNameText = new Text(mAccessoryIconSprite.getWidth() + mAccessoryIconSprite.getX(), 
+					mAccessoryIconSprite.getY() + mAccessoryIconSprite.getHeight() / 2, 
+					pFont, equipDto.getAccessoryName(), 
+					pBaseScene.getBaseActivity().getVertexBufferObjectManager());
+			mAccessoryNameText.setY(mAccessoryNameText.getY() - mAccessoryNameText.getHeight() / 2);
+			attachChildText(mEquipIconRectangle, mAccessoryNameText);	
+		}
 	}
 	
 	public void attachChildText(Text text) {
@@ -205,8 +210,10 @@ public class PlayerStatusRectangle extends Rectangle {
 		// 装備欄ヘッダー
 		mEquipHeaderText.setText("[装備]");
 		// 武器テキスト
-		mWeaponNameText.setText("レイピア"); 
-		// アクセサリーテキスト
-		mAccessoryNameText.setText("普通の指輪"); 
+		if (actor.getEquipDto() != null) {
+			mWeaponNameText.setText(actor.getEquipDto().getWeaponName()); 
+			// アクセサリーテキスト
+			mAccessoryNameText.setText(actor.getEquipDto().getAccessoryName()); 			
+		}
 	}
 }

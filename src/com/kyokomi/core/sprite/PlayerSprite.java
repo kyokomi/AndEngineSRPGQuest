@@ -22,13 +22,14 @@ import com.kyokomi.core.constants.PlayerSpriteType;
 import com.kyokomi.core.dto.ActorPlayerDto;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.srpgquest.map.common.MapPoint;
+import com.kyokomi.srpgquest.scene.SrpgBaseScene;
 
 public class PlayerSprite extends Rectangle {
 	
 	private ActorPlayerDto mActorPlayer;
 	private PlayerStatusRectangle mPlayerStatusRectangle;
 
-	public PlayerStatusRectangle createPlayerStatusWindow(KeyListenScene pBaseScene, Font pFont, float pX, float pY, float pWidth, float pHeight) {
+	public PlayerStatusRectangle createPlayerStatusWindow(SrpgBaseScene pBaseScene, Font pFont, float pX, float pY, float pWidth, float pHeight) {
 		mPlayerStatusRectangle = new PlayerStatusRectangle(pBaseScene, 
 				this, pFont, pX, pY, pWidth, pHeight);
 		return mPlayerStatusRectangle;

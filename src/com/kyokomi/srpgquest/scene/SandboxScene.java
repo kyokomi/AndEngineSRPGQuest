@@ -45,7 +45,7 @@ import android.util.SparseArray;
 import android.view.KeyEvent;
 import android.widget.Toast;
 
-public class SandboxScene extends KeyListenScene 
+public class SandboxScene extends SrpgBaseScene 
 	implements IOnSceneTouchListener{
 	
 	private PlayerSprite player;

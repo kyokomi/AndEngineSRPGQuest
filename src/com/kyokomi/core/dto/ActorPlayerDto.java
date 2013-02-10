@@ -1,5 +1,7 @@
 package com.kyokomi.core.dto;
 
+import java.util.List;
+
 public class ActorPlayerDto {
 
 	/** プレイヤーを一意に識別するID. */
@@ -33,6 +35,25 @@ public class ActorPlayerDto {
 	/** 攻撃範囲(ステータス表示用). */
 	private int attackRange;
 	
+	/** 装備. */
+	private ActorPlayerEquipDto equipDto;
+	/** スキルリスト. */
+	private List<ActorPlayerSkillDto> skillDtoList;
+	
+	/**
+	 * @return the equipDto
+	 */
+	public ActorPlayerEquipDto getEquipDto() {
+		return equipDto;
+	}
+
+	/**
+	 * @param equipDto the equipDto to set
+	 */
+	public void setEquipDto(ActorPlayerEquipDto equipDto) {
+		this.equipDto = equipDto;
+	}
+
 	/**
 	 * @return the playerId
 	 */
@@ -197,5 +218,12 @@ public class ActorPlayerDto {
 	 */
 	public void setMagicPointLimit(int magicPointLimit) {
 		this.magicPointLimit = magicPointLimit;
+	}
+	public List<ActorPlayerSkillDto> getSkillDtoList() {
+		return skillDtoList;
+	}
+
+	public void setSkillDtoList(List<ActorPlayerSkillDto> skillDtoList) {
+		this.skillDtoList = skillDtoList;
 	}
 }

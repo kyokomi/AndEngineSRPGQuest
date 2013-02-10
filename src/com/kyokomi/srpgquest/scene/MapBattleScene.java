@@ -51,7 +51,7 @@ import com.kyokomi.srpgquest.GameManager;
 import com.kyokomi.srpgquest.map.common.MapPoint;
 import com.kyokomi.srpgquest.sprite.CursorRectangle;
 
-public class MapBattleScene extends KeyListenScene 
+public class MapBattleScene extends SrpgBaseScene 
 	implements IOnSceneTouchListener{
 	
 	enum LayerZIndex {
@@ -391,7 +391,7 @@ public class MapBattleScene extends KeyListenScene
 	 * @param mapPoint
 	 */
 	public void createObstacleSprite(MapPoint mapPoint, int currentTileIndex) {
-		TiledSprite obstacle = getResourceTiledSprite("icon_set.png", 16, 48);
+		TiledSprite obstacle = getIconSetTiledSprite();
 		obstacle.setPosition(mapPoint.getX(), mapPoint.getY());
 		obstacle.setCurrentTileIndex(currentTileIndex);
 		obstacle.setSize(mapPoint.getGridSize(), mapPoint.getGridSize());

@@ -6,6 +6,7 @@ import org.andengine.engine.handler.timer.ITimerCallback;
 import org.andengine.engine.handler.timer.TimerHandler;
 
 import com.kyokomi.core.dto.ActorPlayerDto;
+import com.kyokomi.core.logic.ActorPlayerLogic;
 import com.kyokomi.srpgquest.constant.GameStateType;
 import com.kyokomi.srpgquest.constant.MapDataType;
 import com.kyokomi.srpgquest.constant.MoveDirectionType;
@@ -47,6 +48,9 @@ public class GameManager {
 	/** 選択したプレイヤーテンポラリ. */
 	private ActorPlayerMapItem mSelectActorPlayer;
 	
+	// --- logic ----
+	private ActorPlayerLogic mActorPlayerLogic;
+	
 	/** 敵のターンタイマー. */
 	private TimerHandler mEnemyTurnUpdateHandler;
 	
@@ -63,6 +67,7 @@ public class GameManager {
 
 		// 初期化
 		mBattleLogic = new BattleLogic();
+		mActorPlayerLogic = new ActorPlayerLogic();
 		mPlayerList = new SparseArray<ActorPlayerDto>();
 		mEnemyList = new SparseArray<ActorPlayerDto>();
 		
@@ -110,13 +115,11 @@ public class GameManager {
 		
 		// TODO: test用
 		int playerId = 1;
-		int playerImageId = 110;
-		addPlayer(3, 3, playerId, playerImageId);
+		addPlayer(3, 3, playerId);
 		
 		int enemyId = 2;
-		int enemyImageId = 34;
-		addEnemy(15, 10, enemyId, enemyImageId);
-		addEnemy(19, 2, 3, enemyImageId);
+		addEnemy(15, 10, enemyId);
+		addEnemy(19, 2, 3);
 		// 負荷原因はRectangleが画面全体にあったため（透明だけどオブジェクトは存在しているので重かった）
 //		addEnemy(6, 2, 4, enemyImageId);
 //		addEnemy(6, 3, 5, enemyImageId);
@@ -379,64 +382,64 @@ public class GameManager {
 	//---------------------------------------------------------
 	// プレイヤー追加とか
 	//---------------------------------------------------------
-	private void addPlayer(int mapPointX, int mapPointY, int playerId, int playerImageId) {
+	private void addPlayer(int mapPointX, int mapPointY, int playerId) {
 		if (mPlayerList.indexOfKey(playerId) >= 0) {
 			// すでに追加済み
 			return;
 		}
- 		ActorPlayerDto player = createActorPlayer(playerId, playerImageId);
+ 		ActorPlayerDto player = mActorPlayerLogic.createActorPlayerDto(playerId);
 		mPlayerList.put(playerId, player);
 		mMapManager.addPlayer(mapPointX, mapPointY, player);
 		// Scene側でSpriteを生成
 		mBaseScene.createPlayerSprite(player,
 				calcGridPosition(mapPointX, mapPointY), GRID_SIZE);
 	}
-	private void addEnemy(int mapPointX, int mapPointY, int enemyId, int enemyImageId) {
+	private void addEnemy(int mapPointX, int mapPointY, int enemyId) {
 		if (mEnemyList.indexOfKey(enemyId) >= 0) {
 			// すでに追加済み
 			return;
 		}
-		ActorPlayerDto enemy = createActorPlayer(enemyId, enemyImageId);
+		ActorPlayerDto enemy = mActorPlayerLogic.createActorPlayerDto(enemyId);
 		mEnemyList.put(enemyId, enemy);
 		mMapManager.addEnemy(mapPointX, mapPointY, enemy);
 		// Scene側でSpriteを生成
 		mBaseScene.createEnemySprite(enemy, 
 				calcGridPosition(mapPointX, mapPointY), GRID_SIZE);
 	}
-	private ActorPlayerDto createActorPlayer(int playerId, int imageResId) {
-		ActorPlayerDto actorPlayer = new ActorPlayerDto();
-		actorPlayer.setPlayerId(playerId);
-		actorPlayer.setImageResId(imageResId);
-		
-		// TODO: DBとかから取得
-		if (playerId == 1) {
-			actorPlayer.setName("アスリーン");
-			actorPlayer.setLv(2);
-			actorPlayer.setExp(10);
-			
-			actorPlayer.setMovePoint(6);
-			actorPlayer.setAttackRange(1);
-			
-			actorPlayer.setHitPoint(100);
-			actorPlayer.setHitPointLimit(100);
-			actorPlayer.setAttackPoint(60);
-			actorPlayer.setDefencePoint(30);
-		} else {
-			actorPlayer.setName("ラーティ・クルス");
-			actorPlayer.setLv(1);
-			actorPlayer.setExp(10);
-			
-			actorPlayer.setMovePoint(5);
-			actorPlayer.setAttackRange(1);
-			
-			actorPlayer.setHitPoint(100);
-			actorPlayer.setHitPointLimit(100);
-			actorPlayer.setAttackPoint(40);
-			actorPlayer.setDefencePoint(10);
-		}
-		
-		return actorPlayer;
-	}
+//	private ActorPlayerDto createActorPlayer(int playerId, int imageResId) {
+//		ActorPlayerDto actorPlayer = new ActorPlayerDto();
+//		actorPlayer.setPlayerId(playerId);
+//		actorPlayer.setImageResId(imageResId);
+//		
+//		// TODO: DBとかから取得
+//		if (playerId == 1) {
+//			actorPlayer.setName("アスリーン");
+//			actorPlayer.setLv(2);
+//			actorPlayer.setExp(10);
+//			
+//			actorPlayer.setMovePoint(6);
+//			actorPlayer.setAttackRange(1);
+//			
+//			actorPlayer.setHitPoint(100);
+//			actorPlayer.setHitPointLimit(100);
+//			actorPlayer.setAttackPoint(60);
+//			actorPlayer.setDefencePoint(30);
+//		} else {
+//			actorPlayer.setName("ラーティ・クルス");
+//			actorPlayer.setLv(1);
+//			actorPlayer.setExp(10);
+//			
+//			actorPlayer.setMovePoint(5);
+//			actorPlayer.setAttackRange(1);
+//			
+//			actorPlayer.setHitPoint(100);
+//			actorPlayer.setHitPointLimit(100);
+//			actorPlayer.setAttackPoint(40);
+//			actorPlayer.setDefencePoint(10);
+//		}
+//		
+//		return actorPlayer;
+//	}
 	private void addObstacle(int mapPointX, int mapPointY) {
 		mMapManager.addObstacle(mapPointX, mapPointY);
 		mBaseScene.createObstacleSprite(calcGridPosition(mapPointX, mapPointY), 16 * 12 + 0);

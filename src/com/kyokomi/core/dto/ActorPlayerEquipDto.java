@@ -5,28 +5,17 @@ package com.kyokomi.core.dto;
  * @author kyokomi
  *
  */
-public class EquipDto {
+public class ActorPlayerEquipDto {
 
-	private Integer playerId;
 	// 武器
 	private String weaponName;
 	private Integer weaponImgResId;
+	private Integer weaponStr;
 	// アクセサリー
 	private String accessoryName;
 	private Integer accessoryImgResId;
+	private Integer accessoryDef;
 	
-	/**
-	 * @return the playerId
-	 */
-	public Integer getPlayerId() {
-		return playerId;
-	}
-	/**
-	 * @param playerId the playerId to set
-	 */
-	public void setPlayerId(Integer playerId) {
-		this.playerId = playerId;
-	}
 	/**
 	 * @return the weaponName
 	 */
@@ -74,5 +63,29 @@ public class EquipDto {
 	 */
 	public void setAccessoryImgResId(Integer accessoryImgResId) {
 		this.accessoryImgResId = accessoryImgResId;
+	}
+	/**
+	 * @return the weaponStr
+	 */
+	public Integer getWeaponStr() {
+		return weaponStr;
+	}
+	/**
+	 * @param weaponStr the weaponStr to set
+	 */
+	public void setWeaponStr(Integer weaponStr) {
+		this.weaponStr = weaponStr;
+	}
+	/**
+	 * @return the accessoryDef
+	 */
+	public Integer getAccessoryDef() {
+		return accessoryDef;
+	}
+	/**
+	 * @param accessoryDef the accessoryDef to set
+	 */
+	public void setAccessoryDef(Integer accessoryDef) {
+		this.accessoryDef = accessoryDef;
 	}
 }
