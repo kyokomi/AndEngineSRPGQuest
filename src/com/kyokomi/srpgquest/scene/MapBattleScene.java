@@ -835,7 +835,7 @@ public class MapBattleScene extends KeyListenScene
 	}
 	
 	// --------------- ステータスウィンドウ --------------
-	public void showPlayerStatusWindow(int playerId) {
+	public void showPlayerStatusWindow(int playerId, float x) {
 		if (mPlayerStatusRect != null) {
 			detachChild(mPlayerStatusRect);
 		}
@@ -847,6 +847,7 @@ public class MapBattleScene extends KeyListenScene
 		mPlayerStatusRect = players.get(playerId).getPlayerStatusRectangle();
 		if (mPlayerStatusRect != null) {
 			mPlayerStatusRect.setVisible(true);
+			mPlayerStatusRect.setX(x);
 			mPlayerStatusRect.setY(y);
 			attachChild(mPlayerStatusRect);	
 		}

@@ -266,7 +266,7 @@ public class GameManager {
 					// アニメーション停止
 					mBaseScene.stopWalkingPlayerAnimation(mSelectActorPlayer.getPlayerId());
 					// プレイヤーのステータスは表示
-					mBaseScene.showPlayerStatusWindow(actorPlayerMapItem.getPlayerId());
+					showPlayerStatusWindow(actorPlayerMapItem);
 				}
 			} else if (touchMapDataType == MapDataType.ENEMY) {
 				mBaseScene.playSound(SoundType.BTN_PRESSED_SOUND);
@@ -548,13 +548,20 @@ public class GameManager {
 		changeGameState(GameStateType.PLAYER_SELECT);
 		mBaseScene.showSelectMenu(mSelectActorPlayer.isAttackDone(), mSelectActorPlayer.isMoveDone(), 
 				getMapItemToMapPoint(mSelectActorPlayer));
+		
 		// プレイヤーのステータスも非表示
-		mBaseScene.showPlayerStatusWindow(mSelectActorPlayer.getPlayerId());
+		showPlayerStatusWindow(mSelectActorPlayer);
 	}
 	private void hideSelectMenu() {
 		mBaseScene.hideSelectMenu();
 		// プレイヤーのステータスも非表示
 		mBaseScene.hidePlayerStatusWindow();
+	}
+	
+	private void showPlayerStatusWindow(ActorPlayerMapItem pSelectActorPlayer) {
+		float x = mBaseScene.getWindowWidth() / 2;
+		// プレイヤーのステータスも非表示
+		mBaseScene.showPlayerStatusWindow(pSelectActorPlayer.getPlayerId(), x);
 	}
 	
 	// ----------------------------------------------------------
