@@ -13,7 +13,7 @@ import org.andengine.util.modifier.ease.EaseBackInOut;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.dao.MScenarioDao;
-import com.kyokomi.core.dto.MScenarioDto;
+import com.kyokomi.core.dto.MScenarioEntity;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.pazuruquest.scene.PazuruQuestScene;
 
@@ -34,6 +34,7 @@ public class InitialScene extends SrpgBaseScene implements ButtonSprite.OnClickL
 	
 	public InitialScene(MultiSceneActivity baseActivity) {
 		super(baseActivity);
+		
 		init();
 		
 		titleBGM.setLooping(true);
@@ -147,28 +148,8 @@ public class InitialScene extends SrpgBaseScene implements ButtonSprite.OnClickL
 		case INITIAL_FEEDBACK:
 			showScene(new PazuruQuestScene(getBaseActivity()));
 			break;
-		case 4:
-//			getBaseActivity().runOnUiThread(new Runnable() {
-//				@Override
-//				public void run() {
-					SQLiteDatabase database = getBaseActivity().getBaseDBOpenHelper().getWritableDatabase();
-					MScenarioDao mScenarioDao = new MScenarioDao();
-					// TODO: セーブデータからscenarioNoとseqNoをとってくる
-					MScenarioDto scenarioDto = mScenarioDao.selectByScenarioNoAndSeqNo(database, 1, 1);
-					switch (scenarioDto.getSceneType()) {
-					case SCENE_TYPE_MAP:
-						// TODO: map側が未対応
-//						showScene(new MapBattleScene(getBaseActivity(), scenarioDto));
-						showScene(new MapBattleScene(getBaseActivity()));
-						break;
-					case SCENE_TYPE_NOVEL:
-						showScene(new NovelScene(getBaseActivity(), scenarioDto));
-						break;
-					default:
-						break;
-					}					
-//				}
-//			});
+		case 4: // シナリオデータ読み込み
+			loadScenario();
 			break;
 		}	
 	}

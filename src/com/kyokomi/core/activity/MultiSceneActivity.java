@@ -10,6 +10,7 @@ import android.widget.Toast;
 import com.kyokomi.core.db.GameBaseDBOpenHelper;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.core.utils.ResourceUtil;
+import com.kyokomi.srpgquest.GameController;
 
 /**
  * {@link BaseGameActivity}のサブクラスであり、XMLLayoutを利用してActivityを生成するクラス.
@@ -43,7 +44,20 @@ import com.kyokomi.core.utils.ResourceUtil;
  *
  */
 public abstract class MultiSceneActivity extends SimpleLayoutGameActivity {
-
+	
+	/** ゲーム制御用. */
+	private GameController mGameController;
+	public GameController getGameController() {
+		return mGameController;
+	}
+	public void initGameController() {
+		mGameController = new GameController();
+		boolean isNewGame = mGameController.load();
+		if (isNewGame) {
+			mGameController.start();
+		}
+	}
+	
 	/** ResourceUtilのインスタンス. */
 	private ResourceUtil mResourceUtil;
 	

@@ -9,34 +9,35 @@ import com.kyokomi.core.constants.SceneType;
  * @author kyokomi
  *
  */
-public class MScenarioDto implements ADatabaseDto {
-//	private Integer id;
+public class MScenarioEntity implements ADatabaseEntity {
+	private Integer id;
 	private Integer scenarioNo;
 	private Integer seqNo;
 	private Integer sceneType;
 	private Integer sceneId;
 	private String scenarioTitle; // TODO: 正規化対象
 	
-	public MScenarioDto() {
+	public MScenarioEntity() {
 		
 	}
-	public MScenarioDto(Cursor pCursor) {
+	public MScenarioEntity(Cursor pCursor) {
 		initCursor(pCursor);
 	}
 	@Override
 	public void initCursor(Cursor pCursor) {
+		this.id            = pCursor.getInt(0);
 		this.scenarioNo    = pCursor.getInt(1);
 		this.seqNo         = pCursor.getInt(2);
 		this.sceneType     = pCursor.getInt(3);
 		this.sceneId       = pCursor.getInt(4);
 		this.scenarioTitle = pCursor.getString(5);
 	}
-//	public Integer getId() {
-//		return id;
-//	}
-//	public void setId(Integer id) {
-//		this.id = id;
-//	}
+	public Integer getId() {
+		return id;
+	}
+	public void setId(Integer id) {
+		this.id = id;
+	}
 	public Integer getScenarioNo() {
 		return scenarioNo;
 	}

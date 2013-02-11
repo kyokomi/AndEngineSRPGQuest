@@ -19,7 +19,7 @@ import android.view.KeyEvent;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.dao.MScenarioDao;
-import com.kyokomi.core.dto.MScenarioDto;
+import com.kyokomi.core.dto.MScenarioEntity;
 import com.kyokomi.core.dto.PlayerTalkDto;
 import com.kyokomi.core.dto.PlayerTalkDto.TalkDirection;
 import com.kyokomi.core.sprite.TalkLayer;
@@ -31,7 +31,7 @@ public class NovelScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	/** 会話レイヤー. */
 	private TalkLayer mTalkLayer;
 	private int scenarioNo;
-	private int talkNo;
+	private int seqNo;
 	
 	/**
 	 * @deprecated 廃止予定
@@ -42,13 +42,13 @@ public class NovelScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	public NovelScene(MultiSceneActivity baseActivity, int scenarioNo, int talkNo) {
 		super(baseActivity);
 		this.scenarioNo = scenarioNo;
-		this.talkNo = talkNo;
+		this.seqNo = talkNo;
 		init();
 	}
-	public NovelScene(MultiSceneActivity baseActivity, MScenarioDto pMScenario) {
+	public NovelScene(MultiSceneActivity baseActivity, MScenarioEntity pMScenario) {
 		super(baseActivity);
 		this.scenarioNo = pMScenario.getScenarioNo();
-		this.talkNo = pMScenario.getSeqNo();
+		this.seqNo = pMScenario.getSeqNo();
 		init();
 	}
 	
@@ -57,7 +57,7 @@ public class NovelScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		
 		List<String> talkDataList = new ArrayList<String>();
 		try {
-			InputStream in = getBaseActivity().getAssets().open("scenario/" + scenarioNo + "_" + talkNo + ".txt");
+			InputStream in = getBaseActivity().getAssets().open("scenario/" + scenarioNo + "_" + seqNo + ".txt");
 			BufferedReader reader = 
 		        new BufferedReader(new InputStreamReader(in));
 		    String str;
@@ -157,40 +157,9 @@ public class NovelScene extends SrpgBaseScene implements IOnSceneTouchListener {
 					mTalkLayer.hide();
 					// 次の会話がなくなれば、会話レイヤーを開放
 					detachEntity(mTalkLayer);
-					
-//					getBaseActivity().runOnUiThread(new Runnable() {
-//						
-//						@Override
-//						public void run() {
-							SQLiteDatabase database = getBaseActivity().getBaseDBOpenHelper().getWritableDatabase();
-							MScenarioDao mScenarioDao = new MScenarioDao();
-							// 次のシナリオを取得
-							MScenarioDto scenarioDto = mScenarioDao.selectNextSeq(database, scenarioNo, talkNo);
-							if (scenarioDto == null) {
-								// TODO: マスターが無いときどうする・・・？
-								getBaseActivity().backToInitial();
-							}
-							switch (scenarioDto.getSceneType()) {
-							case SCENE_TYPE_MAP:
-								// TODO: map側が未対応
-//								showScene(new MapBattleScene(getBaseActivity(), scenarioDto));
-								showScene(new MapBattleScene(getBaseActivity()));
-								break;
-							case SCENE_TYPE_NOVEL:
-								showScene(new NovelScene(getBaseActivity(), scenarioDto));
-								break;
-							default:
-								break;
-							}	
-							
-//						}
-//					});
-//					// TODO: 進行(次のマップへ)どこで管理する？
-//					if (talkNo == 1) {
-//						showScene(new MapBattleScene(getBaseActivity()));
-//					} else if (talkNo == 2) {
-//						getBaseActivity().backToInitial();
-//					}
+				
+					// 次のシナリオへ
+					nextScenario(scenarioNo, seqNo);
 				}
 			}
 		}

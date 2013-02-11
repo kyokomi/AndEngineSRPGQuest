@@ -38,6 +38,8 @@ public class MainActivity extends MultiSceneActivity {
 		super.onCreate(pSavedInstanceState);
 		// DB初期化
 		initBaseDB();
+		// Gameデータ初期化
+		initGameController();
 	}
 	@Override
 	public EngineOptions onCreateEngineOptions() {
@@ -70,13 +72,6 @@ public class MainActivity extends MultiSceneActivity {
 		SoundFactory.setAssetBasePath("mfx/");
 		// サウンドファイルの格納場所を指定
 		MusicFactory.setAssetBasePath("mfx/");
-		
-//		// TODO: ここでよい？ゲーム制御クラス生成
-//		mGameController = new GameController();
-//		if (mGameController.load()) {
-//			// セーブデータがない場合はニューゲーム
-//			mGameController.start();
-//		}
 		
 		InitialScene initialScene = new InitialScene(this);
 		// 遷移管理用配列に追加
