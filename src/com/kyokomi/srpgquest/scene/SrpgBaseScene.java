@@ -43,6 +43,8 @@ public abstract class SrpgBaseScene extends KeyListenScene {
 		initSoundAndMusic();
 	}
 	public abstract void initSoundAndMusic();
+	public abstract void onResume();
+	public abstract void onPause();
 	
 	public SrpgBaseScene(MultiSceneActivity baseActivity) {
 		super(baseActivity);

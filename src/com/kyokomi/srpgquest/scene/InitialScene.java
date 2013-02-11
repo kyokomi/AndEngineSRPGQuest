@@ -122,6 +122,25 @@ public class InitialScene extends SrpgBaseScene implements ButtonSprite.OnClickL
 		}
 	}
 
+	/**
+	 * 再開時
+	 */
+	@Override
+	public void onResume() {
+		if (titleBGM != null && !titleBGM.isPlaying()) {
+			titleBGM.play();
+		}
+	}
+	/**
+	 * バックグラウンド時
+	 */
+	@Override
+	public void onPause() {
+		if (titleBGM != null && titleBGM.isPlaying()) {
+			titleBGM.pause();
+		}
+	}
+	
 	@Override
 	public boolean dispatchKeyEvent(KeyEvent e) {
 		return false;

@@ -79,7 +79,22 @@ public class NovelScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	public void initSoundAndMusic() {
 		
 	}
-
+	
+	/**
+	 * 再開時
+	 */
+	@Override
+	public void onResume() {
+		
+	}
+	/**
+	 * バックグラウンド時
+	 */
+	@Override
+	public void onPause() {
+	
+	}
+	
 	@Override
 	public boolean dispatchKeyEvent(KeyEvent e) {
 		// バックボタンが押された時

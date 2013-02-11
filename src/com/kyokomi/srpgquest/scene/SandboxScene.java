@@ -175,6 +175,21 @@ public class SandboxScene extends SrpgBaseScene
 		setOnSceneTouchListener(this);
 	}
 	
+	/**
+	 * 再開時
+	 */
+	@Override
+	public void onResume() {
+		
+	}
+	/**
+	 * バックグラウンド時
+	 */
+	@Override
+	public void onPause() {
+	
+	}
+	
 	@Override
 	public void initSoundAndMusic() {
 			

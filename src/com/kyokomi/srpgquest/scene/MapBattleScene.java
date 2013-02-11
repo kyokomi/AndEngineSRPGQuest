@@ -120,6 +120,7 @@ public class MapBattleScene extends SrpgBaseScene
 	/**
 	 * 再開時
 	 */
+	@Override
 	public void onResume() {
 		// TODO: 本当はどのBGMが再生中か調べて再生するけど一旦バトルで
 		playMusic(mBattleBGM);
@@ -127,6 +128,7 @@ public class MapBattleScene extends SrpgBaseScene
 	/**
 	 * バックグラウンド時
 	 */
+	@Override
 	public void onPause() {
 		stopPlayMusic();
 	}
