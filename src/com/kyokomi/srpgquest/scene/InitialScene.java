@@ -143,6 +143,10 @@ public class InitialScene extends SrpgBaseScene implements ButtonSprite.OnClickL
 	
 	@Override
 	public boolean dispatchKeyEvent(KeyEvent e) {
+		// バックボタンが押された時
+		if (e.getAction() == KeyEvent.ACTION_DOWN && e.getKeyCode() == KeyEvent.KEYCODE_BACK) { 
+			return true;
+		}
 		return false;
 	}
 
