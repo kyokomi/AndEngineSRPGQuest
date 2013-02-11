@@ -112,7 +112,7 @@ public class InitialScene extends SrpgBaseScene implements ButtonSprite.OnClickL
 	}
 
 	@Override
-	public void prepareSoundAndMusic() {
+	public void initSoundAndMusic() {
 		// 効果音をロード
 		try {
 			btnPressedSound = createSoundFromFileName("clock00.wav");
@@ -120,7 +120,6 @@ public class InitialScene extends SrpgBaseScene implements ButtonSprite.OnClickL
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-			
 	}
 
 	@Override
@@ -158,10 +157,4 @@ public class InitialScene extends SrpgBaseScene implements ButtonSprite.OnClickL
 		}
 		super.showScene(scene);
 	}
-
-	@Override
-	public void initSoundAndMusic() {
-		
-	}
-
 }

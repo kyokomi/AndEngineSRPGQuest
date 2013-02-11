@@ -209,27 +209,27 @@ public class SandboxScene extends SrpgBaseScene
 	
 	private TextButton textButtonSprite;
 	
-	private void sampleMenuScene() {
-		
-		Text text = new Text(16, 16, mFont, 
-				"-------------", 
-				new TextOptions(HorizontalAlign.CENTER), 
-				getBaseActivity().getVertexBufferObjectManager());
-		
-		textButtonSprite = new TextButton(text, 
-				getWindowWidth() / 2 - text.getWidth() / 2, getWindowHeight()/ 2 - text.getHeight() / 2,
-				20, 20, 
-				getBaseActivity().getVertexBufferObjectManager(), 
-				new TextButton.OnClickListener() {
-					@Override
-					public void onClick(TextButton pTextButtonSprite,
-							float pTouchAreaLocalX, float pTouchAreaLocalY) {
-//						Log.d("TextButtonSprite", "Touch!!!!!!!");
-					}
-				});
-		attachChild(textButtonSprite);
-		registerTouchArea(textButtonSprite);
-	}
+//	private void sampleMenuScene() {
+//		
+//		Text text = new Text(16, 16, mFont, 
+//				"-------------", 
+//				new TextOptions(HorizontalAlign.CENTER), 
+//				getBaseActivity().getVertexBufferObjectManager());
+//		
+//		textButtonSprite = new TextButton(text, 
+//				getWindowWidth() / 2 - text.getWidth() / 2, getWindowHeight()/ 2 - text.getHeight() / 2,
+//				20, 20, 
+//				getBaseActivity().getVertexBufferObjectManager(), 
+//				new TextButton.OnClickListener() {
+//					@Override
+//					public void onClick(TextButton pTextButtonSprite,
+//							float pTouchAreaLocalX, float pTouchAreaLocalY) {
+////						Log.d("TextButtonSprite", "Touch!!!!!!!");
+//					}
+//				});
+//		attachChild(textButtonSprite);
+//		registerTouchArea(textButtonSprite);
+//	}
 	
 	private MenuRectangle mMenuRectangle;
 	

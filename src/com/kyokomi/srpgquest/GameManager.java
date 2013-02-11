@@ -13,6 +13,7 @@ import com.kyokomi.srpgquest.constant.MoveDirectionType;
 import com.kyokomi.srpgquest.constant.SelectMenuType;
 import com.kyokomi.srpgquest.dto.MapBattleInfoDto;
 import com.kyokomi.srpgquest.dto.MapBattleInfoDto.MapSymbol;
+import com.kyokomi.srpgquest.layer.MapBattleCutInLayer.MapBattleCutInLayerType;
 import com.kyokomi.srpgquest.logic.BattleLogic;
 import com.kyokomi.srpgquest.map.MapManager;
 import com.kyokomi.srpgquest.map.common.MapPoint;
@@ -584,7 +585,8 @@ public class GameManager {
 	
 	private void changePlayerTurn() {
 		// プレイヤーターン開始
-		mBaseScene.showPlayerTurn(new MapBattleScene.IAnimationCallback() {
+		mBaseScene.showCutIn(MapBattleCutInLayerType.PLAYER_TURN_CUTIN, 
+				new MapBattleScene.IAnimationCallback() {
 			@Override
 			public void doAction() {
 				// 全プレイヤーを行動可能にしてアニメーションを再開
@@ -601,7 +603,8 @@ public class GameManager {
 	}
 	private void changeEnemyTurn() {
 		// 敵のターンアニメーション
-		mBaseScene.showEnemyTurn(new MapBattleScene.IAnimationCallback() {
+		mBaseScene.showCutIn(MapBattleCutInLayerType.ENEMY_TURN_CUTIN,
+				new MapBattleScene.IAnimationCallback() {
 			@Override
 			public void doAction() {
 				// 全エネミーを行動可能にする
@@ -622,7 +625,8 @@ public class GameManager {
 	private void changePlayerWin() {
 		Log.d(TAG, "changeState Player Win");
 		// 勝利のカットインを入れてコールバックで次のシナリオへ
-		mBaseScene.showPlayerWin(new MapBattleScene.IAnimationCallback() {
+		mBaseScene.showCutIn(MapBattleCutInLayerType.PLAYER_WIN_CUTIN, 
+				new MapBattleScene.IAnimationCallback() {
 			@Override
 			public void doAction() {
 				mBaseScene.clearMapBattle();
@@ -634,7 +638,8 @@ public class GameManager {
 	private void changeEnemyWin() {
 		Log.d(TAG, "changeState GameOver");
 		// 敗北のカットインを入れてコールバックでタイトル画面に戻す
-		mBaseScene.showGameOver(new MapBattleScene.IAnimationCallback() {
+		mBaseScene.showCutIn(MapBattleCutInLayerType.GAME_OVER_CUTIN,
+				new MapBattleScene.IAnimationCallback() {
 			@Override
 			public void doAction() {
 				// タイトル画面に戻る

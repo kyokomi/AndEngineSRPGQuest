@@ -9,7 +9,6 @@ import org.andengine.audio.sound.Sound;
 import org.andengine.entity.IEntity;
 import org.andengine.entity.modifier.AlphaModifier;
 import org.andengine.entity.modifier.DelayModifier;
-import org.andengine.entity.modifier.FadeInModifier;
 import org.andengine.entity.modifier.IEntityModifier;
 import org.andengine.entity.modifier.LoopEntityModifier;
 import org.andengine.entity.modifier.MoveModifier;
@@ -20,20 +19,15 @@ import org.andengine.entity.primitive.Line;
 import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.Scene;
-import org.andengine.entity.shape.IAreaShape;
 import org.andengine.entity.sprite.ButtonSprite;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.sprite.TiledSprite;
 import org.andengine.entity.text.Text;
-import org.andengine.entity.text.TextOptions;
 import org.andengine.input.touch.TouchEvent;
-import org.andengine.opengl.font.Font;
-import org.andengine.util.HorizontalAlign;
 import org.andengine.util.color.Color;
 import org.andengine.util.modifier.IModifier;
 import org.andengine.util.modifier.ease.EaseBackInOut;
 
-import android.graphics.Typeface;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 
@@ -49,13 +43,17 @@ import com.kyokomi.core.sprite.TalkLayer;
 import com.kyokomi.core.utils.JsonUtil;
 import com.kyokomi.srpgquest.GameManager;
 import com.kyokomi.srpgquest.dto.MapBattleInfoDto;
+import com.kyokomi.srpgquest.layer.MapBattleCutInLayer;
+import com.kyokomi.srpgquest.layer.MapBattleCutInLayer.MapBattleCutInLayerType;
+import com.kyokomi.srpgquest.layer.MapBattleTouchLayer.MapBattleTouchLayerType;
+import com.kyokomi.srpgquest.layer.MapBattleTouchLayer;
 import com.kyokomi.srpgquest.map.common.MapPoint;
 import com.kyokomi.srpgquest.sprite.CursorRectangle;
 
 public class MapBattleScene extends SrpgBaseScene 
 	implements IOnSceneTouchListener{
 	
-	enum LayerZIndex {
+	public enum LayerZIndex {
 		TALK_LAYER(80),
 		CUTIN_LAYER(70),
 		TEXT_LAYER(60),
@@ -96,17 +94,9 @@ public class MapBattleScene extends SrpgBaseScene
 	/** 会話レイヤー. */
 	private TalkLayer mTalkLayer;
 	
-	// TODO: カットインマネージャーがいる
-	/** 勝利条件カットイン. */
-	private Rectangle mClearConditionCutInRect;
-	/** プレイヤーターンカットイン. */
-	private Sprite mPlayerTurnCutInSprite;
-	/** エネミーターンカットイン. */
-	private Sprite mEnemyTurnCutInSprite;
-	/** プレイヤー勝利カットイン. */
-	private Sprite mPlayerWinCutInSprite;
-	/** ゲームオーバーカットイン. */
-	private Sprite mGameOverCutInSprite;
+	/** カットインレイヤー. */
+	private MapBattleCutInLayer mMapBattleCutInLayer;
+	private MapBattleTouchLayer mMapBattleTouchLayer;
 	
 	// ----- SE, BGM -----
 	private Sound mAttackSound;
@@ -240,8 +230,9 @@ public class MapBattleScene extends SrpgBaseScene
 		// グリッド線表示
 		testShowGrid();
 		// カットイン初期化
-		initCutInSprite();
-		initClearConditionCutIn();
+		mMapBattleCutInLayer = new MapBattleCutInLayer(this);
+		// タッチレイヤー初期化
+		mMapBattleTouchLayer = new MapBattleTouchLayer(this);
 		// メニューを作っておく
 		createSelectMenuSprite();
 
@@ -282,63 +273,6 @@ public class MapBattleScene extends SrpgBaseScene
 		mDamageText.setColor(Color.TRANSPARENT);
 		mDamageText.setZIndex(LayerZIndex.TEXT_LAYER.getValue());
 		attachChild(mDamageText);
-	}
-	
-	// --------------- カットイン系 --------------
-	private void initClearConditionCutIn() {
-		Font blueFont = createFont(Typeface.SANS_SERIF, 36, Color.BLUE);
-		Font redFont = createFont(Typeface.SANS_SERIF, 36, Color.RED);
-		mClearConditionCutInRect = new Rectangle(0, 0, getWindowWidth(), getWindowHeight(), 
-				getBaseActivity().getVertexBufferObjectManager());
-		mClearConditionCutInRect.setColor(Color.BLACK);
-		mClearConditionCutInRect.setAlpha(0.7f);
-		mClearConditionCutInRect.setVisible(false);
-		mClearConditionCutInRect.setZIndex(LayerZIndex.CUTIN_LAYER.getValue());
-		attachChild(mClearConditionCutInRect);
-		
-		Text winConditionTitle = new Text(16, 16, blueFont, "- 勝利条件 -", 
-				new TextOptions(HorizontalAlign.CENTER), 
-				getBaseActivity().getVertexBufferObjectManager());
-		placeToCenterX(winConditionTitle, 20);
-		mClearConditionCutInRect.attachChild(winConditionTitle);
-		
-		Text winConditionDetial = new Text(16, 16, getFont(), "全ての敵を倒せ",
-				new TextOptions(HorizontalAlign.CENTER),
-				getBaseActivity().getVertexBufferObjectManager());
-		placeToCenterX(winConditionDetial, winConditionTitle.getY() + winConditionTitle.getHeight() + 20);
-		mClearConditionCutInRect.attachChild(winConditionDetial);
-		
-		Text gameOverConditionTitle = new Text(16, 16, redFont, "- 敗北条件 -",
-				new TextOptions(HorizontalAlign.CENTER),
-				getBaseActivity().getVertexBufferObjectManager());
-		placeToCenterX(gameOverConditionTitle, winConditionDetial.getY() + winConditionDetial.getHeight() + 50);
-		mClearConditionCutInRect.attachChild(gameOverConditionTitle);
-		
-		Text gameOverConditionDetial = new Text(16, 16, getFont(), "プレイヤーキャラの全滅",
-				new TextOptions(HorizontalAlign.CENTER),
-				getBaseActivity().getVertexBufferObjectManager());
-		placeToCenterX(gameOverConditionDetial, gameOverConditionTitle.getY() + gameOverConditionTitle.getHeight() + 20);
-		mClearConditionCutInRect.attachChild(gameOverConditionDetial);
-	}
-	public void showClearCondition() {
-		mClearConditionCutInRect.setVisible(true);
-		registerTouchArea(mClearConditionCutInRect);
-	}
-	public void hideClearCondition() {
-		mClearConditionCutInRect.setVisible(false);
-		unregisterTouchArea(mClearConditionCutInRect);
-	}
-	
-	private void initCutInSprite() {
-		mPlayerTurnCutInSprite = getResourceSprite("player_turn.png");
-		attachChildCutInSprite(mPlayerTurnCutInSprite);
-		mEnemyTurnCutInSprite = getResourceSprite("enemy_turn.png");
-		attachChildCutInSprite(mEnemyTurnCutInSprite);
-		mPlayerWinCutInSprite = getResourceSprite("player_win.png");
-		attachChildCutInSprite(mPlayerWinCutInSprite);
-		mGameOverCutInSprite = getResourceSprite("game_over.jpg");
-		mGameOverCutInSprite.setSize(getWindowWidth(), getWindowHeight());
-		attachChildCutInSprite(mGameOverCutInSprite);
 	}
 	
 	// ----------------------- actor layer ---------------------------
@@ -754,36 +688,28 @@ public class MapBattleScene extends SrpgBaseScene
 		hideSelectMenu();
 	}
 	// ---------------- カットイン関連 ----------------------
-	private void attachChildCutInSprite(IAreaShape sprite) {
-		placeToCenter(sprite);
-		sprite.setAlpha(0.0f);
-		sprite.setZIndex(LayerZIndex.CUTIN_LAYER.getValue());
-		attachChild(sprite);
-	}
-	public void showPlayerTurn(IAnimationCallback animationCallback) {
-		playMusic(mBattleBGM);
-		showCutInSprite(mPlayerTurnCutInSprite, animationCallback);
-	}
-	public void showEnemyTurn(IAnimationCallback animationCallback) {
-		playMusic(mBattleBGM);
-		showCutInSprite(mEnemyTurnCutInSprite, animationCallback);
-	}
-	public void showPlayerWin(IAnimationCallback animationCallback) {
-		playMusic(mClearBGM);
-		showCutInSprite(mPlayerWinCutInSprite, animationCallback);
-	}
-	public void showGameOver(IAnimationCallback animationCallback) {
-		playMusic(mGameOverBGM);
-		showCutInSprite(mGameOverCutInSprite, animationCallback);
-	}
-	private void showCutInSprite(final IAreaShape pEntity, final IAnimationCallback animationCallback) {
-		pEntity.registerEntityModifier(new FadeInModifier(2.0f, new IEntityModifier.IEntityModifierListener() {
-			@Override public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {}
-			@Override public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
-				animationCallback.doAction(); // コールバック呼び出し
-				pEntity.setAlpha(0.0f);
-			}
-		}));
+	public void showCutIn(MapBattleCutInLayerType pMapBattleCutInLayerType, 
+			final IAnimationCallback pAnimationCallback) {
+		switch (pMapBattleCutInLayerType) {
+		case PLAYER_TURN_CUTIN:
+			playMusic(mBattleBGM);
+			break;
+		case ENEMY_TURN_CUTIN:
+			playMusic(mBattleBGM);
+			break;
+		case PLAYER_WIN_CUTIN:
+			playMusic(mClearBGM);
+			break;
+		case GAME_OVER_CUTIN:
+			playMusic(mGameOverBGM);
+			break;
+		default:
+			return;
+		}
+		// カットイン表示
+		mMapBattleCutInLayer.showCutIn(pMapBattleCutInLayerType, new MapBattleCutInLayer.ICutInCallback() {
+			@Override public void doAction() { if (pAnimationCallback != null) pAnimationCallback.doAction(); }
+		});
 	}
 	// --------------- 会話パート用 --------------------
 	private void initTalk() {
@@ -887,7 +813,7 @@ public class MapBattleScene extends SrpgBaseScene
 			// TODO: 一旦会話はGameManager外にする
 			if (mTalkLayer != null && mTalkLayer.contains(x, y)) {
 				
-				getBtnPressedSound().play();
+				playSound(SoundType.BTN_PRESSED_SOUND);
 				
 				if (mTalkLayer.isNextTalk()) {
 					mTalkLayer.nextTalk();
@@ -899,17 +825,20 @@ public class MapBattleScene extends SrpgBaseScene
 					mTalkLayer = null;
 					
 					// 勝利条件表示
-					showClearCondition();
+					playMusic(mBattleBGM);
+					registerTouchArea(mMapBattleTouchLayer.showTouchLayer(
+							MapBattleTouchLayerType.CLEAR_CONDITION_TOUCH));
 				}
 				
-			} else if (mClearConditionCutInRect != null && 
-					mClearConditionCutInRect.isVisible() && 
-					mClearConditionCutInRect.contains(x, y)) {
+			} else if (mMapBattleTouchLayer.isTouchClerCondition(
+					MapBattleTouchLayerType.CLEAR_CONDITION_TOUCH, x, y)) {
 				
 				playSound(SoundType.BTN_PRESSED_SOUND);
 				
 				// 勝利条件を非表示にする
-				hideClearCondition();
+				unregisterTouchArea(mMapBattleTouchLayer.hideTouchLayer(
+						MapBattleTouchLayerType.CLEAR_CONDITION_TOUCH));
+				
 				// ゲーム開始
 				gameManager.gameStart();
 				

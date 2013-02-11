@@ -244,6 +244,7 @@ public abstract class KeyListenScene extends Scene {
 	protected void initFps(float x, float y, Font font) {
 		mFpsText= new Text(x, y, font, "FPS:0.000000000000000000000000", 
 				getBaseActivity().getVertexBufferObjectManager());
+		mFpsText.setZIndex(999);
 		attachChild(mFpsText);
 
 		mFpsCounter = new AverageFPSCounter(1) {
@@ -278,7 +279,7 @@ public abstract class KeyListenScene extends Scene {
 		return mBaseFont;
 	}
 	
-	protected Font createFont(Typeface typeface, int fontSize, Color color) {
+	public Font createFont(Typeface typeface, int fontSize, Color color) {
 		Texture texture = new BitmapTextureAtlas(
 				this.getBaseActivity().getTextureManager(), 512, 512, 
 				TextureOptions.BILINEAR_PREMULTIPLYALPHA);
