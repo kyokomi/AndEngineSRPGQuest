@@ -11,6 +11,8 @@ import com.kyokomi.srpgquest.constant.GameStateType;
 import com.kyokomi.srpgquest.constant.MapDataType;
 import com.kyokomi.srpgquest.constant.MoveDirectionType;
 import com.kyokomi.srpgquest.constant.SelectMenuType;
+import com.kyokomi.srpgquest.dto.MapBattleInfoDto;
+import com.kyokomi.srpgquest.dto.MapBattleInfoDto.MapSymbol;
 import com.kyokomi.srpgquest.logic.BattleLogic;
 import com.kyokomi.srpgquest.map.MapManager;
 import com.kyokomi.srpgquest.map.common.MapPoint;
@@ -31,6 +33,8 @@ public class GameManager {
 	private final static String TAG = "GameManager";
 	
 	private final static float GRID_SIZE = 40;
+	
+	private MapBattleInfoDto mMapBattleInfoDto;
 	
 	private MapBattleScene mBaseScene;
 	
@@ -109,52 +113,31 @@ public class GameManager {
 	 * @param mapY
 	 * @param scale
 	 */
-	public void mapInit(int mapX, int mapY, float scale) {
+	public void mapInit(MapBattleInfoDto pMapBattleInfoDto) {
+		this.mMapBattleInfoDto = pMapBattleInfoDto;
+		
 		// 初期データ設定(mapX * mapYのグリッドを作成)
-		mMapManager = new MapManager(this, mapX, mapY, scale);
-		
-		// TODO: test用
-		int playerId = 1;
-		addPlayer(3, 3, playerId);
-		
-		int enemyId = 2;
-		addEnemy(15, 10, enemyId);
-		addEnemy(19, 2, 3);
-		// 負荷原因はRectangleが画面全体にあったため（透明だけどオブジェクトは存在しているので重かった）
-//		addEnemy(6, 2, 4, enemyImageId);
-//		addEnemy(6, 3, 5, enemyImageId);
-//		addEnemy(6, 4, 6, enemyImageId);
-//		addEnemy(6, 5, 7, enemyImageId);
-//		addEnemy(6, 6, 8, enemyImageId);
-//		addEnemy(6, 7, 9, enemyImageId);
-		
-		// 障害物配置
-		addObstacle(3, 5);
-		addObstacle(6, 9);
-		addObstacle(7, 9);
-		addObstacle(8, 7);
-		addObstacle(8, 8);
-		addObstacle(8, 9);
-		addObstacle(0, 2);
-		addObstacle(1, 2);
-		addObstacle(2, 2);
-		addObstacle(3, 2);
-		addObstacle(4, 2);
-		addObstacle(5, 2);
-		
-		addObstacle(13, 5);
-		addObstacle(13, 6);
-		addObstacle(13, 7);
-		addObstacle(14, 5);
-		addObstacle(15, 5);
-		addObstacle(15, 6);
-		addObstacle(15, 7);
-		addObstacle(15, 8);
-		addObstacle(15, 9);
-		addObstacle(14, 4);
-		addObstacle(15, 3);
-		addObstacle(16, 2);
-		
+		mMapManager = new MapManager(this, 
+				mMapBattleInfoDto.getMapSizeX(), 
+				mMapBattleInfoDto.getMapSizeY(), 
+				1.0f);
+		List<MapSymbol> mapSymbolList = mMapBattleInfoDto.getMapSymbolList();
+		for (int i = 0; i < mapSymbolList.size(); i++) {
+			MapSymbol mapSymbol = mapSymbolList.get(i);
+			switch (MapDataType.get(mapSymbol.getType())) {
+			case PLAYER:
+				addPlayer(mapSymbol.getMapPointX(), mapSymbol.getMapPointY(), mapSymbol.getId());
+				break;
+			case ENEMY:
+				addEnemy(mapSymbol.getMapPointX(), mapSymbol.getMapPointY(), mapSymbol.getId());
+				break;
+			case MAP_ITEM:
+				addObstacle(mapSymbol.getMapPointX(), mapSymbol.getMapPointY(), mapSymbol.getId());
+				break;
+			default:
+				break;
+			}
+		}
 		mBaseScene.sortChildren();
 	}
 	
@@ -406,43 +389,10 @@ public class GameManager {
 		mBaseScene.createEnemySprite(enemy, 
 				calcGridPosition(mapPointX, mapPointY), GRID_SIZE);
 	}
-//	private ActorPlayerDto createActorPlayer(int playerId, int imageResId) {
-//		ActorPlayerDto actorPlayer = new ActorPlayerDto();
-//		actorPlayer.setPlayerId(playerId);
-//		actorPlayer.setImageResId(imageResId);
-//		
-//		// TODO: DBとかから取得
-//		if (playerId == 1) {
-//			actorPlayer.setName("アスリーン");
-//			actorPlayer.setLv(2);
-//			actorPlayer.setExp(10);
-//			
-//			actorPlayer.setMovePoint(6);
-//			actorPlayer.setAttackRange(1);
-//			
-//			actorPlayer.setHitPoint(100);
-//			actorPlayer.setHitPointLimit(100);
-//			actorPlayer.setAttackPoint(60);
-//			actorPlayer.setDefencePoint(30);
-//		} else {
-//			actorPlayer.setName("ラーティ・クルス");
-//			actorPlayer.setLv(1);
-//			actorPlayer.setExp(10);
-//			
-//			actorPlayer.setMovePoint(5);
-//			actorPlayer.setAttackRange(1);
-//			
-//			actorPlayer.setHitPoint(100);
-//			actorPlayer.setHitPointLimit(100);
-//			actorPlayer.setAttackPoint(40);
-//			actorPlayer.setDefencePoint(10);
-//		}
-//		
-//		return actorPlayer;
-//	}
-	private void addObstacle(int mapPointX, int mapPointY) {
+	
+	private void addObstacle(int mapPointX, int mapPointY, int imgResId) {
 		mMapManager.addObstacle(mapPointX, mapPointY);
-		mBaseScene.createObstacleSprite(calcGridPosition(mapPointX, mapPointY), 16 * 12 + 0);
+		mBaseScene.createObstacleSprite(calcGridPosition(mapPointX, mapPointY), imgResId);
 	}
 	//---------------------------------------------------------
 	// カーソル表示関連

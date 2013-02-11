@@ -46,7 +46,9 @@ import com.kyokomi.core.sprite.PlayerSprite;
 import com.kyokomi.core.sprite.PlayerStatusRectangle;
 import com.kyokomi.core.sprite.MenuRectangle.MenuDirection;
 import com.kyokomi.core.sprite.TalkLayer;
+import com.kyokomi.core.utils.JsonUtil;
 import com.kyokomi.srpgquest.GameManager;
+import com.kyokomi.srpgquest.dto.MapBattleInfoDto;
 import com.kyokomi.srpgquest.map.common.MapPoint;
 import com.kyokomi.srpgquest.sprite.CursorRectangle;
 
@@ -64,35 +66,37 @@ public class MapBattleScene extends SrpgBaseScene
 		MOVECURSOR_LAYER(10),
 		BACKGROUND_LAYER(0),
 		;
-		
 		private Integer value;
-		
 		private LayerZIndex(Integer value) {
 			this.value = value;
 		}
-		
 		public Integer getValue() {
 			return value;
 		}
 	}
-	
+	/** SRPGゲームマネージャー. */
 	private GameManager gameManager;
 	
+	/** プレイヤーと敵情報. */
 	private SparseArray<PlayerSprite> players;
 	private SparseArray<PlayerSprite> enemys;
+	/** カーソル表示リスト. */
 	private List<CursorRectangle> cursorList;
-	
+
+	/** ダメージ表示用テキスト. */
 	private Text mDamageText;
-	
+	/** 背景. */
 	private Sprite mBackgroundSprite;
 	
+	/** メニュー・ステータス周り. */
 	private MenuRectangle mMenuRectangle;
 	private PlayerStatusRectangle mPlayerStatusRect;
 	private PlayerStatusRectangle mEnemyStatusRect;
 	
+	/** 会話レイヤー. */
 	private TalkLayer mTalkLayer;
 	
-	// カットイン
+	// TODO: カットインマネージャーがいる
 	/** 勝利条件カットイン. */
 	private Rectangle mClearConditionCutInRect;
 	/** プレイヤーターンカットイン. */
@@ -113,6 +117,8 @@ public class MapBattleScene extends SrpgBaseScene
 	
 	/** このマップのシナリオ情報. */
 	private MScenarioEntity mScenarioEntity;
+	/** マップ情報. */
+	private MapBattleInfoDto mMapBattleInfoDto;
 	
 	public MapBattleScene(MultiSceneActivity pBaseActivity, MScenarioEntity pScenarioEntity) {
 		super(pBaseActivity);
@@ -239,9 +245,13 @@ public class MapBattleScene extends SrpgBaseScene
 		// メニューを作っておく
 		createSelectMenuSprite();
 
+		// マップ情報を読み込む
+		mMapBattleInfoDto = new MapBattleInfoDto();
+		mMapBattleInfoDto.createMapJsonData(mScenarioEntity.getSceneId(), 
+				JsonUtil.toJson(getBaseActivity(), "map/"+ mScenarioEntity.getSceneId()));
 		// ゲーム開始
 		gameManager = new GameManager(this);
-		gameManager.mapInit(20, 12, 1f); // 10 x 10 スケール1倍のグリッドマップ
+		gameManager.mapInit(mMapBattleInfoDto); // 10 x 10 スケール1倍のグリッドマップ
 			
 		// プレイヤー情報ができてから呼び出さないといけないので注意
 		// 会話レイヤーを生成

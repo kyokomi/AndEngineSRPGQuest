@@ -17,4 +17,13 @@ public enum MapDataType {
 	public Integer getValue() {
 		return value;
 	}
+	public static MapDataType get(Integer value) {
+		MapDataType[] values = values();
+		for (MapDataType type : values) {
+			if (type.getValue() == value) {
+				return type;
+			}
+		}
+		throw new RuntimeException("find not tag type.");
+	}
 }
