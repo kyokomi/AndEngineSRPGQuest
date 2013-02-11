@@ -34,9 +34,9 @@ public class MenuRectangle extends Rectangle {
 	// Constructors
 	// ===========================================================
 
-	public MenuRectangle(float pX, float pY, float pWidth, float pHeight,
+	public MenuRectangle(
 			VertexBufferObjectManager pVertexBufferObjectManager) {
-		super(pX, pY, pWidth, pHeight, pVertexBufferObjectManager);
+		super(0, 0, 0, 0, pVertexBufferObjectManager);
 		
 		this.setColor(Color.BLACK);
 		this.setAlpha(0.8f);

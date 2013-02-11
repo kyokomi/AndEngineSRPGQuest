@@ -35,16 +35,15 @@ import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.dto.ActorPlayerDto;
 import com.kyokomi.core.dto.MScenarioEntity;
 import com.kyokomi.core.dto.PlayerTalkDto;
-import com.kyokomi.core.sprite.MenuRectangle;
 import com.kyokomi.core.sprite.PlayerSprite;
 import com.kyokomi.core.sprite.PlayerStatusRectangle;
-import com.kyokomi.core.sprite.MenuRectangle.MenuDirection;
 import com.kyokomi.core.sprite.TalkLayer;
 import com.kyokomi.core.utils.JsonUtil;
 import com.kyokomi.srpgquest.GameManager;
 import com.kyokomi.srpgquest.dto.MapBattleInfoDto;
 import com.kyokomi.srpgquest.layer.MapBattleCutInLayer;
 import com.kyokomi.srpgquest.layer.MapBattleCutInLayer.MapBattleCutInLayerType;
+import com.kyokomi.srpgquest.layer.MapBattleSelectMenuLayer;
 import com.kyokomi.srpgquest.layer.MapBattleTouchLayer.MapBattleTouchLayerType;
 import com.kyokomi.srpgquest.layer.MapBattleTouchLayer;
 import com.kyokomi.srpgquest.map.common.MapPoint;
@@ -87,7 +86,9 @@ public class MapBattleScene extends SrpgBaseScene
 	private Sprite mBackgroundSprite;
 	
 	/** メニュー・ステータス周り. */
-	private MenuRectangle mMenuRectangle;
+	private MapBattleSelectMenuLayer mMapBattleSelectMenuLayer;
+	
+//	private MenuRectangle mMenuRectangle;
 	private PlayerStatusRectangle mPlayerStatusRect;
 	private PlayerStatusRectangle mEnemyStatusRect;
 	
@@ -229,12 +230,19 @@ public class MapBattleScene extends SrpgBaseScene
 		initDamageText();
 		// グリッド線表示
 		testShowGrid();
+		
 		// カットイン初期化
 		mMapBattleCutInLayer = new MapBattleCutInLayer(this);
 		// タッチレイヤー初期化
 		mMapBattleTouchLayer = new MapBattleTouchLayer(this);
-		// メニューを作っておく
-		createSelectMenuSprite();
+		// メニュー初期化
+		mMapBattleSelectMenuLayer = new MapBattleSelectMenuLayer(this, new ButtonSprite.OnClickListener() {
+			@Override
+			public void onClick(ButtonSprite pButtonSprite, float pTouchAreaLocalX,
+					float pTouchAreaLocalY) {
+				gameManager.touchMenuBtnEvent(pButtonSprite.getTag());
+			}
+		});
 
 		// マップ情報を読み込む
 		mMapBattleInfoDto = new MapBattleInfoDto();
@@ -596,97 +604,15 @@ public class MapBattleScene extends SrpgBaseScene
 				})));
 	}
 	// ---------------- メニュー -------------------
-	
 	public void showSelectMenu(boolean isAttackDone, boolean isMovedDone, MapPoint mapPoint) {
-		float x = mapPoint.getX();
-		// 横は画面半分のどっち側にいるかで表示位置を垂直方向に反転させる
-		if (x < getWindowWidth() / 2) {
-			x = x + 40;
-		} else {
-			x = x - mMenuRectangle.getWidth();
-		}
-		// 縦が画面外に入る場合は補正
-		float y = mapPoint.getY();
-		if ((y + mMenuRectangle.getHeight()) > getWindowHeight()) {
-			y = getWindowHeight() - mMenuRectangle.getHeight();
-		}
-		mMenuRectangle.setX(x);
-		mMenuRectangle.setY(y);
-		
-		// 攻撃
-		IEntity attackMenuItem = mMenuRectangle.getChildByTag(
-				SelectMenuType.SELECT_MENU_ATTACK_TYPE.getValue());
-		if (attackMenuItem instanceof ButtonSprite) {
-			((ButtonSprite) attackMenuItem).setEnabled(!isAttackDone);
-			((ButtonSprite) attackMenuItem).setVisible(!isAttackDone); // 非活性ボタンがあればイラナイ
-		}
-		// 移動
-		IEntity moveMenuItem = mMenuRectangle.getChildByTag(
-				SelectMenuType.SELECT_MENU_MOVE_TYPE.getValue());
-		if (moveMenuItem instanceof ButtonSprite) {
-			((ButtonSprite) moveMenuItem).setEnabled(!isMovedDone);
-			((ButtonSprite) moveMenuItem).setVisible(!isMovedDone); // 非活性ボタンがあればイラナイ
-		}
-		
-		// 非表示
-		mMenuRectangle.setEnabled(true);
-		mMenuRectangle.setVisible(true);
+		mMapBattleSelectMenuLayer.showSelectMenu(this, 
+				mapPoint.getX(), mapPoint.getY(), 
+				isAttackDone, isMovedDone);
 	}
 	public void hideSelectMenu() {
-		// 非表示
-		mMenuRectangle.setEnabled(false);
-		mMenuRectangle.setVisible(false);
+		mMapBattleSelectMenuLayer.hideSelectMenu();
 	}
 	
-	enum SelectMenuType {
-		SELECT_MENU_ATTACK_TYPE(1),
-		SELECT_MENU_MOVE_TYPE(2),
-		SELECT_MENU_WAIT_TYPE(3),
-		SELECT_MENU_CANCEL_TYPE(4),
-		;
-		
-		private Integer value;
-		
-		private SelectMenuType(Integer value) {
-			this.value = value;
-		}
-		
-		public Integer getValue() {
-			return value;
-		}
-	}
-	public void createSelectMenuSprite() {
-					
-		mMenuRectangle = new MenuRectangle(
-				getWindowWidth() / 2, getWindowHeight() / 2, 
-				getWindowWidth(), getWindowHeight(), 
-				getBaseActivity().getVertexBufferObjectManager());
-		mMenuRectangle.setZIndex(LayerZIndex.POPUP_LAYER.getValue());
-		
-		// 各ボタン配置
-		ButtonSprite btnAttack = getResourceButtonSprite("attack_btn.gif", "attack_btn_p.gif");
-		mMenuRectangle.addMenuItem(SelectMenuType.SELECT_MENU_ATTACK_TYPE.getValue(), btnAttack);
-		btnAttack.setOnClickListener(selectMenuOnClickListener);
-		
-		ButtonSprite btnMove = getResourceButtonSprite("move_btn.gif", "move_btn_p.gif");
-		mMenuRectangle.addMenuItem(SelectMenuType.SELECT_MENU_MOVE_TYPE.getValue(), btnMove);
-		btnMove.setOnClickListener(selectMenuOnClickListener);
-		
-		ButtonSprite btnWait = getResourceButtonSprite("wait_btn.gif", "wait_btn_p.gif");
-		mMenuRectangle.addMenuItem(SelectMenuType.SELECT_MENU_WAIT_TYPE.getValue(), btnWait);
-		btnWait.setOnClickListener(selectMenuOnClickListener);
-		
-		ButtonSprite btnCancel = getResourceButtonSprite("cancel_btn.gif", "cancel_btn_p.gif");
-		mMenuRectangle.addMenuItem(SelectMenuType.SELECT_MENU_CANCEL_TYPE.getValue(), btnCancel);
-		btnCancel.setOnClickListener(selectMenuOnClickListener);
-		
-		mMenuRectangle.create(MenuDirection.MENU_DIRECTION_Y);
-		attachChild(mMenuRectangle);
-		registerTouchArea(mMenuRectangle);
-
-		// 非表示にする
-		hideSelectMenu();
-	}
 	// ---------------- カットイン関連 ----------------------
 	public void showCutIn(MapBattleCutInLayerType pMapBattleCutInLayerType, 
 			final IAnimationCallback pAnimationCallback) {
@@ -786,17 +712,6 @@ public class MapBattleScene extends SrpgBaseScene
 		}
 	}
 	// --------------- イベント系 -------------------
-	
-	/**
-	 * キャラ選択画面のボタン押下時.
-	 */
-	private ButtonSprite.OnClickListener selectMenuOnClickListener = new ButtonSprite.OnClickListener() {
-		@Override
-		public void onClick(ButtonSprite pButtonSprite, float pTouchAreaLocalX,
-				float pTouchAreaLocalY) {
-			gameManager.touchMenuBtnEvent(pButtonSprite.getTag());
-		}
-	};
 
 	/**
 	 * 画面タッチイベント.

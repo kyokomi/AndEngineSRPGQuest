@@ -238,8 +238,6 @@ public class SandboxScene extends SrpgBaseScene
 		Font font = createFont(Typeface.DEFAULT_BOLD, 22, Color.WHITE);
 		
 		mMenuRectangle = new MenuRectangle(
-				getWindowWidth() / 2, getWindowHeight() / 2, 
-				getWindowWidth(), getWindowHeight(), 
 				getBaseActivity().getVertexBufferObjectManager());
 		
 		for (int i = 0; i < 4; i++) {
