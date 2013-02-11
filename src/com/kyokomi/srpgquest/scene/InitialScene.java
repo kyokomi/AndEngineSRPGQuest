@@ -12,12 +12,9 @@ import org.andengine.entity.sprite.Sprite;
 import org.andengine.util.modifier.ease.EaseBackInOut;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
-import com.kyokomi.core.dao.MScenarioDao;
-import com.kyokomi.core.dto.MScenarioEntity;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.pazuruquest.scene.PazuruQuestScene;
 
-import android.database.sqlite.SQLiteDatabase;
 import android.view.KeyEvent;
 
 public class InitialScene extends SrpgBaseScene implements ButtonSprite.OnClickListener{
@@ -49,24 +46,24 @@ public class InitialScene extends SrpgBaseScene implements ButtonSprite.OnClickL
 		bg.setSize(getWindowWidth(), getWindowHeight());
 		attachChild(bg);
 		
-		ButtonSprite btnStart = getBaseActivity().getResourceUtil().getButtonSprite(
-				"initial_btn_01.png", 
-				"initial_btn_01_p.png");
-		placeToCenterX(btnStart, 40);
-		btnStart.setY(btnStart.getY() + 400);
-		btnStart.setTag(INITIAL_START);
-		btnStart.setOnClickListener(this);
-		attachChild(btnStart);
-		// ボタンをタップ可能にする
-		registerTouchArea(btnStart);
-				
-		btnStart.registerEntityModifier(new SequenceEntityModifier(
-				new DelayModifier(1.0f), new MoveModifier(1.0f, 
-						btnStart.getX(), 
-						btnStart.getX(), 
-						btnStart.getY(),
-						btnStart.getY() - 400,
-						EaseBackInOut.getInstance())));
+//		ButtonSprite btnStart = getBaseActivity().getResourceUtil().getButtonSprite(
+//				"initial_btn_01.png", 
+//				"initial_btn_01_p.png");
+//		placeToCenterX(btnStart, 40);
+//		btnStart.setY(btnStart.getY() + 400);
+//		btnStart.setTag(INITIAL_START);
+//		btnStart.setOnClickListener(this);
+//		attachChild(btnStart);
+//		// ボタンをタップ可能にする
+//		registerTouchArea(btnStart);
+//				
+//		btnStart.registerEntityModifier(new SequenceEntityModifier(
+//				new DelayModifier(1.0f), new MoveModifier(1.0f, 
+//						btnStart.getX(), 
+//						btnStart.getX(), 
+//						btnStart.getY(),
+//						btnStart.getY() - 400,
+//						EaseBackInOut.getInstance())));
 		
 		ButtonSprite btnSandBox = getBaseActivity().getResourceUtil().getButtonSprite(
 				"initial_btn_01.png", 
@@ -140,7 +137,7 @@ public class InitialScene extends SrpgBaseScene implements ButtonSprite.OnClickL
 		
 		switch (pButtonSprite.getTag()) {
 		case INITIAL_START:
-			showScene(new MapBattleScene(getBaseActivity()));
+//			showScene(new MapBattleScene(getBaseActivity()));
 			break;
 		case INITIAL_RANKING:
 			showScene(new SandboxScene(getBaseActivity()));

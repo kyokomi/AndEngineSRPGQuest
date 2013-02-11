@@ -39,8 +39,8 @@ import android.view.KeyEvent;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.dto.ActorPlayerDto;
+import com.kyokomi.core.dto.MScenarioEntity;
 import com.kyokomi.core.dto.PlayerTalkDto;
-import com.kyokomi.core.dto.PlayerTalkDto.TalkDirection;
 import com.kyokomi.core.sprite.MenuRectangle;
 import com.kyokomi.core.sprite.PlayerSprite;
 import com.kyokomi.core.sprite.PlayerStatusRectangle;
@@ -105,15 +105,18 @@ public class MapBattleScene extends SrpgBaseScene
 	private Sprite mGameOverCutInSprite;
 	
 	// ----- SE, BGM -----
-//	private Sound mBtnPressedSound;
 	private Sound mAttackSound;
 	private Music mTutorialBGM;
 	private Music mBattleBGM;
 	private Music mClearBGM;
 	private Music mGameOverBGM;
 	
-	public MapBattleScene(MultiSceneActivity baseActivity) {
-		super(baseActivity);
+	/** このマップのシナリオ情報. */
+	private MScenarioEntity mScenarioEntity;
+	
+	public MapBattleScene(MultiSceneActivity pBaseActivity, MScenarioEntity pScenarioEntity) {
+		super(pBaseActivity);
+		this.mScenarioEntity = pScenarioEntity;
 		init();
 	}
 	
@@ -121,7 +124,7 @@ public class MapBattleScene extends SrpgBaseScene
 	 * 再開時
 	 */
 	public void onResume() {
-		// TODO: 本当はどのBGMが中断中か調べて再生するけど一旦バトルで
+		// TODO: 本当はどのBGMが再生中か調べて再生するけど一旦バトルで
 		playMusic(mBattleBGM);
 	}
 	/**
@@ -135,7 +138,6 @@ public class MapBattleScene extends SrpgBaseScene
 		// 効果音をロード
 		try {
 			mAttackSound = createSoundFromFileName("SE_ATTACK_ZANGEKI_01.wav");
-//			mBtnPressedSound = createSoundFromFileName("btn_se1.wav");
 			mTutorialBGM = createMusicFromFileName("tutorial_bgm1.mp3");
 			mBattleBGM = createMusicFromFileName("battle_bgm1.mp3");
 			mClearBGM = createMusicFromFileName("clear_bgm1.mp3");
@@ -212,7 +214,6 @@ public class MapBattleScene extends SrpgBaseScene
 	public boolean dispatchKeyEvent(KeyEvent e) {
 		// バックボタンが押された時
 		if (e.getAction() == KeyEvent.ACTION_DOWN && e.getKeyCode() == KeyEvent.KEYCODE_BACK) { 
-//			releseMusic();
 			return true;
 		}
 		return false;
@@ -226,20 +227,15 @@ public class MapBattleScene extends SrpgBaseScene
 		cursorList = new ArrayList<CursorRectangle>();
 		// デフォルトフォント初期化
 		initFont(16);
-
 		// 背景
 		initBackground();
-		
 		// ダメージテキスト初期化
 		initDamageText();
-		
 		// グリッド線表示
 		testShowGrid();
-		
 		// カットイン初期化
 		initCutInSprite();
 		initClearConditionCutIn();
-	
 		// メニューを作っておく
 		createSelectMenuSprite();
 
@@ -253,10 +249,8 @@ public class MapBattleScene extends SrpgBaseScene
 		
 		// BGM再生開始
 		playMusic(mTutorialBGM);
-				
 		// Sceneのタッチリスナーを登録
 		setOnSceneTouchListener(this);
-			
 		// FPS表示
 		initFps(getWindowWidth() - 100, getWindowHeight() - 20, getFont());
 	}
@@ -798,33 +792,14 @@ public class MapBattleScene extends SrpgBaseScene
 			actorFaces.put(enemy.getPlayerId(), 
 					getResourceFaceSprite(enemy.getPlayerId(), enemy.getFaceFileName()));
 		}
-		
-		// TODO: "id, name, faceIndex, talkDirection"
-		PlayerSprite player = players.valueAt(0);
-		PlayerSprite enemy = enemys.valueAt(0);
-		// 会話内容を作成
-		List<PlayerTalkDto> talks = new ArrayList<PlayerTalkDto>();
-		talks.add(new PlayerTalkDto(player.getPlayerId(), 
-				player.getActorPlayer().getName(), 0, TalkDirection.TALK_DIRECT_LEFT,
-				"突然だけどここからチュートリアルです。"));
-		talks.add(new PlayerTalkDto(enemy.getPlayerId(), 
-				enemy.getActorPlayer().getName(), 0, TalkDirection.TALK_DIRECT_RIGHT,
-				"私が対戦相手になります。"));
-		talks.add(new PlayerTalkDto(player.getPlayerId(), 
-				player.getActorPlayer().getName(), 3, TalkDirection.TALK_DIRECT_LEFT,
-				"キャラクターをタップするとメニューがでるので、 移動と攻撃で倒される前に倒します。"));
-		talks.add(new PlayerTalkDto(player.getPlayerId(), 
-				player.getActorPlayer().getName(), 2, TalkDirection.TALK_DIRECT_LEFT,
-				"待機すると敵のターンとなるよくあるターン制のSRPGです。"));
-		talks.add(new PlayerTalkDto(enemy.getPlayerId(), 
-				enemy.getActorPlayer().getName(), 1, TalkDirection.TALK_DIRECT_RIGHT,
-				"それじゃあ始めるわよ。"));
+		// 会話内容取得
+		List<PlayerTalkDto> talks = getTalkDtoList(mScenarioEntity.getScenarioNo(), mScenarioEntity.getSeqNo());
 		mTalkLayer = new TalkLayer(this);
 		mTalkLayer.initTalk(actorFaces, talks);
 		mTalkLayer.hide();
 		mTalkLayer.setZIndex(LayerZIndex.TALK_LAYER.getValue());
 		attachChild(mTalkLayer);
-		
+		// 会話表示
 		mTalkLayer.nextTalk();
 	}
 	
@@ -889,6 +864,7 @@ public class MapBattleScene extends SrpgBaseScene
 
 	/**
 	 * 画面タッチイベント.
+	 * TODO: 画面暗いときに押せちゃうのを制御しないといけない
 	 */
 	@Override
 	public boolean onSceneTouchEvent(Scene pScene, TouchEvent pSceneTouchEvent) {
@@ -896,21 +872,26 @@ public class MapBattleScene extends SrpgBaseScene
 		// タッチの座標を取得
 		float x = pSceneTouchEvent.getX();
 		float y = pSceneTouchEvent.getY();
-		
 		if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
 			
 			// TODO: 一旦会話はGameManager外にする
-			if (mTalkLayer != null && mTalkLayer.contains(x, y) && mTalkLayer.isNextTalk()) {
+			if (mTalkLayer != null && mTalkLayer.contains(x, y)) {
 				
-				playSound(SoundType.BTN_PRESSED_SOUND);
+				getBtnPressedSound().play();
 				
-				if (!mTalkLayer.nextTalk()) {
+				if (mTalkLayer.isNextTalk()) {
+					mTalkLayer.nextTalk();
+					
+				} else {
+					mTalkLayer.hide();
 					// 次の会話がなくなれば、会話レイヤーを開放
 					detachEntity(mTalkLayer);
+					mTalkLayer = null;
 					
 					// 勝利条件表示
 					showClearCondition();
 				}
+				
 			} else if (mClearConditionCutInRect != null && 
 					mClearConditionCutInRect.isVisible() && 
 					mClearConditionCutInRect.contains(x, y)) {
@@ -932,11 +913,10 @@ public class MapBattleScene extends SrpgBaseScene
 	
 	// ---- クリア時の処理 ----
 	public void clearMapBattle() {
-		// TODO: 次のステージへ？
+		// 音源を開放
 		releseMusic();
-//		getBaseActivity().backToInitial();
-		// TODO: 次のシナリオをMScenarioで持たないといけない
-		showScene(new NovelScene(getBaseActivity(), 1, 2));
+		// 次のシナリオへ
+		nextScenario(mScenarioEntity.getScenarioNo(), mScenarioEntity.getSeqNo());
 	}
 	public void gameOverMapBattle() {
 		// TODO: タイトルへ？

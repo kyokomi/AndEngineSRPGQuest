@@ -1,6 +1,11 @@
 package com.kyokomi.srpgquest.scene;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.andengine.audio.sound.Sound;
 import org.andengine.entity.sprite.TiledSprite;
@@ -9,9 +14,10 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
-import com.kyokomi.core.constants.SceneType;
 import com.kyokomi.core.dao.MScenarioDao;
 import com.kyokomi.core.dto.MScenarioEntity;
+import com.kyokomi.core.dto.PlayerTalkDto;
+import com.kyokomi.core.dto.PlayerTalkDto.TalkDirection;
 import com.kyokomi.core.scene.KeyListenScene;
 
 public abstract class SrpgBaseScene extends KeyListenScene {
@@ -64,6 +70,48 @@ public abstract class SrpgBaseScene extends KeyListenScene {
 		return getBaseActivity().getResourceUtil().getTiledSprite("icon_set.png", 16, 48);
 	}
 	
+	// ------------------ 会話 ---------------------
+	public List<PlayerTalkDto> getTalkDtoList(int scenarioNo, int seqNo) {
+		// ファイル読み込み
+		List<String> talkDataList = new ArrayList<String>();
+		try {
+			InputStream in = getBaseActivity().getAssets().open("scenario/" + scenarioNo + "_" + seqNo + ".txt");
+			BufferedReader reader = 
+		        new BufferedReader(new InputStreamReader(in));
+		    String str;
+		    while ((str = reader.readLine()) != null) {
+		    	talkDataList.add(str);
+		    }
+		    in.close();
+		    reader.close();
+		    
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		// 会話内容作成
+		List<PlayerTalkDto> talks = new ArrayList<PlayerTalkDto>();
+		for (String data :talkDataList) {
+			String[] tokens = data.split(",");
+			if (tokens.length < 5) {
+				continue;
+			}
+			int i = 0;
+			int id = Integer.parseInt(tokens[i]);
+			i++;
+			String name = tokens[i];
+			i++;
+			int faceIndex = Integer.parseInt(tokens[i]);
+			i++;
+			TalkDirection talkDirection = TalkDirection.get(Integer.parseInt(tokens[i]));
+			i++;
+			String text = tokens[i];
+			
+			PlayerTalkDto talkDto = new PlayerTalkDto(id, name, faceIndex, talkDirection, text);
+			talks.add(talkDto);
+		}
+		
+		return talks;
+	}
 	// ------------------ DB ----------------------
 	
 	private void initDB() {
@@ -110,9 +158,7 @@ public abstract class SrpgBaseScene extends KeyListenScene {
 		Log.d("SRPGBaseScene", "ditactionScene " + mScenarioEntity.getSceneType());
 		switch (mScenarioEntity.getSceneType()) {
 		case SCENE_TYPE_MAP:
-			// TODO: map側が未対応
-//			showScene(new MapBattleScene(getBaseActivity(), scenarioDto));
-			showScene(new MapBattleScene(getBaseActivity()));
+			showScene(new MapBattleScene(getBaseActivity(), mScenarioEntity));
 			break;
 		case SCENE_TYPE_NOVEL:
 			showScene(new NovelScene(getBaseActivity(), mScenarioEntity));
