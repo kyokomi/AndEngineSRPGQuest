@@ -186,7 +186,7 @@ public class MjPazuruQuestScene extends KeyListenScene
 		panelMap = new PanelLayer[PANEL_COUNT_X][PANEL_COUNT_Y];
 		
 		initPanelBase(0, 0);
-		
+		// パネルの背景（移動可能範囲）
 		mBackgroundLayer = new Rectangle(0, 0, 
 				PANEL_COUNT_X * (PANEL_SIZE), 
 				PANEL_COUNT_Y * (PANEL_SIZE), 
@@ -196,12 +196,13 @@ public class MjPazuruQuestScene extends KeyListenScene
 		mBackgroundLayer.setZIndex(0);
 		attachChild(mBackgroundLayer);
 		
+		// パネル消滅時のタッチ封じレイヤー
 		mTouchBreakLayeer = new Rectangle(0, 0, 
-				PANEL_COUNT_X * (PANEL_SIZE + 1) - 1, 
-				PANEL_COUNT_Y * (PANEL_SIZE + 1) - 1 + PANEL_BASE_Y + 10, 
+				PANEL_COUNT_X * (PANEL_SIZE + 1) - 1 + PANEL_BASE_X + 20, 
+				PANEL_COUNT_Y * (PANEL_SIZE + 1) - 1 + PANEL_BASE_Y + 20, 
 				getBaseActivity().getVertexBufferObjectManager());
 		mTouchBreakLayeer.setColor(Color.BLACK);
-		mTouchBreakLayeer.setPosition(PANEL_BASE_X, - 10);
+		mTouchBreakLayeer.setPosition(-10, -10);
 		mTouchBreakLayeer.setAlpha(0.5f);
 		mTouchBreakLayeer.setZIndex(10);
 		
@@ -678,6 +679,20 @@ public class MjPazuruQuestScene extends KeyListenScene
         	}
             
             if (layer == null) {
+                // 消滅判定
+                if (tempList.size() >= 3) {
+                	if (tempList.size() == 4) {
+                		cutInKan(); // TODO: ここはやめる
+                	}
+                	deleteList.addAll(tempList);
+                }
+                tempList = new ArrayList<PanelLayer>();
+                
+                currentType = 0;
+                currentTypeValue = 0;
+                check = 0;
+                checkDir = 1;
+                
             	continue;
             }
             int mjType = layer.getMjPanel().getType();
