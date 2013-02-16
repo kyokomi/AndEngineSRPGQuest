@@ -8,12 +8,13 @@ import java.util.Random;
 import org.andengine.engine.handler.timer.ITimerCallback;
 import org.andengine.engine.handler.timer.TimerHandler;
 import org.andengine.entity.IEntity;
+import org.andengine.entity.modifier.DelayModifier;
 import org.andengine.entity.modifier.IEntityModifier;
-import org.andengine.entity.modifier.IEntityModifier.IEntityModifierListener;
 import org.andengine.entity.modifier.AlphaModifier;
 import org.andengine.entity.modifier.MoveModifier;
 import org.andengine.entity.modifier.ParallelEntityModifier;
 import org.andengine.entity.modifier.ScaleModifier;
+import org.andengine.entity.modifier.SequenceEntityModifier;
 import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.Scene;
@@ -23,7 +24,6 @@ import org.andengine.util.color.Color;
 import org.andengine.util.modifier.IModifier;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
-import com.kyokomi.core.constants.SceneType;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.pazuruquest.layer.PanelLayer;
 
@@ -91,6 +91,9 @@ public class MjPazuruQuestScene extends KeyListenScene
 	private Rectangle mTouchBreakLayeer;
 	private Rectangle mBackgroundLayer;
 	
+	private Sprite mBackgroundSprite;
+	private Sprite mKanCutIn;
+	
 	// ----------------------------------------------------------------------------
 	private static final int PANEL_SIZE = 78;
 	private static final int PANEL_BASE_X = 10;
@@ -154,12 +157,12 @@ public class MjPazuruQuestScene extends KeyListenScene
 	// ------------------------------------------
 	// ゲーム関連
 	// ------------------------------------------
-	// 連鎖カウント
-	private int chainCount;
-	// スコア
-	private int score;
-	// タイムカウント
-	private int timeCount;
+//	// 連鎖カウント
+//	private int chainCount;
+//	// スコア
+//	private int score;
+//	// タイムカウント
+//	private int timeCount;
 	
 	private PanelLayer[][] panelMap;
 	
@@ -168,6 +171,17 @@ public class MjPazuruQuestScene extends KeyListenScene
 	
 	// ビューが表示される直前の初期化処理
 	private void viewWillAppear() {
+		mBackgroundSprite = getResourceSprite("mj_bk.jpg");
+		placeToCenter(mBackgroundSprite);
+		attachChild(mBackgroundSprite);
+		// カンのカットイン --------------------
+		mKanCutIn = getResourceSprite("cutin/cut_in_kan.jpg");
+		placeToCenter(mKanCutIn);
+		mKanCutIn.setZIndex(100);
+		mKanCutIn.setVisible(false);
+		attachChild(mKanCutIn);
+
+		// ----------------------------------------------
 		
 		panelMap = new PanelLayer[PANEL_COUNT_X][PANEL_COUNT_Y];
 		
@@ -195,8 +209,8 @@ public class MjPazuruQuestScene extends KeyListenScene
 		chegeState(PlayState.PlayStateChoose);
 	    
 	    isFinished = false;
-	    score = 0;
-	    timeCount = 60;
+//	    score = 0;
+//	    timeCount = 60;
 	    
 	    // Y方向とX方向6マスのパネル画像を設定
 	    for (int y = 0; y < PANEL_COUNT_Y; y++) {
@@ -209,6 +223,7 @@ public class MjPazuruQuestScene extends KeyListenScene
 	            panelMap[x][y] = layer;
 	        }
 	    }
+	    mBackgroundLayer.sortChildren();
 	    sortChildren();
 	    
 	    // TODO: プレイ時間
@@ -306,7 +321,7 @@ public class MjPazuruQuestScene extends KeyListenScene
         // ランダム値をもとにパネル画像を読み込む
         MjPanel mjPanel = MjPanel.get(dice);
         String layerName = mjPanel.getFileName();
-        Log.d(TAG, layerName);
+//        Log.d(TAG, layerName);
         Sprite imageSprite = getResourceSprite("mjpanel/" + layerName);
         imageSprite.setSize(PANEL_SIZE, PANEL_SIZE);
         layer.attachChild(imageSprite);
@@ -362,6 +377,7 @@ public class MjPazuruQuestScene extends KeyListenScene
 	    // 最初のパネルの選択
 	    if (mMovingLayer1 == null) {
 	    	mMovingLayer1 = layer;
+	    	mMovingLayer1.setAlpha(0.5f);
 	    }
 	}
 	
@@ -380,9 +396,9 @@ public class MjPazuruQuestScene extends KeyListenScene
 	    // タッチの座標を取得
  		float x = pSceneTouchEvent.getX();
  		float y = pSceneTouchEvent.getY();
-		float logX = getPanelToWindowX((int)x);
-		float logY = getPanelToWindowY((int)y);
-		Log.d(TAG, "move[" + logX + "][" + logY + "]");
+//		float logX = getPanelToWindowX((int)x);
+//		float logY = getPanelToWindowY((int)y);
+//		Log.d(TAG, "move[" + logX + "][" + logY + "]");
  		if (!mBackgroundLayer.contains(x, y)) {
  			return;
  		}
@@ -419,15 +435,8 @@ public class MjPazuruQuestScene extends KeyListenScene
 	    				panelMap[panelX][panelY] = mMovingLayer1;
 	    				temp.setPanelPoint(new Point(beforePanelX, beforePanelY));
 	    				panelMap[beforePanelX][beforePanelY] = temp;
-	    				
-	    				animationMovePanel(temp, beforeX, beforeY, new IEntityModifierListener() {
-							@Override
-							public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
-							}
-							@Override
-							public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
-							}
-						});
+	    				// 移動アニメーション
+	    				animationMovePanel(temp, beforeX, beforeY);
     				}    					
     			}
     		}
@@ -451,6 +460,8 @@ public class MjPazuruQuestScene extends KeyListenScene
 						float beforeX = getWindowToPanelX(beforePanelX);
 						float beforeY = getWindowToPanelY(beforePanelY);
 						mMovingLayer1.setPosition(beforeX, beforeY);
+				    	mMovingLayer1.setAlpha(1.0f);
+				    	mMovingLayer1.setScale(1.0f);
 						mMovingLayer1 = null;
 						finishChange();
 					}
@@ -459,20 +470,100 @@ public class MjPazuruQuestScene extends KeyListenScene
 	    }
 	}
 	
-	private void animationMovePanel(PanelLayer pLayer, float moveX, float moveY, 
-			IEntityModifierListener pIEntityModifierListener) {
-		pLayer.registerEntityModifier(new MoveModifier(0.1f, 
-				pLayer.getX(), moveX, 
-				pLayer.getY(), moveY, 
-				pIEntityModifierListener));
+	private void animationMovePanel(final PanelLayer pLayer, float moveX, float moveY) {
+		// どの方向に移動するか判定
+		int addMoveX = 0;
+		int addMoveY = 0;
+		
+		// X軸変化なし（Y移動）
+		if ((pLayer.getX() - moveX) == 0) {
+			// 上か下か
+			if ((pLayer.getY() - moveY) > 0) {
+				// 下
+				addMoveX = (PANEL_SIZE / 2) * -1;
+				addMoveY = (PANEL_SIZE / 2) * -1;
+			} else {
+				// 上
+				addMoveX = (PANEL_SIZE / 2);
+				addMoveY = (PANEL_SIZE / 2);				
+			}
+		// Y軸変換なし（X移動）
+		} else if ((pLayer.getY() - moveY) == 0) {
+			// 右か左か
+			if ((pLayer.getX() - moveX) > 0) {
+				// 右
+				addMoveX = (PANEL_SIZE / 2) * -1;
+				addMoveY = (PANEL_SIZE / 2);
+			} else {
+				// 左
+				addMoveX = (PANEL_SIZE / 2);
+				addMoveY = (PANEL_SIZE / 2) * -1;
+			}
+			
+		// XとY移動
+		} else {
+			// 右下
+			if ( (pLayer.getX() - moveX) > 0 && (pLayer.getY() - moveY) > 0) {
+				addMoveX = (PANEL_SIZE / 2);
+				addMoveY = (PANEL_SIZE / 2);
+			// 右上
+			} else if ((pLayer.getX() - moveX) > 0 && (pLayer.getY() - moveY) < 0) {
+				addMoveX = (PANEL_SIZE / 2);
+				addMoveY = (PANEL_SIZE / 2) * -1;
+			// 左上
+			} else if ((pLayer.getX() - moveX) < 0 && (pLayer.getY() - moveY) < 0) {
+				addMoveX = (PANEL_SIZE / 2) * -1;
+				addMoveY = (PANEL_SIZE / 2) * -1;
+			// 左下
+			} else if ((pLayer.getX() - moveX) < 0 && (pLayer.getY() - moveY) > 0) {
+				addMoveX = (PANEL_SIZE / 2) * -1;
+				addMoveY = (PANEL_SIZE / 2);
+			} else {
+				// 想定外というか異常系
+				Log.e(TAG, "move Direction Error");
+			}
+		}
+		
+		pLayer.registerEntityModifier(new SequenceEntityModifier(
+				// 経由位置
+				new MoveModifier(0.05f, 
+					pLayer.getX(), pLayer.getX() + addMoveX, 
+					pLayer.getY(), pLayer.getY() + addMoveY, 
+					new IEntityModifier.IEntityModifierListener() {
+						@Override
+						public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
+							pLayer.setZIndex(pLayer.getZIndex() + 1);
+							mBackgroundLayer.sortChildren();
+						}
+						@Override
+						public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+							
+						}
+				}),
+				// 最終目的位置
+				new MoveModifier(0.05f, 
+					pLayer.getX() + addMoveX, moveX, 
+					pLayer.getY() + addMoveY, moveY, 
+					new IEntityModifier.IEntityModifierListener() {
+						@Override
+						public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
+							
+						}
+						@Override
+						public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+							pLayer.setZIndex(pLayer.getZIndex() - 1);
+							mBackgroundLayer.sortChildren();
+						}
+				}))
+		);
 	}
 
 	// パネルを消せるか判定
 	private void finishChange() {
 		Log.d(TAG, "------ finishChange -----");
 		
-	    // 連鎖カウントを初期化
-	    chainCount = 0;
+//	    // 連鎖カウントを初期化
+//	    chainCount = 0;
 	    
 	    // パネル消去の判定
 	    if (!checkExplosion()) {
@@ -502,89 +593,13 @@ public class MjPazuruQuestScene extends KeyListenScene
 	    mDeleteLayers = new ArrayList<PanelLayer>();
 	    List<PanelLayer> tempList = new ArrayList<PanelLayer>();
 	    for (int y = 0; y < PANEL_COUNT_Y; y++) {
-	    	tempList = checkMjExplosion(1, y, PANEL_COUNT_X);
+	    	tempList = checkMjExplosion(CheckMJExplosionType.CHECK_X, y);
 	    	mDeleteLayers.addAll(tempList);
-//	    	int currentTypeValue = 0;
-//	        int currentType = 0;
-//	        int check = 1; // 1: 暗刻 2:順子
-//	        int checkDir = 1; // 1:左(上)から -1:右(下)から
-//	        
-//	        for (int x = 0; x < PANEL_COUNT_X; x++) {
-//	            PanelLayer layer = panelMap[x][y];
-//	            if (layer == null) {
-//	            	continue;
-//	            }
-//	            int mjType = layer.getMjPanel().getType();
-//	            int typeValue = layer.getMjPanel().getTypeValue();
-//	            // 同じのがあればリストに追加
-//	            if (check == 1 && mjType == currentType
-//	            		&& (currentTypeValue) == typeValue && tempList.size() < 3) {
-//	            	tempList.add(layer);
-//	            	
-//            	// 順子チェック対象判定
-//	            }else if (check == 1 
-//	            		&& tempList.size() == 1 
-//	            		&& mjType != 4 && mjType == currentType
-//	            		&& Math.abs(currentTypeValue - typeValue) == 1) {
-//	            	check = 2;
-//	            	checkDir = typeValue - currentTypeValue;
-//	            	tempList.add(layer);
-//	            	
-//	            } else if (check == 2 
-//	            		&& ((checkDir == 1 && (currentTypeValue + 1) == typeValue) || (checkDir == -1 && (currentTypeValue - 1) == typeValue))   
-//	            		&& mjType == currentType
-//	            		&& tempList.size() < 3) {
-//	            	tempList.add(layer);
-//	            	
-//	            } else {
-//	                check = 1;
-//	                checkDir = 1;
-//	                
-//	                // 消滅判定
-//	                if (tempList.size() >= 3) {
-//	                	mDeleteLayers.addAll(tempList);
-//	                }
-//	                tempList = new ArrayList<PanelLayer>();
-//	                tempList.add(layer);
-//	            }
-//                currentType = mjType;
-//                currentTypeValue = typeValue;
-//
-//	        }
-//	        // 消滅判定
-//            if (tempList.size() >= 3) {
-//            	mDeleteLayers.addAll(tempList);
-//            }
-//            tempList = new ArrayList<PanelLayer>();
 	    }
 	    
 	    for (int x = 0; x < PANEL_COUNT_X; x++) {
-	    	tempList = checkMjExplosion(2, x, PANEL_COUNT_Y);
+	    	tempList = checkMjExplosion(CheckMJExplosionType.CHECK_Y, x);
 	    	mDeleteLayers.addAll(tempList);
-//	    	String currentName = "";
-//	        for (int y = 0; y < PANEL_COUNT_Y; y++) {
-//	            PanelLayer layer = panelMap[x][y];
-//	            if (layer == null) {
-//	            	continue;
-//	            }
-//	            String layerName = layer.getName();
-//	            if (layerName.equals(currentName)) {
-//	            	tempList.add(layer);
-//	            } else {
-//	                currentName = layerName;
-//	                // 消滅判定
-//	                if (tempList.size() >= 3) {
-//	                	mDeleteLayers.addAll(tempList);
-//	                }
-//	                tempList = new ArrayList<PanelLayer>();
-//	                tempList.add(layer);
-//	            }
-//	        }
-//	        // 消滅判定
-//            if (tempList.size() >= 3) {
-//            	mDeleteLayers.addAll(tempList);
-//            }
-//            tempList = new ArrayList<PanelLayer>();
 	    }
 	    // 拡大と透明化のアニメーション
 	    for (PanelLayer layer : mDeleteLayers) {
@@ -632,7 +647,12 @@ public class MjPazuruQuestScene extends KeyListenScene
 	}
 	
 	
-	private List<PanelLayer> checkMjExplosion(int checkType, int i, int panelCount) {
+	public enum CheckMJExplosionType {
+		CHECK_X,
+		CHECK_Y,
+	}
+	
+	private List<PanelLayer> checkMjExplosion(CheckMJExplosionType checkType, int baseIdx) {
 		List<PanelLayer> tempList = new ArrayList<PanelLayer>();
 		List<PanelLayer> deleteList = new ArrayList<PanelLayer>();
 		
@@ -641,12 +661,20 @@ public class MjPazuruQuestScene extends KeyListenScene
         int check = 1; // 1: 暗刻 2:順子
         int checkDir = 1; // 1:左(上)から -1:右(下)から
         
-        for (int x = 0; x < panelCount; x++) {
+        int panelCount = 0;
+        if (checkType == CheckMJExplosionType.CHECK_X) {
+        	panelCount = PANEL_COUNT_X;
+        } else {
+        	panelCount = PANEL_COUNT_Y;
+        }
+        
+        for (int i = 0; i < panelCount; i++) {
+        	
             PanelLayer layer = null;
-        	if (checkType == 1) {
-        		layer = panelMap[x][i];
-        	} else {
-        		layer = panelMap[i][x];
+        	if (checkType == CheckMJExplosionType.CHECK_X) {
+        		layer = panelMap[i][baseIdx];
+        	} else if (checkType == CheckMJExplosionType.CHECK_Y) {
+        		layer = panelMap[baseIdx][i];
         	}
             
             if (layer == null) {
@@ -656,20 +684,25 @@ public class MjPazuruQuestScene extends KeyListenScene
             int typeValue = layer.getMjPanel().getTypeValue();
             // 同じのがあればリストに追加
             if (check == 1 && mjType == currentType
-            		&& (currentTypeValue) == typeValue && tempList.size() < 3) {
+            		&& (currentTypeValue) == typeValue && tempList.size() < 4) {
             	tempList.add(layer);
             	
         	// 順子チェック対象判定
             }else if (check == 1 
-            		&& tempList.size() == 1 
+            		&& (tempList.size() >= 1 && tempList.size() < 3)  
             		&& mjType != 4 && mjType == currentType
             		&& Math.abs(currentTypeValue - typeValue) == 1) {
             	check = 2;
             	checkDir = typeValue - currentTypeValue;
+            	
+            	List<PanelLayer> tempList2 = new ArrayList<PanelLayer>();
+            	tempList2.add(tempList.get(tempList.size() - 1)); // 最後の1件をとる
+            	tempList = tempList2;
             	tempList.add(layer);
             	
             } else if (check == 2 
-            		&& ((checkDir == 1 && (currentTypeValue + 1) == typeValue) || (checkDir == -1 && (currentTypeValue - 1) == typeValue))   
+            		&& ((checkDir == 1 
+            		&& (currentTypeValue + 1) == typeValue) || (checkDir == -1 && (currentTypeValue - 1) == typeValue))   
             		&& mjType == currentType
             		&& tempList.size() < 3) {
             	tempList.add(layer);
@@ -691,6 +724,9 @@ public class MjPazuruQuestScene extends KeyListenScene
                 
                 // 消滅判定
                 if (tempList.size() >= 3) {
+                	if (tempList.size() == 4) {
+                		cutInKan(); // TODO: ここはやめる
+                	}
                 	deleteList.addAll(tempList);
                 }
                 tempList = new ArrayList<PanelLayer>();
@@ -702,9 +738,30 @@ public class MjPazuruQuestScene extends KeyListenScene
         }
         // 消滅判定
         if (tempList.size() >= 3) {
+        	if (tempList.size() == 4) {
+        		cutInKan(); // TODO: ここはやめる
+        	}
         	deleteList.addAll(tempList);
         }
         return deleteList;
+	}
+	
+	private void cutInKan() {
+		sortChildren();
+    	// カンカットイン
+		mKanCutIn.setVisible(true);
+		mKanCutIn.registerEntityModifier(new SequenceEntityModifier(
+				new AlphaModifier(0.1f, 0.0f, 1.0f),
+				new DelayModifier(0.5f, new IEntityModifier.IEntityModifierListener() {
+					@Override
+					public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
+					}
+					
+					@Override
+					public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+						mKanCutIn.setVisible(false);
+					}
+				})));
 	}
 	/**
 	 * 消滅完了時の処理.
@@ -824,7 +881,7 @@ public class MjPazuruQuestScene extends KeyListenScene
                 	panelMap[panelX][panelY] = layer;
                 	
                 	// 落下アニメーション(0.25秒)                	
-    	            layer.registerEntityModifier(new MoveModifier(0.5f, startX, startX, startY, endY, 
+    	            layer.registerEntityModifier(new MoveModifier(0.25f, startX, startX, startY, endY, 
     	            		new IEntityModifier.IEntityModifierListener() {
     					@Override
     					public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
@@ -840,7 +897,7 @@ public class MjPazuruQuestScene extends KeyListenScene
 	    }
 	    
 	    if (hasAdded) {
-	    	registerUpdateHandler(new TimerHandler(1.0f, new ITimerCallback() {
+	    	registerUpdateHandler(new TimerHandler(0.5f, new ITimerCallback() {
 				@Override
 				public void onTimePassed(TimerHandler pTimerHandler) {
 			    	if (!checkExplosion()) {

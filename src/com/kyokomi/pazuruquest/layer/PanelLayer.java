@@ -48,4 +48,20 @@ public class PanelLayer extends Rectangle {
 	public void setMjPanel(MjPanel mjPanel) {
 		this.mjPanel = mjPanel;
 	}
+	
+	@Override
+	public void setZIndex(int pZIndex) {
+		super.setZIndex(pZIndex);
+		if (this.image != null) {
+			this.image.setZIndex(pZIndex);
+		}
+	}
+	
+	@Override
+	public void setAlpha(float pAlpha) {
+		super.setAlpha(pAlpha);
+		if (this.image != null) {
+			this.image.setAlpha(pAlpha);
+		}
+	}
 }
