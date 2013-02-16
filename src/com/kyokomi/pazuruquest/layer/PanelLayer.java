@@ -4,12 +4,15 @@ import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.opengl.vbo.VertexBufferObjectManager;
 
+import com.kyokomi.pazuruquest.scene.MjPazuruQuestScene.MjPanel;
+
 import android.graphics.Point;
 
 public class PanelLayer extends Rectangle {
 
 	private Sprite image;
 	private String name;
+	private MjPanel mjPanel;
 	private Point panelPoint;
 	
 	public PanelLayer(int pPanelPointX, int pPanelPointY, float pX, float pY, float pWidth, float pHeight,
@@ -38,5 +41,11 @@ public class PanelLayer extends Rectangle {
 	
 	public void setPanelPoint(Point panelPoint) {
 		this.panelPoint = panelPoint;
+	}
+	public MjPanel getMjPanel() {
+		return mjPanel;
+	}
+	public void setMjPanel(MjPanel mjPanel) {
+		this.mjPanel = mjPanel;
 	}
 }

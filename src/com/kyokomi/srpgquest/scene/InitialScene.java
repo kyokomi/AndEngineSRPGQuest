@@ -13,6 +13,7 @@ import org.andengine.util.modifier.ease.EaseBackInOut;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.scene.KeyListenScene;
+import com.kyokomi.pazuruquest.scene.MjPazuruQuestScene;
 import com.kyokomi.pazuruquest.scene.PazuruQuestScene;
 
 import android.view.KeyEvent;
@@ -165,7 +166,7 @@ public class InitialScene extends SrpgBaseScene implements ButtonSprite.OnClickL
 			showScene(new SandboxScene(getBaseActivity()));
 			break;
 		case INITIAL_FEEDBACK:
-			showScene(new PazuruQuestScene(getBaseActivity()));
+			showScene(new MjPazuruQuestScene(getBaseActivity()));
 			break;
 		case 4: // シナリオデータ読み込み
 			loadScenario();
