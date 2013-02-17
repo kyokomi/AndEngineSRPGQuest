@@ -297,11 +297,11 @@ public class MapBattleScene extends SrpgBaseScene
 	
 	/**
 	 * プレイヤーキャラ描画.
-	 * @param playerId
+	 * @param playerSeqNo
 	 * @param imageId
 	 * @param mapPoint
 	 */
-	public void createPlayerSprite(ActorPlayerDto playerActor, MapPoint mapPoint, float size) {
+	public void createPlayerSprite(int playerSeqNo, ActorPlayerDto playerActor, MapPoint mapPoint, float size) {
 		PlayerSprite player = new PlayerSprite(playerActor, this, 
 				0, 0, size, size, 1.0f,
 				getBaseActivity().getVertexBufferObjectManager());
@@ -311,7 +311,7 @@ public class MapBattleScene extends SrpgBaseScene
 		player.setPlayerSize(mapPoint.getGridSize(), mapPoint.getGridSize());
 		player.setZIndex(LayerZIndex.ACTOR_LAYER.getValue());
 		attachChild(player);
-		players.put(playerActor.getPlayerId(), player);
+		players.put(playerSeqNo, player);
 		
 		PlayerStatusRectangle playerStatusRect = initStatusWindow(player, 0);
 		playerStatusRect.setZIndex(LayerZIndex.POPUP_LAYER.getValue());
@@ -320,11 +320,12 @@ public class MapBattleScene extends SrpgBaseScene
 	}
 	/**
 	 * 敵キャラ描画.
-	 * @param enemyId
-	 * @param imageId
+	 * @param enemySeqNo
+	 * @param enemyActor
 	 * @param mapPoint
+	 * @param size
 	 */
-	public void createEnemySprite(ActorPlayerDto enemyActor, MapPoint mapPoint, float size) {
+	public void createEnemySprite(int enemySeqNo, ActorPlayerDto enemyActor, MapPoint mapPoint, float size) {
 		PlayerSprite enemy = new PlayerSprite(enemyActor, this, 
 				0, 0, size, size, 1.0f,
 				getBaseActivity().getVertexBufferObjectManager());
@@ -334,7 +335,7 @@ public class MapBattleScene extends SrpgBaseScene
 		enemy.setPlayerSize(mapPoint.getGridSize(), mapPoint.getGridSize());
 		enemy.setZIndex(LayerZIndex.ACTOR_LAYER.getValue());
 		attachChild(enemy);
-		enemys.put(enemyActor.getPlayerId(), enemy);
+		enemys.put(enemySeqNo, enemy);
 		
 		PlayerStatusRectangle enemyStatusRect = initStatusWindow(enemy, 0);
 		enemyStatusRect.setZIndex(LayerZIndex.POPUP_LAYER.getValue());
@@ -378,32 +379,32 @@ public class MapBattleScene extends SrpgBaseScene
 	
 	/**
 	 * プレイヤーステータス更新.
-	 * @param playerId
+	 * @param playerSeqNo
 	 */
-	public void refreshPlayerStatusWindow(int playerId) {
-		PlayerSprite player = players.get(playerId);
+	public void refreshPlayerStatusWindow(int playerSeqNo) {
+		PlayerSprite player = players.get(playerSeqNo);
 		player.getPlayerStatusRectangle().refresh();
 	}
 	/**
 	 * 敵ステータス更新.
-	 * @param enemyId
+	 * @param enemySeqNo
 	 */
-	public void refreshEnemyStatusWindow(int enemyId) {
-		PlayerSprite enemy = enemys.get(enemyId);
+	public void refreshEnemyStatusWindow(int enemySeqNo) {
+		PlayerSprite enemy = enemys.get(enemySeqNo);
 		enemy.getPlayerStatusRectangle().refresh();
 	}
 	/**
 	 * プレイヤーキャラ消去.
-	 * @param playerId
+	 * @param playerSeqNo
 	 */
-	public void removePlayer(final int playerId) {
+	public void removePlayer(final int playerSeqNo) {
 		// 別スレッドで削除
 		getBaseActivity().runOnUpdateThread(new Runnable() {
 			@Override
 			public void run() {
-				PlayerSprite player = players.get(playerId);
+				PlayerSprite player = players.get(playerSeqNo);
 				player.detachSelf();
-				players.remove(playerId);
+				players.remove(playerSeqNo);
 			}
 		});
 	}
@@ -506,12 +507,12 @@ public class MapBattleScene extends SrpgBaseScene
 	// ----------------- アニメーション　演出 -------------------
 	/**
 	 * プレイヤー移動アニメーション.
-	 * @param playerId
+	 * @param playerSeqNo
 	 * @param moveMapPointList
 	 */
-	public void movePlayerAnimation(int playerId, List<MapPoint> moveMapPointList, 
+	public void movePlayerAnimation(int playerSeqNo, List<MapPoint> moveMapPointList, 
 			final IAnimationCallback animationCallback) {
-		PlayerSprite playerSprite = players.get(playerId);
+		PlayerSprite playerSprite = players.get(playerSeqNo);
 		playerSprite.move(1.0f, moveMapPointList, new IEntityModifier.IEntityModifierListener() {
 			@Override
 			public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
@@ -525,12 +526,12 @@ public class MapBattleScene extends SrpgBaseScene
 	}
 	/**
 	 * 敵移動アニメーション.
-	 * @param playerId
+	 * @param enemySeqNo
 	 * @param moveMapPointList
 	 */
-	public void moveEnemyAnimation(int enemyId, List<MapPoint> moveMapPointList, 
+	public void moveEnemyAnimation(int enemySeqNo, List<MapPoint> moveMapPointList, 
 			final IAnimationCallback animationCallback) {
-		PlayerSprite enemySprite = enemys.get(enemyId);
+		PlayerSprite enemySprite = enemys.get(enemySeqNo);
 		enemySprite.move(1.0f, moveMapPointList, new IEntityModifier.IEntityModifierListener() {
 			@Override
 			public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
@@ -544,35 +545,35 @@ public class MapBattleScene extends SrpgBaseScene
 	}
 	/**
 	 * プレイヤー歩行スタート.
-	 * @param playerId
+	 * @param playerSeqNo
 	 */
-	public void startWalkingPlayerAnimation(int playerId) {
-		PlayerSprite playerSprite = players.get(playerId);
+	public void startWalkingPlayerAnimation(int playerSeqNo) {
+		PlayerSprite playerSprite = players.get(playerSeqNo);
 		playerSprite.setPlayerToDefaultPosition();
 	}
 	/**
 	 * プレイヤー歩行停止.
-	 * @param playerId
+	 * @param playerSeqNo
 	 */
-	public void stopWalkingPlayerAnimation(int playerId) {
-		PlayerSprite playerSprite = players.get(playerId);
+	public void stopWalkingPlayerAnimation(int playerSeqNo) {
+		PlayerSprite playerSprite = players.get(playerSeqNo);
 		playerSprite.setPlayerToDefaultPositionStop();
 	}
 
 	/**
 	 * エネミー歩行スタート.
-	 * @param enemyId
+	 * @param enemySeqNo
 	 */
-	public void startWalkingEnemyAnimation(int enemyId) {
-		PlayerSprite enemySprite = enemys.get(enemyId);
+	public void startWalkingEnemyAnimation(int enemySeqNo) {
+		PlayerSprite enemySprite = enemys.get(enemySeqNo);
 		enemySprite.setPlayerToDefaultPosition();
 	}
 	/**
 	 * エネミー歩行停止.
-	 * @param enemyId
+	 * @param enemySeqNo
 	 */
-	public void stopWalkingEnemyAnimation(int enemyId) {
-		PlayerSprite enemySprite = enemys.get(enemyId);
+	public void stopWalkingEnemyAnimation(int enemySeqNo) {
+		PlayerSprite enemySprite = enemys.get(enemySeqNo);
 		enemySprite.setPlayerToDefaultPositionStop();
 	}
 	
@@ -666,7 +667,7 @@ public class MapBattleScene extends SrpgBaseScene
 	}
 	
 	// --------------- ステータスウィンドウ --------------
-	public void showPlayerStatusWindow(int playerId, float x) {
+	public void showPlayerStatusWindow(int playerSeqNo, float x) {
 		if (mPlayerStatusRect != null) {
 			detachChild(mPlayerStatusRect);
 		}
@@ -675,7 +676,7 @@ public class MapBattleScene extends SrpgBaseScene
 		if (mEnemyStatusRect != null && mEnemyStatusRect.isVisible()) {
 			y = mEnemyStatusRect.getY() + mEnemyStatusRect.getHeight();
 		}
-		mPlayerStatusRect = players.get(playerId).getPlayerStatusRectangle();
+		mPlayerStatusRect = players.get(playerSeqNo).getPlayerStatusRectangle();
 		if (mPlayerStatusRect != null) {
 			mPlayerStatusRect.setVisible(true);
 			mPlayerStatusRect.setX(x);
@@ -684,7 +685,7 @@ public class MapBattleScene extends SrpgBaseScene
 		}
 		sortChildren();
 	}
-	public void showEnemyStatusWindow(int enemyId) {
+	public void showEnemyStatusWindow(int enemySeqNo) {
 		if (mEnemyStatusRect != null) {
 			detachChild(mEnemyStatusRect);
 		}
@@ -693,7 +694,7 @@ public class MapBattleScene extends SrpgBaseScene
 		if (mPlayerStatusRect != null && mPlayerStatusRect.isVisible()) {
 			y = mPlayerStatusRect.getY() + mPlayerStatusRect.getHeight();
 		}
-		mEnemyStatusRect = enemys.get(enemyId).getPlayerStatusRectangle();
+		mEnemyStatusRect = enemys.get(enemySeqNo).getPlayerStatusRectangle();
 		if (mEnemyStatusRect != null) {
 			mEnemyStatusRect.setVisible(true);
 			mEnemyStatusRect.setY(y);

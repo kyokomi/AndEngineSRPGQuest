@@ -77,8 +77,8 @@ public class MapManager {
 	 * @param mapPointY
 	 * @param actorPlayer
 	 */
-	public void addPlayer(int mapPointX, int mapPointY, ActorPlayerDto actorPlayer) {
-		addActor(MapDataType.PLAYER, mapPointX, mapPointY, actorPlayer);
+	public void addPlayer(int seqNo, int mapPointX, int mapPointY, ActorPlayerDto actorPlayer) {
+		addActor(MapDataType.PLAYER, seqNo, mapPointX, mapPointY, actorPlayer);
 	}
 	
 	/**
@@ -87,8 +87,8 @@ public class MapManager {
 	 * @param mapPointY
 	 * @param actorPlayer
 	 */
-	public void addEnemy(int mapPointX, int mapPointY, ActorPlayerDto actorPlayer) {
-		addActor(MapDataType.ENEMY, mapPointX, mapPointY, actorPlayer);
+	public void addEnemy(int seqNo, int mapPointX, int mapPointY, ActorPlayerDto actorPlayer) {
+		addActor(MapDataType.ENEMY, seqNo, mapPointX, mapPointY, actorPlayer);
 	}
 	
 	/**
@@ -114,9 +114,9 @@ public class MapManager {
 	 * @param mapPointY
 	 * @param actorPlayer
 	 */
-	private void addActor(MapDataType mapDataType, int mapPointX, int mapPointY, ActorPlayerDto actorPlayer) {
+	private void addActor(MapDataType mapDataType, int seqNo, int mapPointX, int mapPointY, ActorPlayerDto actorPlayer) {
 		ActorPlayerMapItem playerMapItem = new ActorPlayerMapItem();
-		playerMapItem.setPlayerId(actorPlayer.getPlayerId());
+		playerMapItem.setSeqNo(seqNo);
 		playerMapItem.setAttackDist(actorPlayer.getAttackRange());
 		playerMapItem.setMoveDist(actorPlayer.getMovePoint());
 		
@@ -607,11 +607,11 @@ public class MapManager {
 	// 汎用
 	// ----------------------------------------------------------
 	
-	public ActorPlayerMapItem getPlayerIdToActorMapItem(int playerId, MapDataType mapDataType) {
+	public ActorPlayerMapItem getSeqNoToActorMapItem(int seqNo, MapDataType mapDataType) {
 		List<MapItem> actorList = mMapItemManager.getObjectMapItemList(mapDataType);
 		for (MapItem actor : actorList) {
 			if (actor.getMapDataType() == mapDataType && actor instanceof ActorPlayerMapItem) {
-				if (((ActorPlayerMapItem) actor).getPlayerId() == playerId) {
+				if (((ActorPlayerMapItem) actor).getSeqNo() == seqNo) {
 					return (ActorPlayerMapItem) actor;
 				}
 			}
@@ -631,10 +631,10 @@ public class MapManager {
 		return null;
 	}
 	
-	public int getMapPointToActorPlayerId(MapPoint mapPoint) {
+	public int getMapPointToActorSeqNo(MapPoint mapPoint) {
 		ActorPlayerMapItem actorPlayerMapItem = getMapPointToActorPlayer(mapPoint);
 		if (actorPlayerMapItem != null) {
-			return actorPlayerMapItem.getPlayerId();
+			return actorPlayerMapItem.getSeqNo();
 		}
 		return 0;
 	}

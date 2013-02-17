@@ -29,19 +29,19 @@ public class GameController {
 	 */
 	public void start(MultiSceneActivity pBaseActivity) {
 		pBaseActivity.openDB();
-		
-		tSaveDataEntity = new TSaveDataEntity();
-		tSaveDataEntity.setSaveId(START_SAVE_ID);
+
 		// ID1のシナリオから始める
 		MScenarioDao mScenarioDao = new MScenarioDao();
 		MScenarioEntity mScenarioEntity = mScenarioDao.selectById(pBaseActivity.getDB(), 1);
-		tSaveDataEntity.setScenariNo(mScenarioEntity.getScenarioNo());
-		tSaveDataEntity.setSeqNo(mScenarioEntity.getSeqNo());
 		
 		// すでに存在すればUpdateし、存在しない場合はInsertする
 		if (load(pBaseActivity)) {
 			save(pBaseActivity, mScenarioEntity);
 		} else {
+			tSaveDataEntity = new TSaveDataEntity();
+			tSaveDataEntity.setSaveId(START_SAVE_ID);
+			tSaveDataEntity.setScenariNo(mScenarioEntity.getScenarioNo());
+			tSaveDataEntity.setSeqNo(mScenarioEntity.getSeqNo());
 			tSaveDataDao.insert(pBaseActivity.getDB(), tSaveDataEntity);
 		}
 		
