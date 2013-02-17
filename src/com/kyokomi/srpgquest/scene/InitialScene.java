@@ -137,7 +137,7 @@ public class InitialScene extends SrpgBaseScene implements ButtonSprite.OnClickL
 	 */
 	@Override
 	public void onPause() {
-		if (titleBGM != null && titleBGM.isPlaying()) {
+		if (titleBGM != null && !titleBGM.isReleased() && titleBGM.isPlaying()) {
 			titleBGM.pause();
 		}
 	}
