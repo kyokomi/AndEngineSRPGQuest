@@ -38,8 +38,12 @@ public class GameController {
 		tSaveDataEntity.setScenariNo(mScenarioEntity.getScenarioNo());
 		tSaveDataEntity.setSeqNo(mScenarioEntity.getSeqNo());
 		
-		// Insertする
-		tSaveDataDao.insert(pBaseActivity.getDB(), tSaveDataEntity);
+		// すでに存在すればUpdateし、存在しない場合はInsertする
+		if (load(pBaseActivity)) {
+			save(pBaseActivity, mScenarioEntity);
+		} else {
+			tSaveDataDao.insert(pBaseActivity.getDB(), tSaveDataEntity);
+		}
 		
 		pBaseActivity.closeDB();
 	}
@@ -63,8 +67,9 @@ public class GameController {
 		pBaseActivity.openDB();
 		// Updateする
 		long count = tSaveDataDao.update(pBaseActivity.getDB(), saveDataEntity);
-		if (count == 1) {
+		if (count != 1) {
 			Log.e("Save", "save error");
+			return false;
 		}
 		pBaseActivity.closeDB();
 		return true;

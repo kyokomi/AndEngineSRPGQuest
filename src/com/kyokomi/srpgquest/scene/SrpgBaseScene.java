@@ -67,7 +67,6 @@ public abstract class SrpgBaseScene extends KeyListenScene {
 	}
 	
 	// ----- DB ------
-//	private SQLiteDatabase mDB;
 	private MScenarioDao mScenarioDao;
 	
 	// ----- SE, BGM -----
@@ -182,25 +181,8 @@ public abstract class SrpgBaseScene extends KeyListenScene {
 	private void initDB() {
 		 mScenarioDao = new MScenarioDao();
 	}
-//	private void openDB() {
-//		if (mDB == null || !mDB.isOpen()) {
-//			mDB = getBaseActivity().getBaseDBOpenHelper().getWritableDatabase();
-//		}
-//	}
-//	public void closeDB() {
-//		if (mDB != null && mDB.isOpen()) {
-//			mDB.close();
-//		}
-//	}
-//	public SQLiteDatabase getDB() {
-//		if (mDB == null || !mDB.isOpen()) {
-//			openDB();
-//		}
-//		return mDB;
-//	}
 	
 	// ------------------ シナリオ ----------------------
-	// TODO: logicクラスにしてもいいかも？
 	
 	// 現在のセーブをロードしシナリオを読み込む
 	public void loadScenario() {

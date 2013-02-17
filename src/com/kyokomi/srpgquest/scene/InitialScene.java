@@ -114,6 +114,15 @@ public class InitialScene extends SrpgBaseScene
 		btnNovel.setOnClickListener(this);
 		attachChild(btnNovel);
 		registerTouchArea(btnNovel);
+
+		ButtonSprite btnNewGame = getBaseActivity().getResourceUtil().getButtonSprite(
+				"instruction_btn.png", 
+				"instruction_btn_p.png");
+		placeToCenterX(btnNewGame, 320);
+		btnNewGame.setTag(5);
+		btnNewGame.setOnClickListener(this);
+		attachChild(btnNewGame);
+		registerTouchArea(btnNewGame);
 		
 		// Sceneのタッチリスナーを登録
 		setOnSceneTouchListener(this);
@@ -176,6 +185,10 @@ public class InitialScene extends SrpgBaseScene
 			showScene(new MjPazuruQuestScene(getBaseActivity()));
 			break;
 		case 4: // シナリオデータ読み込み
+			loadScenario();
+			break;
+		case 5: // NewGame
+			getBaseActivity().getGameController().start(getBaseActivity());
 			loadScenario();
 			break;
 		}	
