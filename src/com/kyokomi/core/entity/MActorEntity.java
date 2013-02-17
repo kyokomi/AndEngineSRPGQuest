@@ -57,4 +57,9 @@ public class MActorEntity implements IDatabaseEntity {
 		// マスターはupdateもinsertもしないから不要
 		return null;
 	}
+	
+	@Override
+	public int getId() {
+		return getActorId();
+	}
 }

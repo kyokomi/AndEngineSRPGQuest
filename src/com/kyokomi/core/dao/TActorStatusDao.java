@@ -15,7 +15,7 @@ public class TActorStatusDao extends AGameBaseDao<TActorStatusEntity> {
 	}
 	
 	@Override
-	protected String getDataBaseName() {
+	protected String getDatabaseTableName() {
 		return TBL_NAME;
 	}
 

@@ -239,6 +239,9 @@ public abstract class SrpgBaseScene extends KeyListenScene {
 			getBaseActivity().backToInitial();
 			return;
 		}
+		// セーブ
+		getBaseActivity().getGameController().save(getBaseActivity(), mScenarioEntity);
+		
 		Log.d("SRPGBaseScene", "ditactionScene " + mScenarioEntity.getSceneType());
 		switch (mScenarioEntity.getSceneType()) {
 		case SCENE_TYPE_MAP:

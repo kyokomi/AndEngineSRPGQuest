@@ -112,4 +112,9 @@ public class TActorStatusEntity implements IDatabaseEntity {
 //		return values;
 		return null;
 	}
+	
+	@Override
+	public int getId() {
+		return getActorId();
+	}
 }

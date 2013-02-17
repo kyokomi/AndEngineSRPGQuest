@@ -46,24 +46,6 @@ import com.kyokomi.srpgquest.GameController;
  */
 public abstract class MultiSceneActivity extends SimpleLayoutGameActivity {
 	
-	private SQLiteDatabase mDB;
-	public void openDB() {
-		if (mDB == null || !mDB.isOpen()) {
-			mDB = getBaseDBOpenHelper().getWritableDatabase();
-		}
-	}
-	public void closeDB() {
-		if (mDB != null && mDB.isOpen()) {
-			mDB.close();
-		}
-	}
-	public SQLiteDatabase getDB() {
-		if (mDB == null || !mDB.isOpen()) {
-			openDB();
-		}
-		return mDB;
-	}
-	
 	/** ゲーム制御用. */
 	private GameController mGameController;
 	public GameController getGameController() {
@@ -132,5 +114,22 @@ public abstract class MultiSceneActivity extends SimpleLayoutGameActivity {
 	}
 	public void initBaseDB() {
 		this.mBaseDBOpenHelper = new GameBaseDBOpenHelper(this);
+	}
+	private SQLiteDatabase mDB;
+	public void openDB() {
+		if (mDB == null || !mDB.isOpen()) {
+			mDB = getBaseDBOpenHelper().getWritableDatabase();
+		}
+	}
+	public void closeDB() {
+		if (mDB != null && mDB.isOpen()) {
+			mDB.close();
+		}
+	}
+	public SQLiteDatabase getDB() {
+		if (mDB == null || !mDB.isOpen()) {
+			openDB();
+		}
+		return mDB;
 	}
 }

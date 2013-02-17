@@ -11,7 +11,7 @@ import android.database.sqlite.SQLiteDatabase;
 
 public abstract class AGameBaseDao<T extends IDatabaseEntity> {
 
-	protected abstract String getDataBaseName();
+	protected abstract String getDatabaseTableName();
 	
 	protected abstract Class<T> getDtoClass();
 	
@@ -26,7 +26,7 @@ public abstract class AGameBaseDao<T extends IDatabaseEntity> {
 		String groupBy, String having, String orderBy, String limit) {
 		
 		Cursor cursor = pSqLiteDatabase.query(
-				getDataBaseName(), columns, selection, selectionArgs, groupBy, having, orderBy);
+				getDatabaseTableName(), columns, selection, selectionArgs, groupBy, having, orderBy);
 		List<T> dtos = new ArrayList<T>();
 		while (cursor.moveToNext()) {
 			try {
@@ -56,7 +56,12 @@ public abstract class AGameBaseDao<T extends IDatabaseEntity> {
 	}
 	
 	public long insert(SQLiteDatabase pSqLiteDatabase, T entity) {
-		return pSqLiteDatabase.insert(getDataBaseName(), null, entity.createContentValues());		
+		return pSqLiteDatabase.insert(getDatabaseTableName(), null, entity.createContentValues());		
 	}
 
+	public long update(SQLiteDatabase pSqLiteDatabase, T entity) {
+		String where = "_id = ?";
+		String[] whereArgs = {String.valueOf(entity.getId())};
+		return pSqLiteDatabase.update(getDatabaseTableName(), entity.createContentValues(), where, whereArgs);
+	}
 }

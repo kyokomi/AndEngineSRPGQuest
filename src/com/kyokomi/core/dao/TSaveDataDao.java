@@ -11,7 +11,7 @@ public class TSaveDataDao extends AGameBaseDao<TSaveDataEntity> {
 	}
 	
 	@Override
-	protected String getDataBaseName() {
+	protected String getDatabaseTableName() {
 		return TBL_NAME;
 	}
 

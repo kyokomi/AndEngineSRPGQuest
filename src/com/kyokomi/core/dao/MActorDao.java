@@ -15,7 +15,7 @@ public class MActorDao extends AGameBaseDao<MActorEntity> {
 	}
 	
 	@Override
-	protected String getDataBaseName() {
+	protected String getDatabaseTableName() {
 		return TBL_NAME;
 	}
 

@@ -1,5 +1,7 @@
 package com.kyokomi.srpgquest;
 
+import android.util.Log;
+
 import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.dao.MScenarioDao;
 import com.kyokomi.core.dao.TSaveDataDao;
@@ -47,8 +49,24 @@ public class GameController {
 	 * @param pBaseActivity
 	 * @return
 	 */
-	public boolean save(MultiSceneActivity pBaseActivity) {
+	public boolean save(MultiSceneActivity pBaseActivity, MScenarioEntity pScenarioEntity) {
+		tSaveDataEntity.setScenariNo(pScenarioEntity.getScenarioNo());
+		tSaveDataEntity.setSeqNo(pScenarioEntity.getSeqNo());
+		return save(pBaseActivity, tSaveDataEntity);
+	}
+	/**
+	 * SaveGame
+	 * @param pBaseActivity
+	 * @return
+	 */
+	private boolean save(MultiSceneActivity pBaseActivity, TSaveDataEntity saveDataEntity) {
+		pBaseActivity.openDB();
 		// Updateする
+		long count = tSaveDataDao.update(pBaseActivity.getDB(), saveDataEntity);
+		if (count == 1) {
+			Log.e("Save", "save error");
+		}
+		pBaseActivity.closeDB();
 		return true;
 	}
 	
@@ -58,7 +76,9 @@ public class GameController {
 	 * @return
 	 */
 	public boolean load(MultiSceneActivity pBaseActivity) {
+		pBaseActivity.openDB();
 		tSaveDataEntity = tSaveDataDao.selectById(pBaseActivity.getDB(), START_SAVE_ID);
+		pBaseActivity.closeDB();
 		if (tSaveDataEntity == null) {
 			return false;
 		}

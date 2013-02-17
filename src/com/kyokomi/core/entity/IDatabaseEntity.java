@@ -8,4 +8,6 @@ public interface IDatabaseEntity {
 	public void initCursor(Cursor pCursor);
 	
 	public ContentValues createContentValues();
+	
+	public int getId();
 }

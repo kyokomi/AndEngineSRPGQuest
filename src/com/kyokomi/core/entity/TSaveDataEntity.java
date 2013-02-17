@@ -43,9 +43,14 @@ public class TSaveDataEntity implements IDatabaseEntity {
 	@Override
 	public ContentValues createContentValues() {
 		ContentValues values = new ContentValues();
-		values.put("SAVE_ID", saveId);
+		values.put("_ID", saveId);
 		values.put("SCENARIO_NO", scenariNo);
 		values.put("SEQ_NO", seqNo);
 		return values;
+	}
+	
+	@Override
+	public int getId() {
+		return getSaveId();
 	}
 }

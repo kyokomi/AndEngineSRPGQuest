@@ -11,7 +11,7 @@ import com.kyokomi.core.constants.SceneType;
  *
  */
 public class MScenarioEntity implements IDatabaseEntity {
-	private Integer id;
+	private Integer scenarioId;
 	private Integer scenarioNo;
 	private Integer seqNo;
 	private Integer sceneType;
@@ -26,18 +26,18 @@ public class MScenarioEntity implements IDatabaseEntity {
 	}
 	@Override
 	public void initCursor(Cursor pCursor) {
-		this.id            = pCursor.getInt(0);
+		this.scenarioId    = pCursor.getInt(0);
 		this.scenarioNo    = pCursor.getInt(1);
 		this.seqNo         = pCursor.getInt(2);
 		this.sceneType     = pCursor.getInt(3);
 		this.sceneId       = pCursor.getInt(4);
 		this.scenarioTitle = pCursor.getString(5);
 	}
-	public Integer getId() {
-		return id;
+	public Integer getScenarioId() {
+		return scenarioId;
 	}
-	public void setId(Integer id) {
-		this.id = id;
+	public void setScenarioId(Integer scenarioId) {
+		this.scenarioId = scenarioId;
 	}
 	public Integer getScenarioNo() {
 		return scenarioNo;
@@ -77,5 +77,9 @@ public class MScenarioEntity implements IDatabaseEntity {
 	public ContentValues createContentValues() {
 		// マスターはupdateもinsertもしないから不要
 		return null;
+	}
+	@Override
+	public int getId() {
+		return getScenarioId();
 	}
 }
