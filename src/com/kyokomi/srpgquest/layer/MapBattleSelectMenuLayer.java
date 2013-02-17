@@ -11,10 +11,10 @@ import com.kyokomi.srpgquest.scene.SrpgBaseScene;
 
 public class MapBattleSelectMenuLayer {
 	public enum SelectMenuType {
-		SELECT_MENU_ATTACK_TYPE(1, "attack_btn.gif", "attack_btn_p.gif"),
-		SELECT_MENU_MOVE_TYPE(2, "move_btn.gif", "move_btn_p.gif"),
-		SELECT_MENU_WAIT_TYPE(3, "wait_btn.gif", "wait_btn_p.gif"),
-		SELECT_MENU_CANCEL_TYPE(4, "cancel_btn.gif", "cancel_btn_p.gif"),
+		SELECT_MENU_ATTACK_TYPE(1, "btn/attack_btn.gif", "btn/attack_btn_p.gif"),
+		SELECT_MENU_MOVE_TYPE(2,   "btn/move_btn.gif",   "btn/move_btn_p.gif"),
+		SELECT_MENU_WAIT_TYPE(3,   "btn/wait_btn.gif",   "btn/wait_btn_p.gif"),
+		SELECT_MENU_CANCEL_TYPE(4, "btn/cancel_btn.gif", "btn/cancel_btn_p.gif"),
 		;
 		private Integer value;
 		private String normalFileName;

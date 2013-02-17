@@ -46,7 +46,7 @@ public class InitialScene extends SrpgBaseScene
 	@Override
 	public void init() {
 		Sprite bg = getBaseActivity().getResourceUtil().getSprite(
-				"bg_jan.jpg");
+				"bk/bg_jan.jpg");
 		bg.setPosition(0, 0);
 		bg.setSize(getWindowWidth(), getWindowHeight());
 		attachChild(bg);
@@ -71,8 +71,8 @@ public class InitialScene extends SrpgBaseScene
 //						EaseBackInOut.getInstance())));
 		
 		ButtonSprite btnSandBox = getBaseActivity().getResourceUtil().getButtonSprite(
-				"initial_btn_01.png", 
-				"initial_btn_01_p.png");
+				"menu/initial_btn_01.png", 
+				"menu/initial_btn_01_p.png");
 		placeToCenterX(btnSandBox, 110);
 		btnSandBox.setY(btnSandBox.getY() + 400);
 		btnSandBox.setTag(INITIAL_RANKING);
@@ -89,8 +89,8 @@ public class InitialScene extends SrpgBaseScene
 						EaseBackInOut.getInstance())));
 		
 		ButtonSprite btnPazuru = getBaseActivity().getResourceUtil().getButtonSprite(
-				"initial_btn_01.png", 
-				"initial_btn_01_p.png");
+				"menu/initial_btn_01.png", 
+				"menu/initial_btn_01_p.png");
 		placeToCenterX(btnPazuru, 180);
 		btnPazuru.setY(btnPazuru.getY() + 400);
 		btnPazuru.setTag(INITIAL_FEEDBACK);
@@ -107,8 +107,8 @@ public class InitialScene extends SrpgBaseScene
 						EaseBackInOut.getInstance())));
 
 		ButtonSprite btnNovel = getBaseActivity().getResourceUtil().getButtonSprite(
-				"initial_btn_01.png", 
-				"initial_btn_01_p.png");
+				"menu/initial_btn_01.png", 
+				"menu/initial_btn_01_p.png");
 		placeToCenterX(btnNovel, 250);
 		btnNovel.setTag(4);
 		btnNovel.setOnClickListener(this);
@@ -116,8 +116,8 @@ public class InitialScene extends SrpgBaseScene
 		registerTouchArea(btnNovel);
 
 		ButtonSprite btnNewGame = getBaseActivity().getResourceUtil().getButtonSprite(
-				"instruction_btn.png", 
-				"instruction_btn_p.png");
+				"menu/instruction_btn.png", 
+				"menu/instruction_btn_p.png");
 		placeToCenterX(btnNewGame, 320);
 		btnNewGame.setTag(5);
 		btnNewGame.setOnClickListener(this);

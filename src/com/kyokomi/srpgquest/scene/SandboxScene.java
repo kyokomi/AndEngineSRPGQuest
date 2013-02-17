@@ -41,9 +41,11 @@ import android.util.SparseArray;
 import android.view.KeyEvent;
 import android.widget.Toast;
 
+@SuppressWarnings("deprecation")
 public class SandboxScene extends SrpgBaseScene 
 	implements IOnSceneTouchListener{
 	
+
 	private PlayerSprite player;
 	private PlayerSprite enemy;
 	private PlayerStatusRectangle mPlayerStatusRectangle;
@@ -91,7 +93,7 @@ public class SandboxScene extends SrpgBaseScene
 	@Override
 	public void init() {
 		testShowGrid();
-		testBtnCreate();
+//		testBtnCreate();
 		
 		float scale = 2.0f;
 		

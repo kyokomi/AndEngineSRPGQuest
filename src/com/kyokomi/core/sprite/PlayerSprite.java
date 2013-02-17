@@ -24,6 +24,11 @@ import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.srpgquest.map.common.MapPoint;
 import com.kyokomi.srpgquest.scene.SrpgBaseScene;
 
+/**
+ * @deprecated ActorSpriteを使いましょう
+ * @author kyokomi
+ *
+ */
 public class PlayerSprite extends Rectangle {
 	
 	private ActorPlayerDto mActorPlayer;
@@ -102,7 +107,7 @@ public class PlayerSprite extends Rectangle {
 	}
 	
 	public String getFaceFileName() {
-		String baseFileName = "actor" + mActorPlayer.getImageResId();
+		String baseFileName = "actor/actor" + mActorPlayer.getImageResId();
 		return baseFileName + "_f.png";
 	}
 	
@@ -111,7 +116,7 @@ public class PlayerSprite extends Rectangle {
 	private void playerSpriteInit(KeyListenScene baseScene, float x, float y, float scale) {
 		
 		// playerキャラを追加 攻撃と防御のスプライトもセットで読み込んでおく
-		String baseFileName = "actor" + mActorPlayer.getImageResId();
+		String baseFileName = "actor/actor" + mActorPlayer.getImageResId();
 		player        = baseScene.getResourceAnimatedSprite(baseFileName + "_0_s.png", 3, 4);
 //		playerDefense = baseScene.getResourceAnimatedSprite(baseFileName + "_2_s.png", 3, 4);
 //		playerAttack  = baseScene.getResourceAnimatedSprite(baseFileName + "_3_s.png", 3, 4);

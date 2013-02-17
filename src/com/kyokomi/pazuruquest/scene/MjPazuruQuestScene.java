@@ -171,7 +171,7 @@ public class MjPazuruQuestScene extends KeyListenScene
 	
 	// ビューが表示される直前の初期化処理
 	private void viewWillAppear() {
-		mBackgroundSprite = getResourceSprite("mj_bk.jpg");
+		mBackgroundSprite = getResourceSprite("bk/mj_bk.jpg");
 		placeToCenter(mBackgroundSprite);
 		attachChild(mBackgroundSprite);
 		// カンのカットイン --------------------

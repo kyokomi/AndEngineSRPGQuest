@@ -29,6 +29,7 @@ import com.kyokomi.core.entity.MActorEntity;
 import com.kyokomi.core.entity.MScenarioEntity;
 import com.kyokomi.core.entity.TSaveDataEntity;
 import com.kyokomi.core.scene.KeyListenScene;
+import com.kyokomi.core.sprite.ActorSprite;
 
 public abstract class SrpgBaseScene extends KeyListenScene {
 	
@@ -94,12 +95,8 @@ public abstract class SrpgBaseScene extends KeyListenScene {
 		initDB();
 	}
 	
-	public String createFaceFileName(int imageResId) {
-		String baseFileName = "actor" + imageResId;
-		return baseFileName + "_f.png";
-	}
 	public TiledSprite getResourceFaceSprite(int playerId, int imageResId) {
-		return getResourceFaceSprite(playerId, createFaceFileName(imageResId));
+		return getResourceFaceSprite(playerId, ActorSprite.getFaceFileName(imageResId));
 	}
 	public TiledSprite getResourceFaceSprite(int tag, String faceFileName) {
 		TiledSprite tiledSprite = getResourceTiledSprite(faceFileName, 4, 2);

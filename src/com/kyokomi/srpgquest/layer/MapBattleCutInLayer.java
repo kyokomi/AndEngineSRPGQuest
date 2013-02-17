@@ -13,10 +13,10 @@ import com.kyokomi.srpgquest.scene.SrpgBaseScene;
 
 public class MapBattleCutInLayer {
 	public enum MapBattleCutInLayerType {
-		PLAYER_TURN_CUTIN(1, "player_turn.png"),
-		ENEMY_TURN_CUTIN(2, "enemy_turn.png"),
-		PLAYER_WIN_CUTIN(3, "player_win.png"),
-		GAME_OVER_CUTIN(4, "game_over.jpg"),
+		PLAYER_TURN_CUTIN(1, "cutin/player_turn.png"),
+		ENEMY_TURN_CUTIN(2,  "cutin/enemy_turn.png"),
+		PLAYER_WIN_CUTIN(3,  "cutin/player_win.png"),
+		GAME_OVER_CUTIN(4,   "cutin/game_over.jpg"),
 		;
 		private Integer value;
 		private String fileName;

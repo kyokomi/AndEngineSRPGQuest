@@ -35,7 +35,7 @@ import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.dto.ActorPlayerDto;
 import com.kyokomi.core.dto.PlayerTalkDto;
 import com.kyokomi.core.entity.MScenarioEntity;
-import com.kyokomi.core.sprite.PlayerSprite;
+import com.kyokomi.core.sprite.ActorSprite;
 import com.kyokomi.core.sprite.PlayerStatusRectangle;
 import com.kyokomi.core.sprite.TalkLayer;
 import com.kyokomi.core.utils.JsonUtil;
@@ -75,8 +75,8 @@ public class MapBattleScene extends SrpgBaseScene
 	private GameManager gameManager;
 	
 	/** プレイヤーと敵情報. */
-	private SparseArray<PlayerSprite> players;
-	private SparseArray<PlayerSprite> enemys;
+	private SparseArray<ActorSprite> players;
+	private SparseArray<ActorSprite> enemys;
 	/** カーソル表示リスト. */
 	private List<CursorRectangle> cursorList;
 
@@ -227,8 +227,8 @@ public class MapBattleScene extends SrpgBaseScene
 	@Override
 	public void init() {
 		// 初期化
-		players = new SparseArray<PlayerSprite>();
-		enemys = new SparseArray<PlayerSprite>();
+		players = new SparseArray<ActorSprite>();
+		enemys = new SparseArray<ActorSprite>();
 		cursorList = new ArrayList<CursorRectangle>();
 		// デフォルトフォント初期化
 		initFont(16);
@@ -278,7 +278,7 @@ public class MapBattleScene extends SrpgBaseScene
 	 * 背景表示.
 	 */
 	private void initBackground() {
-		mBackgroundSprite = getResourceSprite("main_bg.jpg");
+		mBackgroundSprite = getResourceSprite("bk/main_bg.jpg");
 		mBackgroundSprite.setSize(getWindowWidth(), getWindowHeight());
 		mBackgroundSprite.setZIndex(-1);
 		attachChild(mBackgroundSprite);
@@ -302,9 +302,7 @@ public class MapBattleScene extends SrpgBaseScene
 	 * @param mapPoint
 	 */
 	public void createPlayerSprite(int playerSeqNo, ActorPlayerDto playerActor, MapPoint mapPoint, float size) {
-		PlayerSprite player = new PlayerSprite(playerActor, this, 
-				0, 0, size, size, 1.0f,
-				getBaseActivity().getVertexBufferObjectManager());
+		ActorSprite player = new ActorSprite(playerActor, this, 0, 0, size, size, 1.0f);
 		
 		player.setPlayerToDefaultPosition();
 		player.setPlayerPosition(mapPoint.getX(), mapPoint.getY());
@@ -326,9 +324,7 @@ public class MapBattleScene extends SrpgBaseScene
 	 * @param size
 	 */
 	public void createEnemySprite(int enemySeqNo, ActorPlayerDto enemyActor, MapPoint mapPoint, float size) {
-		PlayerSprite enemy = new PlayerSprite(enemyActor, this, 
-				0, 0, size, size, 1.0f,
-				getBaseActivity().getVertexBufferObjectManager());
+		ActorSprite enemy = new ActorSprite(enemyActor, this, 0, 0, size, size, 1.0f);
 		
 		enemy.setPlayerToDefaultPosition();
 		enemy.setPlayerPosition(mapPoint.getX(), mapPoint.getY());
@@ -362,7 +358,7 @@ public class MapBattleScene extends SrpgBaseScene
 	 * @param y
 	 * @return
 	 */
-	private PlayerStatusRectangle initStatusWindow(PlayerSprite actorSprite, float y) {
+	private PlayerStatusRectangle initStatusWindow(ActorSprite actorSprite, float y) {
 		if (actorSprite == null) {
 			return null;
 		}
@@ -382,7 +378,7 @@ public class MapBattleScene extends SrpgBaseScene
 	 * @param playerSeqNo
 	 */
 	public void refreshPlayerStatusWindow(int playerSeqNo) {
-		PlayerSprite player = players.get(playerSeqNo);
+		ActorSprite player = players.get(playerSeqNo);
 		player.getPlayerStatusRectangle().refresh();
 	}
 	/**
@@ -390,7 +386,7 @@ public class MapBattleScene extends SrpgBaseScene
 	 * @param enemySeqNo
 	 */
 	public void refreshEnemyStatusWindow(int enemySeqNo) {
-		PlayerSprite enemy = enemys.get(enemySeqNo);
+		ActorSprite enemy = enemys.get(enemySeqNo);
 		enemy.getPlayerStatusRectangle().refresh();
 	}
 	/**
@@ -402,7 +398,7 @@ public class MapBattleScene extends SrpgBaseScene
 		getBaseActivity().runOnUpdateThread(new Runnable() {
 			@Override
 			public void run() {
-				PlayerSprite player = players.get(playerSeqNo);
+				ActorSprite player = players.get(playerSeqNo);
 				player.detachSelf();
 				players.remove(playerSeqNo);
 			}
@@ -417,7 +413,7 @@ public class MapBattleScene extends SrpgBaseScene
 		getBaseActivity().runOnUpdateThread(new Runnable() {
 			@Override
 			public void run() {
-				PlayerSprite enemy = enemys.get(enemyId);
+				ActorSprite enemy = enemys.get(enemyId);
 				enemy.detachSelf();
 				enemys.remove(enemyId);
 			}
@@ -512,8 +508,8 @@ public class MapBattleScene extends SrpgBaseScene
 	 */
 	public void movePlayerAnimation(int playerSeqNo, List<MapPoint> moveMapPointList, 
 			final IAnimationCallback animationCallback) {
-		PlayerSprite playerSprite = players.get(playerSeqNo);
-		playerSprite.move(1.0f, moveMapPointList, new IEntityModifier.IEntityModifierListener() {
+		ActorSprite ActorSprite = players.get(playerSeqNo);
+		ActorSprite.move(1.0f, moveMapPointList, new IEntityModifier.IEntityModifierListener() {
 			@Override
 			public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
 			}
@@ -531,7 +527,7 @@ public class MapBattleScene extends SrpgBaseScene
 	 */
 	public void moveEnemyAnimation(int enemySeqNo, List<MapPoint> moveMapPointList, 
 			final IAnimationCallback animationCallback) {
-		PlayerSprite enemySprite = enemys.get(enemySeqNo);
+		ActorSprite enemySprite = enemys.get(enemySeqNo);
 		enemySprite.move(1.0f, moveMapPointList, new IEntityModifier.IEntityModifierListener() {
 			@Override
 			public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
@@ -548,16 +544,16 @@ public class MapBattleScene extends SrpgBaseScene
 	 * @param playerSeqNo
 	 */
 	public void startWalkingPlayerAnimation(int playerSeqNo) {
-		PlayerSprite playerSprite = players.get(playerSeqNo);
-		playerSprite.setPlayerToDefaultPosition();
+		ActorSprite ActorSprite = players.get(playerSeqNo);
+		ActorSprite.setPlayerToDefaultPosition();
 	}
 	/**
 	 * プレイヤー歩行停止.
 	 * @param playerSeqNo
 	 */
 	public void stopWalkingPlayerAnimation(int playerSeqNo) {
-		PlayerSprite playerSprite = players.get(playerSeqNo);
-		playerSprite.setPlayerToDefaultPositionStop();
+		ActorSprite ActorSprite = players.get(playerSeqNo);
+		ActorSprite.setPlayerToDefaultPositionStop();
 	}
 
 	/**
@@ -565,7 +561,7 @@ public class MapBattleScene extends SrpgBaseScene
 	 * @param enemySeqNo
 	 */
 	public void startWalkingEnemyAnimation(int enemySeqNo) {
-		PlayerSprite enemySprite = enemys.get(enemySeqNo);
+		ActorSprite enemySprite = enemys.get(enemySeqNo);
 		enemySprite.setPlayerToDefaultPosition();
 	}
 	/**
@@ -573,7 +569,7 @@ public class MapBattleScene extends SrpgBaseScene
 	 * @param enemySeqNo
 	 */
 	public void stopWalkingEnemyAnimation(int enemySeqNo) {
-		PlayerSprite enemySprite = enemys.get(enemySeqNo);
+		ActorSprite enemySprite = enemys.get(enemySeqNo);
 		enemySprite.setPlayerToDefaultPositionStop();
 	}
 	
