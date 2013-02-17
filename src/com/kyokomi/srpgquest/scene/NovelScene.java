@@ -11,8 +11,8 @@ import android.util.SparseArray;
 import android.view.KeyEvent;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
-import com.kyokomi.core.dto.MScenarioEntity;
 import com.kyokomi.core.dto.PlayerTalkDto;
+import com.kyokomi.core.entity.MScenarioEntity;
 import com.kyokomi.core.sprite.TalkLayer;
 import com.kyokomi.srpgquest.scene.MapBattleScene.LayerZIndex;
 
@@ -24,18 +24,6 @@ public class NovelScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	private int scenarioNo;
 	private int seqNo;
 	
-	/**
-	 * @deprecated 廃止予定
-	 * @param baseActivity
-	 * @param scenarioNo
-	 * @param talkNo
-	 */
-	public NovelScene(MultiSceneActivity baseActivity, int scenarioNo, int talkNo) {
-		super(baseActivity);
-		this.scenarioNo = scenarioNo;
-		this.seqNo = talkNo;
-		init();
-	}
 	public NovelScene(MultiSceneActivity baseActivity, MScenarioEntity pMScenario) {
 		super(baseActivity);
 		this.scenarioNo = pMScenario.getScenarioNo();
@@ -47,19 +35,9 @@ public class NovelScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	public void init() {
 		// 会話内容取得
 		List<PlayerTalkDto> talks = getTalkDtoList(scenarioNo, seqNo);
-		
 		// 顔画像作成
-		SparseArray<TiledSprite> actorFaces = new SparseArray<TiledSprite>();
-		int count = talks.size();
-		for (int i = 0; i < count; i++) {
-			int playerId = talks.get(i).getPlayerId();
-			if (actorFaces.indexOfKey(playerId) >= 0 ) {
-				continue;
-			}
-			// TODO: test用 本当はマスタから引っ張る
-			int imgResId = playerId == 1 ? 110 : 34;
-			actorFaces.put(playerId, getResourceFaceSprite(playerId, imgResId));
-		}
+		SparseArray<TiledSprite> actorFaces = getTalkFaceSparse(talks);
+		// 会話レイヤー作成
 		mTalkLayer = new TalkLayer(this);
 		mTalkLayer.initTalk(actorFaces, talks);
 		mTalkLayer.hide();
@@ -109,6 +87,7 @@ public class NovelScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	 */
 	@Override
 	public boolean onSceneTouchEvent(Scene pScene, TouchEvent pSceneTouchEvent) {
+		touchSprite(pSceneTouchEvent.getX(), pSceneTouchEvent.getY());
 		
 		// タッチの座標を取得
 		float x = pSceneTouchEvent.getX();

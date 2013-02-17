@@ -113,6 +113,10 @@ public class MapBattleSelectMenuLayer {
 		mMenuRectangle.setVisible(false);
 	}
 	
+	public MenuRectangle getMenuRectangle() {
+		return this.mMenuRectangle;
+	}
+	
 	public void setCalcPosition(KeyListenScene pBaseScene, float x, float y) {
 		// 横は画面半分のどっち側にいるかで表示位置を垂直方向に反転させる
 		if (x < pBaseScene.getWindowWidth() / 2) {

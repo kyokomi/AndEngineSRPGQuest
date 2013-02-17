@@ -3,12 +3,12 @@ package com.kyokomi.core.dao;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.kyokomi.core.dto.ADatabaseEntity;
+import com.kyokomi.core.entity.IDatabaseEntity;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
-public abstract class AGameBaseDao<T extends ADatabaseEntity> {
+public abstract class AGameBaseDao<T extends IDatabaseEntity> {
 
 	protected abstract String getDataBaseName();
 	

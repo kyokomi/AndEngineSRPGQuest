@@ -3,7 +3,7 @@ package com.kyokomi.core.dao;
 import java.util.Iterator;
 import java.util.List;
 
-import com.kyokomi.core.dto.MScenarioEntity;
+import com.kyokomi.core.entity.MScenarioEntity;
 
 import android.database.sqlite.SQLiteDatabase;
 

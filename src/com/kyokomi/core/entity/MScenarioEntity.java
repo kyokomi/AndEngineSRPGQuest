@@ -1,4 +1,4 @@
-package com.kyokomi.core.dto;
+package com.kyokomi.core.entity;
 
 import android.database.Cursor;
 
@@ -9,7 +9,7 @@ import com.kyokomi.core.constants.SceneType;
  * @author kyokomi
  *
  */
-public class MScenarioEntity implements ADatabaseEntity {
+public class MScenarioEntity implements IDatabaseEntity {
 	private Integer id;
 	private Integer scenarioNo;
 	private Integer seqNo;

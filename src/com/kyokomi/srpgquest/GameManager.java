@@ -122,6 +122,8 @@ public class GameManager {
 				mMapBattleInfoDto.getMapSizeX(), 
 				mMapBattleInfoDto.getMapSizeY(), 
 				1.0f);
+		
+		// シンボル作成と配置
 		List<MapSymbol> mapSymbolList = mMapBattleInfoDto.getMapSymbolList();
 		for (int i = 0; i < mapSymbolList.size(); i++) {
 			MapSymbol mapSymbol = mapSymbolList.get(i);
@@ -371,7 +373,7 @@ public class GameManager {
 			// すでに追加済み
 			return;
 		}
- 		ActorPlayerDto player = mActorPlayerLogic.createActorPlayerDto(playerId);
+ 		ActorPlayerDto player = mActorPlayerLogic.createActorPlayerDto(mBaseScene, playerId);
 		mPlayerList.put(playerId, player);
 		mMapManager.addPlayer(mapPointX, mapPointY, player);
 		// Scene側でSpriteを生成
@@ -383,7 +385,7 @@ public class GameManager {
 			// すでに追加済み
 			return;
 		}
-		ActorPlayerDto enemy = mActorPlayerLogic.createActorPlayerDto(enemyId);
+		ActorPlayerDto enemy = mActorPlayerLogic.createActorPlayerDto(mBaseScene, enemyId);
 		mEnemyList.put(enemyId, enemy);
 		mMapManager.addEnemy(mapPointX, mapPointY, enemy);
 		// Scene側でSpriteを生成

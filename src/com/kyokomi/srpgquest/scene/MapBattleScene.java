@@ -33,8 +33,8 @@ import android.view.KeyEvent;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.dto.ActorPlayerDto;
-import com.kyokomi.core.dto.MScenarioEntity;
 import com.kyokomi.core.dto.PlayerTalkDto;
+import com.kyokomi.core.entity.MScenarioEntity;
 import com.kyokomi.core.sprite.PlayerSprite;
 import com.kyokomi.core.sprite.PlayerStatusRectangle;
 import com.kyokomi.core.sprite.TalkLayer;
@@ -88,7 +88,6 @@ public class MapBattleScene extends SrpgBaseScene
 	/** メニュー・ステータス周り. */
 	private MapBattleSelectMenuLayer mMapBattleSelectMenuLayer;
 	
-//	private MenuRectangle mMenuRectangle;
 	private PlayerStatusRectangle mPlayerStatusRect;
 	private PlayerStatusRectangle mEnemyStatusRect;
 	
@@ -209,6 +208,9 @@ public class MapBattleScene extends SrpgBaseScene
 		}
 	}
 	
+	/**
+	 * キーイベント制御.
+	 */
 	@Override
 	public boolean dispatchKeyEvent(KeyEvent e) {
 		// バックボタンが押された時
@@ -242,6 +244,8 @@ public class MapBattleScene extends SrpgBaseScene
 			@Override
 			public void onClick(ButtonSprite pButtonSprite, float pTouchAreaLocalX,
 					float pTouchAreaLocalY) {
+				touchSprite(mMapBattleSelectMenuLayer.getMenuRectangle().getX() + pTouchAreaLocalX, 
+						mMapBattleSelectMenuLayer.getMenuRectangle().getY() + pTouchAreaLocalY);
 				gameManager.touchMenuBtnEvent(pButtonSprite.getTag());
 			}
 		});
@@ -641,23 +645,11 @@ public class MapBattleScene extends SrpgBaseScene
 	}
 	// --------------- 会話パート用 --------------------
 	private void initTalk() {
-		
-		// 会話プレイヤー顔リストを作成
-		SparseArray<TiledSprite> actorFaces = new SparseArray<TiledSprite>();
-		int count = players.size();
-		for (int i = 0; i < count; i++) {
-			PlayerSprite player = players.valueAt(i);
-			actorFaces.put(player.getPlayerId(), 
-					getResourceFaceSprite(player.getPlayerId(), player.getFaceFileName()));
-		}
-		count = enemys.size();
-		for (int i = 0; i < count; i++) {
-			PlayerSprite enemy = enemys.valueAt(i);
-			actorFaces.put(enemy.getPlayerId(), 
-					getResourceFaceSprite(enemy.getPlayerId(), enemy.getFaceFileName()));
-		}
 		// 会話内容取得
 		List<PlayerTalkDto> talks = getTalkDtoList(mScenarioEntity.getScenarioNo(), mScenarioEntity.getSeqNo());
+		// 顔リスト作成
+		SparseArray<TiledSprite> actorFaces = getTalkFaceSparse(talks);
+		// 会話レイヤー作成
 		mTalkLayer = new TalkLayer(this);
 		mTalkLayer.initTalk(actorFaces, talks);
 		mTalkLayer.hide();
@@ -721,6 +713,7 @@ public class MapBattleScene extends SrpgBaseScene
 	 */
 	@Override
 	public boolean onSceneTouchEvent(Scene pScene, TouchEvent pSceneTouchEvent) {
+		touchSprite(pSceneTouchEvent.getX(), pSceneTouchEvent.getY());
 		
 		// タッチの座標を取得
 		float x = pSceneTouchEvent.getX();

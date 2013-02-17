@@ -7,18 +7,21 @@ import org.andengine.audio.sound.Sound;
 import org.andengine.entity.modifier.DelayModifier;
 import org.andengine.entity.modifier.MoveModifier;
 import org.andengine.entity.modifier.SequenceEntityModifier;
+import org.andengine.entity.scene.IOnSceneTouchListener;
+import org.andengine.entity.scene.Scene;
 import org.andengine.entity.sprite.ButtonSprite;
 import org.andengine.entity.sprite.Sprite;
+import org.andengine.input.touch.TouchEvent;
 import org.andengine.util.modifier.ease.EaseBackInOut;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.pazuruquest.scene.MjPazuruQuestScene;
-import com.kyokomi.pazuruquest.scene.PazuruQuestScene;
 
 import android.view.KeyEvent;
 
-public class InitialScene extends SrpgBaseScene implements ButtonSprite.OnClickListener{
+public class InitialScene extends SrpgBaseScene 
+	implements ButtonSprite.OnClickListener, IOnSceneTouchListener {
 
 	// TODO: enumでもよい？
 	private static final int INITIAL_START = 1;
@@ -110,6 +113,9 @@ public class InitialScene extends SrpgBaseScene implements ButtonSprite.OnClickL
 		btnNovel.setOnClickListener(this);
 		attachChild(btnNovel);
 		registerTouchArea(btnNovel);
+		
+		// Sceneのタッチリスナーを登録
+		setOnSceneTouchListener(this);
 	}
 
 	@Override
@@ -180,5 +186,11 @@ public class InitialScene extends SrpgBaseScene implements ButtonSprite.OnClickL
 			titleBGM.release();
 		}
 		super.showScene(scene);
+	}
+
+	@Override
+	public boolean onSceneTouchEvent(Scene pScene, TouchEvent pSceneTouchEvent) {
+		touchSprite(pSceneTouchEvent.getX(), pSceneTouchEvent.getY());
+		return false;
 	}
 }

@@ -8,19 +8,61 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.andengine.audio.sound.Sound;
+import org.andengine.entity.IEntity;
+import org.andengine.entity.modifier.AlphaModifier;
+import org.andengine.entity.modifier.IEntityModifier;
+import org.andengine.entity.modifier.ParallelEntityModifier;
+import org.andengine.entity.modifier.ScaleModifier;
+import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.sprite.TiledSprite;
+import org.andengine.util.modifier.IModifier;
 
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
+import android.util.SparseArray;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
+import com.kyokomi.core.dao.MActorDao;
 import com.kyokomi.core.dao.MScenarioDao;
-import com.kyokomi.core.dto.MScenarioEntity;
 import com.kyokomi.core.dto.PlayerTalkDto;
 import com.kyokomi.core.dto.PlayerTalkDto.TalkDirection;
+import com.kyokomi.core.entity.MActorEntity;
+import com.kyokomi.core.entity.MScenarioEntity;
 import com.kyokomi.core.scene.KeyListenScene;
 
 public abstract class SrpgBaseScene extends KeyListenScene {
+	
+	private Sprite mTouchSprite;
+	
+	public void touchSprite(float x, float y) {
+		if (mTouchSprite == null) {
+			mTouchSprite = getResourceSprite("touch.png");
+			mTouchSprite.setVisible(false);
+			mTouchSprite.setZIndex(999);
+			attachChild(mTouchSprite);
+		}
+		mTouchSprite.setPosition(x - mTouchSprite.getWidth() / 2, y - mTouchSprite.getHeight() / 2);
+		mTouchSprite.registerEntityModifier(new ParallelEntityModifier(
+				new ScaleModifier(0.2f, 1.0f, 1.5f, new IEntityModifier.IEntityModifierListener() {
+					@Override
+					public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
+						mTouchSprite.setVisible(true);
+					}
+					@Override
+					public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+					}
+				}),
+				new AlphaModifier(0.2f, 1.0f, 0.0f, new IEntityModifier.IEntityModifierListener() {
+					@Override
+					public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
+					}
+					@Override
+					public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+						mTouchSprite.setVisible(false);
+					}
+				})
+			));
+	}
 	
 	// ----- DB ------
 	private SQLiteDatabase mDB;
@@ -114,6 +156,23 @@ public abstract class SrpgBaseScene extends KeyListenScene {
 		
 		return talks;
 	}
+	public SparseArray<TiledSprite> getTalkFaceSparse(List<PlayerTalkDto> talks) {
+		MActorDao mActorDao = new MActorDao();
+		// 顔画像作成
+		SparseArray<TiledSprite> actorFaces = new SparseArray<TiledSprite>();
+		int count = talks.size();
+		for (int i = 0; i < count; i++) {
+			PlayerTalkDto playerTalkDto = talks.get(i);
+			MActorEntity mActorEntity = mActorDao.selectByActorId(getDB(), playerTalkDto.getPlayerId());
+			playerTalkDto.setName(mActorEntity.getActorName());
+			if (actorFaces.indexOfKey(mActorEntity.getActorId()) >= 0 ) {
+				continue;
+			}
+			actorFaces.put(mActorEntity.getActorId(), 
+					getResourceFaceSprite(mActorEntity.getActorId(), mActorEntity.getImageResId()));
+		}
+		return actorFaces;
+	}
 	// ------------------ DB ----------------------
 	
 	private void initDB() {
@@ -129,6 +188,15 @@ public abstract class SrpgBaseScene extends KeyListenScene {
 			mDB.close();
 		}
 	}
+	public SQLiteDatabase getDB() {
+		if (mDB == null || !mDB.isOpen()) {
+			openDB();
+		}
+		return mDB;
+	}
+	
+	// ------------------ シナリオ ----------------------
+	// TODO: logicクラスにしてもいいかも？
 	
 	// 現在のセーブをロードしシナリオを読み込む
 	public void loadScenario() {

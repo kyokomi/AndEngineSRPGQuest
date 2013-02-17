@@ -4,46 +4,51 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.kyokomi.core.constants.SkillType;
+import com.kyokomi.core.dao.MActorDao;
+import com.kyokomi.core.dao.TActorStatusDao;
 import com.kyokomi.core.dto.ActorPlayerDto;
 import com.kyokomi.core.dto.ActorPlayerEquipDto;
 import com.kyokomi.core.dto.ActorPlayerSkillDto;
+import com.kyokomi.core.entity.MActorEntity;
+import com.kyokomi.core.entity.TActorStatusEntity;
+import com.kyokomi.srpgquest.scene.SrpgBaseScene;
 
 public class ActorPlayerLogic {
 
-	public ActorPlayerDto createActorPlayerDto(int playerId) {
+	private MActorDao mActorDao;
+	private TActorStatusDao tActorStatusDao;
+	
+	public ActorPlayerLogic() {
+		mActorDao = new MActorDao();
+		tActorStatusDao = new TActorStatusDao();
+	}
+	public ActorPlayerDto createActorPlayerDto(SrpgBaseScene pBaseScene, int playerId) {
 		ActorPlayerDto actorPlayer = new ActorPlayerDto();
 		actorPlayer.setPlayerId(playerId);
 		// ---------------------------------------------
 		// 基本ステータス
 		// ---------------------------------------------
-		// TODO: DBとかから取得
-		if (playerId == 1) {
-			actorPlayer.setName("アスリーン");
-			actorPlayer.setImageResId(110);
-			actorPlayer.setLv(2);
-			actorPlayer.setExp(10);
-			
-			actorPlayer.setMovePoint(6);
-			actorPlayer.setAttackRange(1);
-			
-			actorPlayer.setHitPoint(100);
-			actorPlayer.setHitPointLimit(100);
-			actorPlayer.setAttackPoint(60);
-			actorPlayer.setDefencePoint(30);
-		} else {
-			actorPlayer.setName("ラーティ・クルス");
-			actorPlayer.setImageResId(34);
-			actorPlayer.setLv(1);
-			actorPlayer.setExp(10);
-			
-			actorPlayer.setMovePoint(5);
-			actorPlayer.setAttackRange(1);
-			
-			actorPlayer.setHitPoint(100);
-			actorPlayer.setHitPointLimit(100);
-			actorPlayer.setAttackPoint(40);
-			actorPlayer.setDefencePoint(10);
+		
+		MActorEntity mActorEntity = mActorDao.selectByActorId(
+				pBaseScene.getDB(), playerId);
+		if (mActorEntity == null) {
+			throw new RuntimeException("マスタエラー id=" + playerId);
 		}
+		TActorStatusEntity tActorStatusEntity = tActorStatusDao.selectByActorId(
+				pBaseScene.getDB(), playerId);
+
+		actorPlayer.setName(mActorEntity.getActorName());
+		actorPlayer.setImageResId(mActorEntity.getImageResId());
+		actorPlayer.setLv(tActorStatusEntity.getLevel());
+		actorPlayer.setExp(tActorStatusEntity.getExp());
+		
+		actorPlayer.setMovePoint(tActorStatusEntity.getMovePoint());
+		actorPlayer.setAttackRange(tActorStatusEntity.getAttackRange());
+		
+		actorPlayer.setHitPoint(tActorStatusEntity.getHitPoint());
+		actorPlayer.setHitPointLimit(tActorStatusEntity.getHitPoint());
+		actorPlayer.setAttackPoint(tActorStatusEntity.getAttackPoint());
+		actorPlayer.setDefencePoint(tActorStatusEntity.getDefencePoint());
 		
 		// ---------------------------------------------
 		// 装備

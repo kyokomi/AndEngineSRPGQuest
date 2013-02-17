@@ -1,8 +1,8 @@
-package com.kyokomi.core.dto;
+package com.kyokomi.core.entity;
 
 import android.database.Cursor;
 
-public interface ADatabaseEntity {
+public interface IDatabaseEntity {
 	
 	public void initCursor(Cursor pCursor);
 }
