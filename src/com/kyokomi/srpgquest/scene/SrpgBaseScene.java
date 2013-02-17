@@ -17,7 +17,6 @@ import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.sprite.TiledSprite;
 import org.andengine.util.modifier.IModifier;
 
-import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 import android.util.SparseArray;
 
@@ -28,6 +27,7 @@ import com.kyokomi.core.dto.PlayerTalkDto;
 import com.kyokomi.core.dto.PlayerTalkDto.TalkDirection;
 import com.kyokomi.core.entity.MActorEntity;
 import com.kyokomi.core.entity.MScenarioEntity;
+import com.kyokomi.core.entity.TSaveDataEntity;
 import com.kyokomi.core.scene.KeyListenScene;
 
 public abstract class SrpgBaseScene extends KeyListenScene {
@@ -67,7 +67,7 @@ public abstract class SrpgBaseScene extends KeyListenScene {
 	}
 	
 	// ----- DB ------
-	private SQLiteDatabase mDB;
+//	private SQLiteDatabase mDB;
 	private MScenarioDao mScenarioDao;
 	
 	// ----- SE, BGM -----
@@ -159,14 +159,14 @@ public abstract class SrpgBaseScene extends KeyListenScene {
 		return talks;
 	}
 	public SparseArray<TiledSprite> getTalkFaceSparse(List<PlayerTalkDto> talks) {
-		openDB();
+		getBaseActivity().openDB();
 		MActorDao mActorDao = new MActorDao();
 		// 顔画像作成
 		SparseArray<TiledSprite> actorFaces = new SparseArray<TiledSprite>();
 		int count = talks.size();
 		for (int i = 0; i < count; i++) {
 			PlayerTalkDto playerTalkDto = talks.get(i);
-			MActorEntity mActorEntity = mActorDao.selectByActorId(mDB, playerTalkDto.getPlayerId());
+			MActorEntity mActorEntity = mActorDao.selectByActorId(getBaseActivity().getDB(), playerTalkDto.getPlayerId());
 			playerTalkDto.setName(mActorEntity.getActorName());
 			if (actorFaces.indexOfKey(mActorEntity.getActorId()) >= 0 ) {
 				continue;
@@ -174,7 +174,7 @@ public abstract class SrpgBaseScene extends KeyListenScene {
 			actorFaces.put(mActorEntity.getActorId(), 
 					getResourceFaceSprite(mActorEntity.getActorId(), mActorEntity.getImageResId()));
 		}
-		closeDB();
+		getBaseActivity().closeDB();
 		return actorFaces;
 	}
 	// ------------------ DB ----------------------
@@ -182,52 +182,55 @@ public abstract class SrpgBaseScene extends KeyListenScene {
 	private void initDB() {
 		 mScenarioDao = new MScenarioDao();
 	}
-	private void openDB() {
-		if (mDB == null || !mDB.isOpen()) {
-			mDB = getBaseActivity().getBaseDBOpenHelper().getWritableDatabase();
-		}
-	}
-	public void closeDB() {
-		if (mDB != null && mDB.isOpen()) {
-			mDB.close();
-		}
-	}
-	public SQLiteDatabase getDB() {
-		if (mDB == null || !mDB.isOpen()) {
-			openDB();
-		}
-		return mDB;
-	}
+//	private void openDB() {
+//		if (mDB == null || !mDB.isOpen()) {
+//			mDB = getBaseActivity().getBaseDBOpenHelper().getWritableDatabase();
+//		}
+//	}
+//	public void closeDB() {
+//		if (mDB != null && mDB.isOpen()) {
+//			mDB.close();
+//		}
+//	}
+//	public SQLiteDatabase getDB() {
+//		if (mDB == null || !mDB.isOpen()) {
+//			openDB();
+//		}
+//		return mDB;
+//	}
 	
 	// ------------------ シナリオ ----------------------
 	// TODO: logicクラスにしてもいいかも？
 	
 	// 現在のセーブをロードしシナリオを読み込む
 	public void loadScenario() {
-		openDB();
-		// TODO: セーブデータを元にMScenarioを取得
-		getBaseActivity().getGameController().load();
-		MScenarioEntity mScenarioEntity = mScenarioDao.selectByScenarioNoAndSeqNo(mDB, 1, 1);
+		getBaseActivity().openDB();
+		// セーブデータを読み込み
+		TSaveDataEntity saveData = getBaseActivity().getGameController().getSaveData();
+		// シナリオを検索
+		MScenarioEntity scenarioEntity = mScenarioDao.selectByScenarioNoAndSeqNo(
+				getBaseActivity().getDB(),
+				saveData.getScenariNo(), saveData.getSeqNo());
 		// シナリオ開始
-		startScenario(mScenarioEntity);
-		closeDB();
+		startScenario(scenarioEntity);
+		getBaseActivity().closeDB();
 	}
 	// 次シナリオ読み込み
 	public void nextScenario(MScenarioEntity scenarioEntity) {
-		openDB();
-		ditactionScene(mScenarioDao.selectNextSeq(mDB, 
+		getBaseActivity().openDB();
+		ditactionScene(mScenarioDao.selectNextSeq(getBaseActivity().getDB(), 
 				scenarioEntity.getScenarioNo(), 
 				scenarioEntity.getSeqNo()));
-		closeDB();
+		getBaseActivity().closeDB();
 	}
 	
 	// シナリオ読み込み
 	public void startScenario(MScenarioEntity scenarioEntity) {
-		openDB();
-		ditactionScene(mScenarioDao.selectByScenarioNoAndSeqNo(mDB, 
+		getBaseActivity().openDB();
+		ditactionScene(mScenarioDao.selectByScenarioNoAndSeqNo(getBaseActivity().getDB(), 
 				scenarioEntity.getScenarioNo(), 
 				scenarioEntity.getSeqNo()));
-		closeDB();
+		getBaseActivity().closeDB();
 	}
 	
 	// シーン振り分け

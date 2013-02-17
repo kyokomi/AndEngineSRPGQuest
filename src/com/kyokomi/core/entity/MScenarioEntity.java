@@ -1,5 +1,6 @@
 package com.kyokomi.core.entity;
 
+import android.content.ContentValues;
 import android.database.Cursor;
 
 import com.kyokomi.core.constants.SceneType;
@@ -70,5 +71,11 @@ public class MScenarioEntity implements IDatabaseEntity {
 	}
 	public void setSceneId(Integer sceneId) {
 		this.sceneId = sceneId;
+	}
+	
+	@Override
+	public ContentValues createContentValues() {
+		// マスターはupdateもinsertもしないから不要
+		return null;
 	}
 }

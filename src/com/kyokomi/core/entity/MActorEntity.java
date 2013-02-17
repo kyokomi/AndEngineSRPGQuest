@@ -1,5 +1,6 @@
 package com.kyokomi.core.entity;
 
+import android.content.ContentValues;
 import android.database.Cursor;
 
 /**
@@ -49,5 +50,11 @@ public class MActorEntity implements IDatabaseEntity {
 	}
 	public void setImageResId(Integer imageResId) {
 		this.imageResId = imageResId;
+	}
+	
+	@Override
+	public ContentValues createContentValues() {
+		// マスターはupdateもinsertもしないから不要
+		return null;
 	}
 }

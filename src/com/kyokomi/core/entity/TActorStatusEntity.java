@@ -1,5 +1,6 @@
 package com.kyokomi.core.entity;
 
+import android.content.ContentValues;
 import android.database.Cursor;
 
 /**
@@ -100,5 +101,15 @@ public class TActorStatusEntity implements IDatabaseEntity {
 	}
 	public void setAttackRange(Integer attackRange) {
 		this.attackRange = attackRange;
+	}
+	@Override
+	public ContentValues createContentValues() {
+		// TODO: あとで
+//		ContentValues values = new ContentValues();
+//		values.put("SAVE_ID", saveId);
+//		values.put("SCENARIO_NO", scenariNo);
+//		values.put("SEQ_NO", seqNo);
+//		return values;
+		return null;
 	}
 }

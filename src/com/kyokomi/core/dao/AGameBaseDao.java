@@ -1,6 +1,7 @@
 package com.kyokomi.core.dao;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import com.kyokomi.core.entity.IDatabaseEntity;
@@ -42,4 +43,20 @@ public abstract class AGameBaseDao<T extends IDatabaseEntity> {
 		
 		return dtos;
 	}
+	public T selectById(SQLiteDatabase pSqLiteDatabase, int id) {
+		String where = "_id = ?";
+		String[] whereArgs = {String.valueOf(id)};
+		String limit = "1";
+		Iterator<T> it = query(pSqLiteDatabase, null, where, whereArgs, null, null, null, limit).iterator();
+		if (it.hasNext()) {
+			return it.next();
+		} else {
+			return null;
+		}
+	}
+	
+	public long insert(SQLiteDatabase pSqLiteDatabase, T entity) {
+		return pSqLiteDatabase.insert(getDataBaseName(), null, entity.createContentValues());		
+	}
+
 }
