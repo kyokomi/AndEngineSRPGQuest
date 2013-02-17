@@ -24,7 +24,7 @@ import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.srpgquest.map.common.MapPoint;
 import com.kyokomi.srpgquest.scene.SrpgBaseScene;
 
-public class PlayerSprite extends Rectangle {
+public class ActorSprite extends Rectangle {
 	
 	private ActorPlayerDto mActorPlayer;
 	private PlayerStatusRectangle mPlayerStatusRectangle;
@@ -69,7 +69,7 @@ public class PlayerSprite extends Rectangle {
 		return mActorPlayer.getPlayerId();
 	}
 
-	public PlayerSprite(ActorPlayerDto pActorPlayer, KeyListenScene baseScene, 
+	public ActorSprite(ActorPlayerDto pActorPlayer, KeyListenScene baseScene, 
 			float pX, float pY, float pWidth, float pHeight, float scale,
 			VertexBufferObjectManager pVertexBufferObjectManager) {
 		super(pX, pY, pWidth, pHeight, pVertexBufferObjectManager);

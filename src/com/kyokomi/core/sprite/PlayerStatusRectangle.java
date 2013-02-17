@@ -22,7 +22,8 @@ import com.kyokomi.srpgquest.scene.SrpgBaseScene;
  */
 public class PlayerStatusRectangle extends Rectangle {
 
-	private final PlayerSprite mPlayerSprite;
+	private final ActorPlayerDto mActorPlayerDto;
+	
 	// 顔、名前
 	private TiledSprite mFaceTiledSprite;
 	private Text mNameText;
@@ -47,15 +48,16 @@ public class PlayerStatusRectangle extends Rectangle {
 	/** リフレッシュ用に全テキストを管理. */
 	private List<Text> mTextList;
 	
-	public PlayerStatusRectangle(SrpgBaseScene pBaseScene, final PlayerSprite pPlayerSprite, final Font pFont, 
+	public PlayerStatusRectangle(SrpgBaseScene pBaseScene, final Font pFont, 
+			final ActorPlayerDto pActorPlayerDto, final String pFaceFileName, 
 			float pX, float pY, float pWidth, float pHeight) {
 		super(pX, pY, pWidth, pHeight, pBaseScene.getBaseActivity().getVertexBufferObjectManager());
 		
 		this.setColor(Color.WHITE);
 		this.setAlpha(0.5f);
 		
-		this.mPlayerSprite = pPlayerSprite;
-		init(pBaseScene, pFont);
+		this.mActorPlayerDto = pActorPlayerDto;
+		init(pBaseScene, pFont, pFaceFileName);
 	}
 	
 	/**
@@ -65,40 +67,46 @@ public class PlayerStatusRectangle extends Rectangle {
 	 * @param pFont
 	 * @param pVertexBufferObjectManager
 	 */
-	private void init(SrpgBaseScene pBaseScene, Font pFont) {
+	private void init(SrpgBaseScene pBaseScene, Font pFont, String pFaceFileName) {
 		
 		mTextList = new ArrayList<Text>();
 		
-		ActorPlayerDto actor = mPlayerSprite.getActorPlayer();
-		mFaceTiledSprite = pBaseScene.getResourceTiledSprite(mPlayerSprite.getFaceFileName(), 4, 2);
+		mFaceTiledSprite = pBaseScene.getResourceFaceSprite(
+				mActorPlayerDto.getPlayerId(), pFaceFileName);
 		attachChild(mFaceTiledSprite);
 		
 		float faceRigthX = mFaceTiledSprite.getWidth();
 		mNameText = new Text(faceRigthX, 0, pFont, 
-				actor.getName(), 
+				mActorPlayerDto.getName(), 
 				pBaseScene.getBaseActivity().getVertexBufferObjectManager());
 		attachChildText(mNameText);
 		mLevelExpText = new Text(faceRigthX, mNameText.getY() + mNameText.getHeight(), pFont, 
-				String.format("Lv.%2d (%3d/%3d)", actor.getLv(), actor.getExp(), 100), 
+				String.format("Lv.%2d (%3d/%3d)", 
+						mActorPlayerDto.getLv(), 
+						mActorPlayerDto.getExp(), 100), 
 				pBaseScene.getBaseActivity().getVertexBufferObjectManager());
 		attachChildText(mLevelExpText);
 		mHitPointText = new Text(faceRigthX, mLevelExpText.getY() + mLevelExpText.getHeight(), pFont, 
-				String.format("HP %02d/%02d", actor.getHitPoint(), actor.getHitPointLimit()),
+				String.format("HP %02d/%02d", 
+						mActorPlayerDto.getHitPoint(), 
+						mActorPlayerDto.getHitPointLimit()),
 				pBaseScene.getBaseActivity().getVertexBufferObjectManager());
 		attachChildText(mHitPointText);
 		mMoveAttackDirectionText = new Text(faceRigthX, mHitPointText.getY() + mHitPointText.getHeight(), pFont, 
-				String.format("移動力 %d 射程 %d", actor.getMovePoint(), actor.getAttackRange()), 
+				String.format("移動力 %d 射程 %d", 
+						mActorPlayerDto.getMovePoint(), 
+						mActorPlayerDto.getAttackRange()), 
 				pBaseScene.getBaseActivity().getVertexBufferObjectManager());
 		attachChildText(mMoveAttackDirectionText);
 		
 		float nameRigthX = (getWidth() - faceRigthX) / 2 + faceRigthX;
 		float nameBottomY = mNameText.getY() + mNameText.getHeight();
 		mAttackPointText = new Text(nameRigthX, nameBottomY, pFont, 
-				String.format("攻撃力 %3d" ,actor.getAttackPoint()), 
+				String.format("攻撃力 %3d" ,mActorPlayerDto.getAttackPoint()), 
 				pBaseScene.getBaseActivity().getVertexBufferObjectManager());
 		attachChildText(mAttackPointText);
 		mDefencePointText = new Text(nameRigthX, mAttackPointText.getY() + mAttackPointText.getHeight(), pFont, 
-				String.format("防御力 %3d", actor.getDefencePoint()), 
+				String.format("防御力 %3d", mActorPlayerDto.getDefencePoint()), 
 				pBaseScene.getBaseActivity().getVertexBufferObjectManager());
 		attachChildText(mDefencePointText);
 	
@@ -113,17 +121,12 @@ public class PlayerStatusRectangle extends Rectangle {
 				"[スキル]", 
 				pBaseScene.getBaseActivity().getVertexBufferObjectManager());
 		attachChildText(mSkillIconRectangle, mSkillHeaderText);
-		if (actor.getSkillDtoList() != null && !actor.getSkillDtoList().isEmpty()) {
+		if (mActorPlayerDto.getSkillDtoList() != null && !mActorPlayerDto.getSkillDtoList().isEmpty()) {
 			// スキルアイコン
-//			List<Integer> skillIds = new ArrayList<Integer>();
-//			skillIds.add(9 + 16 * 30);
-//			skillIds.add(10 + 16 * 30);
-//			skillIds.add(11 + 16 * 30);
-//			skillIds.add(12 + 16 * 30);
 			mSkillIconSpriteList = new ArrayList<TiledSprite>();
 			float x = mSkillHeaderText.getX();
 			float y = mSkillHeaderText.getY() + mSkillHeaderText.getHeight();
-			for (ActorPlayerSkillDto skillDto : actor.getSkillDtoList()) {
+			for (ActorPlayerSkillDto skillDto : mActorPlayerDto.getSkillDtoList()) {
 				TiledSprite skillIcon = pBaseScene.getIconSetTiledSprite();
 				skillIcon.setCurrentTileIndex(skillDto.getSkillImgResId());
 				skillIcon.setPosition(x, y);
@@ -145,7 +148,7 @@ public class PlayerStatusRectangle extends Rectangle {
 				pBaseScene.getBaseActivity().getVertexBufferObjectManager());
 		attachChildText(mEquipIconRectangle, mEquipHeaderText);
 		
-		ActorPlayerEquipDto equipDto = actor.getEquipDto();
+		ActorPlayerEquipDto equipDto = mActorPlayerDto.getEquipDto();
 		if (equipDto != null) {
 			// 武器アイコン
 			mWeaponIconSprite = pBaseScene.getIconSetTiledSprite();
@@ -190,30 +193,28 @@ public class PlayerStatusRectangle extends Rectangle {
 	
 	public void refresh() {
 		
-		ActorPlayerDto actor = mPlayerSprite.getActorPlayer();
-		
-		mNameText.setText(actor.getName()); 
+		mNameText.setText(mActorPlayerDto.getName()); 
 		
 		mLevelExpText.setText( 
-				String.format("Lv.%2d (%3d/%3d)", actor.getLv(), actor.getExp(), 100));
+				String.format("Lv.%2d (%3d/%3d)", mActorPlayerDto.getLv(), mActorPlayerDto.getExp(), 100));
 		mHitPointText.setText( 
-				String.format("HP %3d/%3d", actor.getHitPoint(), actor.getHitPointLimit()));
+				String.format("HP %3d/%3d", mActorPlayerDto.getHitPoint(), mActorPlayerDto.getHitPointLimit()));
 		mMoveAttackDirectionText.setText( 
-				String.format("移動力 %d 射程 %d", actor.getMovePoint(), actor.getAttackRange()));
+				String.format("移動力 %d 射程 %d", mActorPlayerDto.getMovePoint(), mActorPlayerDto.getAttackRange()));
 		mAttackPointText.setText( 
-				String.format("攻撃力 %3d" ,actor.getAttackPoint()));
+				String.format("攻撃力 %3d" ,mActorPlayerDto.getAttackPoint()));
 		mDefencePointText.setText( 
-				String.format("防御力 %3d", actor.getDefencePoint()));
+				String.format("防御力 %3d", mActorPlayerDto.getDefencePoint()));
 	
 		// スキル欄ヘッダー
 		mSkillHeaderText.setText("[スキル]");
 		// 装備欄ヘッダー
 		mEquipHeaderText.setText("[装備]");
 		// 武器テキスト
-		if (actor.getEquipDto() != null) {
-			mWeaponNameText.setText(actor.getEquipDto().getWeaponName()); 
+		if (mActorPlayerDto.getEquipDto() != null) {
+			mWeaponNameText.setText(mActorPlayerDto.getEquipDto().getWeaponName()); 
 			// アクセサリーテキスト
-			mAccessoryNameText.setText(actor.getEquipDto().getAccessoryName()); 			
+			mAccessoryNameText.setText(mActorPlayerDto.getEquipDto().getAccessoryName()); 			
 		}
 	}
 }

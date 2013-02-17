@@ -146,8 +146,11 @@ public class SandboxScene extends SrpgBaseScene
 
 		// 会話プレイヤーリストを作成
 		SparseArray<TiledSprite> playerSprite = new SparseArray<TiledSprite>();
-		playerSprite.put(player.getPlayerId(), player.getPlayerFace());
-		playerSprite.put(enemy.getPlayerId(), enemy.getPlayerFace());
+		
+		playerSprite.put(player.getPlayerId(), getResourceFaceSprite(
+				player.getPlayerId(), player.getFaceFileName()));
+		playerSprite.put(enemy.getPlayerId(), getResourceFaceSprite(
+				enemy.getPlayerId(), enemy.getFaceFileName()));
 		
 		// 会話内容を作成
 		List<PlayerTalkDto> talks = new ArrayList<PlayerTalkDto>();

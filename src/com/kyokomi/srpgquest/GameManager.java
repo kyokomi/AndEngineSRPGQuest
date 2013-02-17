@@ -578,9 +578,6 @@ public class GameManager {
 			}
 		} else if (pGameStateType == GameStateType.START) {
 			
-			// 勝利条件表示
-			// TODO: 勝利条件アニメーション
-			
 			// プレイヤーターン開始
 			changePlayerTurn();
 			
