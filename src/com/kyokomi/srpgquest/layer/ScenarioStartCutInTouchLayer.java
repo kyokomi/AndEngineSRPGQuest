@@ -40,7 +40,7 @@ public class ScenarioStartCutInTouchLayer extends ACutInTouchLayer {
 		// フォント
 		Font defaultFont = pBaseScene.createFont(Typeface.SANS_SERIF, 16, Color.WHITE);
 		Font titleFont = pBaseScene.createFont(Typeface.SANS_SERIF, 36, Color.WHITE);
-		// 表示テキスト
+		// 表示テキスト TODO: 文字ベタ書き
 		Text winConditionTitle = new Text(16, 16, titleFont, 
 				"- 第" + mScenarioEntity.getScenarioNo() + "章 -", 
 				new TextOptions(HorizontalAlign.CENTER), 

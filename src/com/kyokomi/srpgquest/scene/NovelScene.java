@@ -14,6 +14,7 @@ import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.dto.PlayerTalkDto;
 import com.kyokomi.core.entity.MScenarioEntity;
 import com.kyokomi.core.sprite.TalkLayer;
+import com.kyokomi.srpgquest.layer.ACutInTouchLayer;
 import com.kyokomi.srpgquest.layer.ScenarioStartCutInTouchLayer;
 import com.kyokomi.srpgquest.scene.MapBattleScene.LayerZIndex;
 
@@ -23,7 +24,7 @@ public class NovelScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	/** 会話レイヤー. */
 	private TalkLayer mTalkLayer;
 	/** 章カットイン. */
-	private ScenarioStartCutInTouchLayer mScenarioStartCutInTouchLayer;
+	private ACutInTouchLayer mScenarioStartCutInTouchLayer;
 
 	private final MScenarioEntity mScenarioEntity;
 	

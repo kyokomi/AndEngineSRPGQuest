@@ -13,6 +13,11 @@ import android.graphics.Typeface;
 import com.kyokomi.srpgquest.scene.SrpgBaseScene;
 import com.kyokomi.srpgquest.scene.MapBattleScene.LayerZIndex;
 
+/**
+ * TODO: ACutInTouchLayerを継承する
+ * @author kyokomi
+ *
+ */
 public class MapBattleTouchLayer {
 	public enum MapBattleTouchLayerType {
 		CLEAR_CONDITION_TOUCH(1),
@@ -52,6 +57,7 @@ public class MapBattleTouchLayer {
 		mClearConditionCutInRect.setZIndex(LayerZIndex.CUTIN_LAYER.getValue());
 		pBaseScene.attachChild(mClearConditionCutInRect);
 		
+		// TODO: 文字ベタ書き
 		Text winConditionTitle = new Text(16, 16, blueFont, "- 勝利条件 -", 
 				new TextOptions(HorizontalAlign.CENTER), 
 				pBaseScene.getBaseActivity().getVertexBufferObjectManager());
