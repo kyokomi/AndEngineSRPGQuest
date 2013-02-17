@@ -107,6 +107,10 @@ public class MapBattleScene extends SrpgBaseScene
 	
 	/** このマップのシナリオ情報. */
 	private MScenarioEntity mScenarioEntity;
+	@Override
+	public MScenarioEntity getScenarioEntity() {
+		return mScenarioEntity;
+	}
 	/** マップ情報. */
 	private MapBattleInfoDto mMapBattleInfoDto;
 	
@@ -252,8 +256,8 @@ public class MapBattleScene extends SrpgBaseScene
 
 		// マップ情報を読み込む
 		mMapBattleInfoDto = new MapBattleInfoDto();
-		mMapBattleInfoDto.createMapJsonData(mScenarioEntity.getSceneId(), 
-				JsonUtil.toJson(getBaseActivity(), "map/"+ mScenarioEntity.getSceneId()));
+		mMapBattleInfoDto.createMapJsonData(getScenarioEntity().getSceneId(), 
+				JsonUtil.toJson(getBaseActivity(), "map/"+ getScenarioEntity().getSceneId()));
 		// ゲーム開始
 		gameManager = new GameManager(this);
 		gameManager.mapInit(mMapBattleInfoDto); // 10 x 10 スケール1倍のグリッドマップ
@@ -646,7 +650,9 @@ public class MapBattleScene extends SrpgBaseScene
 	// --------------- 会話パート用 --------------------
 	private void initTalk() {
 		// 会話内容取得
-		List<PlayerTalkDto> talks = getTalkDtoList(mScenarioEntity.getScenarioNo(), mScenarioEntity.getSeqNo());
+		List<PlayerTalkDto> talks = getTalkDtoList(
+				getScenarioEntity().getScenarioNo(), 
+				getScenarioEntity().getSeqNo());
 		// 顔リスト作成
 		SparseArray<TiledSprite> actorFaces = getTalkFaceSparse(talks);
 		// 会話レイヤー作成
@@ -765,7 +771,7 @@ public class MapBattleScene extends SrpgBaseScene
 		// 音源を開放
 		releseMusic();
 		// 次のシナリオへ
-		nextScenario(mScenarioEntity.getScenarioNo(), mScenarioEntity.getSeqNo());
+		nextScenario(getScenarioEntity());
 	}
 	public void gameOverMapBattle() {
 		// TODO: タイトルへ？

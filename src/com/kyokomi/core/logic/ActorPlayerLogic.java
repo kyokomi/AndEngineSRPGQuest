@@ -32,11 +32,13 @@ public class ActorPlayerLogic {
 		MActorEntity mActorEntity = mActorDao.selectByActorId(
 				pBaseScene.getDB(), playerId);
 		if (mActorEntity == null) {
+			pBaseScene.closeDB();
 			throw new RuntimeException("マスタエラー id=" + playerId);
 		}
 		TActorStatusEntity tActorStatusEntity = tActorStatusDao.selectByActorId(
 				pBaseScene.getDB(), playerId);
-
+		pBaseScene.closeDB();
+		
 		actorPlayer.setName(mActorEntity.getActorName());
 		actorPlayer.setImageResId(mActorEntity.getImageResId());
 		actorPlayer.setLv(tActorStatusEntity.getLevel());

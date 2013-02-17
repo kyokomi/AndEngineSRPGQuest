@@ -15,6 +15,7 @@ import org.andengine.input.touch.TouchEvent;
 import org.andengine.util.modifier.ease.EaseBackInOut;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
+import com.kyokomi.core.entity.MScenarioEntity;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.pazuruquest.scene.MjPazuruQuestScene;
 
@@ -192,5 +193,11 @@ public class InitialScene extends SrpgBaseScene
 	public boolean onSceneTouchEvent(Scene pScene, TouchEvent pSceneTouchEvent) {
 		touchSprite(pSceneTouchEvent.getX(), pSceneTouchEvent.getY());
 		return false;
+	}
+
+	@Override
+	public MScenarioEntity getScenarioEntity() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

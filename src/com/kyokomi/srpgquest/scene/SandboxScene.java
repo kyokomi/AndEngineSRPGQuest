@@ -25,6 +25,7 @@ import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.dto.ActorPlayerDto;
 import com.kyokomi.core.dto.PlayerTalkDto;
 import com.kyokomi.core.dto.PlayerTalkDto.TalkDirection;
+import com.kyokomi.core.entity.MScenarioEntity;
 import com.kyokomi.core.sprite.MenuRectangle;
 import com.kyokomi.core.sprite.PlayerSprite;
 import com.kyokomi.core.sprite.PlayerStatusRectangle;
@@ -486,5 +487,11 @@ public class SandboxScene extends SrpgBaseScene
 				}
 			}
 		});
+	}
+
+	@Override
+	public MScenarioEntity getScenarioEntity() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

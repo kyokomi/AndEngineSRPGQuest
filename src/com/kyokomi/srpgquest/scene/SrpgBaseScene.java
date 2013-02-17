@@ -34,6 +34,8 @@ public abstract class SrpgBaseScene extends KeyListenScene {
 	
 	private Sprite mTouchSprite;
 	
+	public abstract MScenarioEntity getScenarioEntity();
+	
 	public void touchSprite(float x, float y) {
 		if (mTouchSprite == null) {
 			mTouchSprite = getResourceSprite("touch.png");
@@ -157,13 +159,14 @@ public abstract class SrpgBaseScene extends KeyListenScene {
 		return talks;
 	}
 	public SparseArray<TiledSprite> getTalkFaceSparse(List<PlayerTalkDto> talks) {
+		openDB();
 		MActorDao mActorDao = new MActorDao();
 		// 顔画像作成
 		SparseArray<TiledSprite> actorFaces = new SparseArray<TiledSprite>();
 		int count = talks.size();
 		for (int i = 0; i < count; i++) {
 			PlayerTalkDto playerTalkDto = talks.get(i);
-			MActorEntity mActorEntity = mActorDao.selectByActorId(getDB(), playerTalkDto.getPlayerId());
+			MActorEntity mActorEntity = mActorDao.selectByActorId(mDB, playerTalkDto.getPlayerId());
 			playerTalkDto.setName(mActorEntity.getActorName());
 			if (actorFaces.indexOfKey(mActorEntity.getActorId()) >= 0 ) {
 				continue;
@@ -171,6 +174,7 @@ public abstract class SrpgBaseScene extends KeyListenScene {
 			actorFaces.put(mActorEntity.getActorId(), 
 					getResourceFaceSprite(mActorEntity.getActorId(), mActorEntity.getImageResId()));
 		}
+		closeDB();
 		return actorFaces;
 	}
 	// ------------------ DB ----------------------
@@ -183,7 +187,7 @@ public abstract class SrpgBaseScene extends KeyListenScene {
 			mDB = getBaseActivity().getBaseDBOpenHelper().getWritableDatabase();
 		}
 	}
-	private void closeDB() {
+	public void closeDB() {
 		if (mDB != null && mDB.isOpen()) {
 			mDB.close();
 		}
@@ -200,22 +204,29 @@ public abstract class SrpgBaseScene extends KeyListenScene {
 	
 	// 現在のセーブをロードしシナリオを読み込む
 	public void loadScenario() {
-		// TODO: セーブデータのロード
-		int scenarioNo = 1;
-		int seqNo = 1;
-		startScenario(scenarioNo, seqNo);
+		openDB();
+		// TODO: セーブデータを元にMScenarioを取得
+		getBaseActivity().getGameController().load();
+		MScenarioEntity mScenarioEntity = mScenarioDao.selectByScenarioNoAndSeqNo(mDB, 1, 1);
+		// シナリオ開始
+		startScenario(mScenarioEntity);
+		closeDB();
 	}
 	// 次シナリオ読み込み
-	public void nextScenario(int scenarioNo, int seqNo) {
+	public void nextScenario(MScenarioEntity scenarioEntity) {
 		openDB();
-		ditactionScene(mScenarioDao.selectNextSeq(mDB, scenarioNo, seqNo));
+		ditactionScene(mScenarioDao.selectNextSeq(mDB, 
+				scenarioEntity.getScenarioNo(), 
+				scenarioEntity.getSeqNo()));
 		closeDB();
 	}
 	
 	// シナリオ読み込み
-	public void startScenario(int scenarioNo, int seqNo) {
+	public void startScenario(MScenarioEntity scenarioEntity) {
 		openDB();
-		ditactionScene(mScenarioDao.selectByScenarioNoAndSeqNo(mDB, scenarioNo, seqNo));
+		ditactionScene(mScenarioDao.selectByScenarioNoAndSeqNo(mDB, 
+				scenarioEntity.getScenarioNo(), 
+				scenarioEntity.getSeqNo()));
 		closeDB();
 	}
 	

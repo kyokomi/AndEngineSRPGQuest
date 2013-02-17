@@ -1,7 +1,7 @@
 
-insert into M_SCENARIO values(1, 1, 1, 1, 1, "scenario test_1");
-insert into M_SCENARIO values(2, 1, 2, 2, 1, "scenario test_2");
-insert into M_SCENARIO values(3, 1, 3, 1, 1, "scenario test_3");
+insert into M_SCENARIO values(1, 1, 1, 1, 1, "とりあえずなチュートリアル");
+insert into M_SCENARIO values(2, 1, 2, 2, 1, "チュートリルバトル開始");
+insert into M_SCENARIO values(3, 1, 3, 1, 1, "チュートリアルバトル後の説明");
 
 insert into M_ACTOR values(1, "アスリーン", 110);
 insert into M_ACTOR values(2, "ラーティ・クルス", 34);

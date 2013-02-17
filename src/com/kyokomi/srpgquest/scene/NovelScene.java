@@ -14,6 +14,7 @@ import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.dto.PlayerTalkDto;
 import com.kyokomi.core.entity.MScenarioEntity;
 import com.kyokomi.core.sprite.TalkLayer;
+import com.kyokomi.srpgquest.layer.ScenarioStartCutInTouchLayer;
 import com.kyokomi.srpgquest.scene.MapBattleScene.LayerZIndex;
 
 public class NovelScene extends SrpgBaseScene implements IOnSceneTouchListener {
@@ -21,20 +22,27 @@ public class NovelScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	
 	/** 会話レイヤー. */
 	private TalkLayer mTalkLayer;
-	private int scenarioNo;
-	private int seqNo;
+	/** 章カットイン. */
+	private ScenarioStartCutInTouchLayer mScenarioStartCutInTouchLayer;
+
+	private final MScenarioEntity mScenarioEntity;
 	
+	@Override
+	public MScenarioEntity getScenarioEntity() {
+		return this.mScenarioEntity;
+	}
 	public NovelScene(MultiSceneActivity baseActivity, MScenarioEntity pMScenario) {
 		super(baseActivity);
-		this.scenarioNo = pMScenario.getScenarioNo();
-		this.seqNo = pMScenario.getSeqNo();
+		this.mScenarioEntity = pMScenario;
 		init();
 	}
 	
 	@Override
 	public void init() {
 		// 会話内容取得
-		List<PlayerTalkDto> talks = getTalkDtoList(scenarioNo, seqNo);
+		List<PlayerTalkDto> talks = getTalkDtoList(
+				getScenarioEntity().getScenarioNo(), 
+				getScenarioEntity().getSeqNo());
 		// 顔画像作成
 		SparseArray<TiledSprite> actorFaces = getTalkFaceSparse(talks);
 		// 会話レイヤー作成
@@ -45,7 +53,13 @@ public class NovelScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		mTalkLayer.setTag(999);
 		attachChild(mTalkLayer);
 		
-		mTalkLayer.nextTalk();
+		// まずは章開始カットイン
+		if (getScenarioEntity().getSeqNo() == 1) {
+			mScenarioStartCutInTouchLayer = new ScenarioStartCutInTouchLayer(this);
+			mScenarioStartCutInTouchLayer.showTouchLayer(this);
+		} else {
+			mTalkLayer.nextTalk();
+		}
 		
 		// Sceneのタッチリスナーを登録
 		setOnSceneTouchListener(this);
@@ -94,8 +108,15 @@ public class NovelScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		float y = pSceneTouchEvent.getY();
 		
 		if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
-			
-			if (mTalkLayer != null && mTalkLayer.contains(x, y)) {
+			// シナリオタイトル表示が先
+			if (mScenarioStartCutInTouchLayer != null && 
+					mScenarioStartCutInTouchLayer.isTouchLayer(x, y)) {
+				// タップで消える
+				mScenarioStartCutInTouchLayer.hideTouchLayer(this);
+				// 会話を表示開始
+				mTalkLayer.nextTalk();
+				
+			} else if (mTalkLayer != null && mTalkLayer.contains(x, y)) {
 				
 				getBtnPressedSound().play();
 				
@@ -109,7 +130,7 @@ public class NovelScene extends SrpgBaseScene implements IOnSceneTouchListener {
 					mTalkLayer = null;
 					
 					// 次のシナリオへ
-					nextScenario(scenarioNo, seqNo);
+					nextScenario(getScenarioEntity());
 				}
 			}
 		}
