@@ -15,12 +15,12 @@ import com.kyokomi.srpgquest.dto.MapBattleInfoDto;
 import com.kyokomi.srpgquest.dto.MapBattleInfoDto.MapSymbol;
 import com.kyokomi.srpgquest.layer.MapBattleCutInLayer.MapBattleCutInLayerType;
 import com.kyokomi.srpgquest.logic.BattleLogic;
+import com.kyokomi.srpgquest.manager.MediaManager.SoundType;
 import com.kyokomi.srpgquest.map.MapManager;
 import com.kyokomi.srpgquest.map.common.MapPoint;
 import com.kyokomi.srpgquest.map.item.ActorPlayerMapItem;
 import com.kyokomi.srpgquest.map.item.MapItem;
 import com.kyokomi.srpgquest.scene.MapBattleScene;
-import com.kyokomi.srpgquest.scene.MapBattleScene.SoundType;
 
 import android.util.Log;
 import android.util.SparseArray;
@@ -240,7 +240,7 @@ public class GameManager {
 						
 			// プレイヤーキャラ選択が可能なので行動可能であればウィンドウ表示
 			if (touchMapDataType == MapDataType.PLAYER) {
-				mBaseScene.playSound(SoundType.BTN_PRESSED_SOUND);
+				mBaseScene.getMediaManager().play(SoundType.BTN_PRESSED_SE);
 				
 				ActorPlayerMapItem actorPlayerMapItem = (ActorPlayerMapItem) mapItem;
 				
@@ -258,7 +258,7 @@ public class GameManager {
 					showPlayerStatusWindow(actorPlayerMapItem);
 				}
 			} else if (touchMapDataType == MapDataType.ENEMY) {
-				mBaseScene.playSound(SoundType.BTN_PRESSED_SOUND);
+				mBaseScene.getMediaManager().play(SoundType.BTN_PRESSED_SE);
 				
 				ActorPlayerMapItem actorEnemyMapItem = (ActorPlayerMapItem) mapItem;
 				// プレイヤーのステータス非表示
@@ -280,7 +280,7 @@ public class GameManager {
 		case PLAYER_ATTACK:
 			// 攻撃を選択したときは敵しかタップイベントに反応しない
 			if (touchMapDataType == MapDataType.ATTACK_DIST) {
-				mBaseScene.playSound(SoundType.BTN_PRESSED_SOUND);
+				mBaseScene.getMediaManager().play(SoundType.BTN_PRESSED_SE);
 				
 				// 敵が存在するカーソルかチェック
 				ActorPlayerMapItem enemy = mMapManager.getMapPointToActorPlayer(mapPoint);
@@ -314,7 +314,7 @@ public class GameManager {
 		case PLAYER_MOVE:
 			// 移動を選択したときは移動可能カーソルにしか反応しない
 			if (touchMapDataType == MapDataType.MOVE_DIST) {
-				mBaseScene.playSound(SoundType.BTN_PRESSED_SOUND);
+				mBaseScene.getMediaManager().play(SoundType.BTN_PRESSED_SE);
 				
 				if (mSelectActorPlayer != null) {
 					
@@ -457,19 +457,19 @@ public class GameManager {
 		if (mSelectActorPlayer != null) {
 			switch (SelectMenuType.findTag(pressedBtnTag)) {
 			case MENU_ATTACK: // 攻撃
-				mBaseScene.playSound(SoundType.BTN_PRESSED_SOUND);
+				mBaseScene.getMediaManager().play(SoundType.BTN_PRESSED_SE);
 				changeGameState(GameStateType.PLAYER_ATTACK);
 				showAttackDistCursor(mSelectActorPlayer);
 				break;
 			case MENU_MOVE: // 移動
-				mBaseScene.playSound(SoundType.BTN_PRESSED_SOUND);
+				mBaseScene.getMediaManager().play(SoundType.BTN_PRESSED_SE);
 				changeGameState(GameStateType.PLAYER_MOVE);
 				if (!showMoveDistCursor(mSelectActorPlayer)) {
 					changeGameState(GameStateType.PLAYER_TURN);
 				}
 				break;
 			case MENU_WAIT: // 待機
-				mBaseScene.playSound(SoundType.BTN_PRESSED_SOUND);
+				mBaseScene.getMediaManager().play(SoundType.BTN_PRESSED_SE);
 				// 待機状態にする
 				mSelectActorPlayer.setWaitDone(true);
 				// アニメーション停止
@@ -479,7 +479,7 @@ public class GameManager {
 				mBaseScene.hideCursorSprite();
 				break;
 			case MENU_CANCEL: // キャンセル
-				mBaseScene.playSound(SoundType.BTN_PRESSED_SOUND);
+				mBaseScene.getMediaManager().play(SoundType.BTN_PRESSED_SE);
 				break;
 			default:
 				break;

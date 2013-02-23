@@ -2,8 +2,6 @@ package com.kyokomi.core.scene;
 
 import java.io.IOException;
 
-import org.andengine.audio.music.Music;
-import org.andengine.audio.music.MusicFactory;
 import org.andengine.audio.sound.Sound;
 import org.andengine.audio.sound.SoundFactory;
 import org.andengine.entity.Entity;
@@ -26,6 +24,7 @@ import org.andengine.util.color.Color;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.utils.ResourceUtil;
+import com.kyokomi.srpgquest.manager.MediaManager;
 
 import android.content.Intent;
 import android.graphics.Typeface;
@@ -215,13 +214,16 @@ public abstract class KeyListenScene extends Scene {
 				getBaseActivity(), 
 				fileName);
 	}
-	// ------- BGM -------
-	protected Music createMusicFromFileName(String fileName) throws IOException {
-		return MusicFactory.createMusicFromAsset(
-				getBaseActivity().getMusicManager(),
-				getBaseActivity(),
-				fileName);
+	public MediaManager getMediaManager() {
+		return getBaseActivity().getMediaManager();
 	}
+//	// ------- BGM -------
+//	protected Music createMusicFromFileName(String fileName) throws IOException {
+//		return MusicFactory.createMusicFromAsset(
+//				getBaseActivity().getMusicManager(),
+//				getBaseActivity(),
+//				fileName);
+//	}
 	// ------- Intent ------
 	/**
 	 * TWEET送信.

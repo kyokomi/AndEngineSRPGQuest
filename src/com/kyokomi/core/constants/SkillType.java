@@ -20,4 +20,13 @@ public enum SkillType {
 	public Integer getValue() {
 		return value;
 	}
+	public static SkillType get(Integer value) {
+		SkillType[] values = values();
+		for (SkillType type : values) {
+			if (type.getValue() == value) {
+				return type;
+			}
+		}
+		throw new RuntimeException("find not tag type.");
+	}
 }

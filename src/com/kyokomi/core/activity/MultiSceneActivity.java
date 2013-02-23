@@ -12,6 +12,7 @@ import com.kyokomi.core.db.GameBaseDBOpenHelper;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.core.utils.ResourceUtil;
 import com.kyokomi.srpgquest.GameController;
+import com.kyokomi.srpgquest.manager.MediaManager;
 
 /**
  * {@link BaseGameActivity}のサブクラスであり、XMLLayoutを利用してActivityを生成するクラス.
@@ -61,6 +62,8 @@ public abstract class MultiSceneActivity extends SimpleLayoutGameActivity {
 	
 	/** ResourceUtilのインスタンス. */
 	private ResourceUtil mResourceUtil;
+	/** BGM, SE管理のインスタンス. */
+	private MediaManager mMediaManager;
 	
 	/** 起動済みのSceneの配列. */
 	private List<KeyListenScene> mSceneArray;
@@ -71,13 +74,16 @@ public abstract class MultiSceneActivity extends SimpleLayoutGameActivity {
 	@Override
 	protected void onCreateResources() {
 		mResourceUtil = ResourceUtil.getInstance(this);
+		mMediaManager = MediaManager.getInstance(this);
 		mSceneArray = new ArrayList<KeyListenScene>();
 	}
 
 	public ResourceUtil getResourceUtil() {
 		return mResourceUtil;
 	}
-	
+	public MediaManager getMediaManager() {
+		return mMediaManager;
+	}	
 	public List<KeyListenScene> getSceneArray() {
 		return mSceneArray;
 	}

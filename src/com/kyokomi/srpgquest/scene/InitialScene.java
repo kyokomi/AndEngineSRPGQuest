@@ -2,7 +2,6 @@ package com.kyokomi.srpgquest.scene;
 
 import java.io.IOException;
 
-import org.andengine.audio.music.Music;
 import org.andengine.audio.sound.Sound;
 import org.andengine.entity.modifier.DelayModifier;
 import org.andengine.entity.modifier.MoveModifier;
@@ -18,6 +17,8 @@ import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.entity.MScenarioEntity;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.pazuruquest.scene.MjPazuruQuestScene;
+import com.kyokomi.srpgquest.manager.MediaManager.MusicType;
+import com.kyokomi.srpgquest.manager.MediaManager.SoundType;
 
 import android.view.KeyEvent;
 
@@ -29,18 +30,12 @@ public class InitialScene extends SrpgBaseScene
 	private static final int INITIAL_RANKING = 2;
 	private static final int INITIAL_FEEDBACK = 3;
 	
-	/** タイトル画面のBGM. */
-	private Music titleBGM;
-	/** ボタンが押された時のサウンド. */
-	private Sound btnPressedSound;
-	
 	public InitialScene(MultiSceneActivity baseActivity) {
 		super(baseActivity);
 		
 		init();
 		
-		titleBGM.setLooping(true);
-		titleBGM.play();
+		getMediaManager().playStart(MusicType.TITLE_BGM);
 	}
 
 	@Override
@@ -132,8 +127,9 @@ public class InitialScene extends SrpgBaseScene
 	public void initSoundAndMusic() {
 		// 効果音をロード
 		try {
-			btnPressedSound = createSoundFromFileName("clock00.wav");
-			titleBGM = createMusicFromFileName("title_bgm1.mp3");
+			getMediaManager().resetAllMedia();
+			getMediaManager().createMedia(SoundType.BTN_PRESSED_SE);
+			getMediaManager().createMedia(MusicType.TITLE_BGM);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -144,18 +140,14 @@ public class InitialScene extends SrpgBaseScene
 	 */
 	@Override
 	public void onResume() {
-		if (titleBGM != null && !titleBGM.isPlaying()) {
-			titleBGM.play();
-		}
+		getBaseActivity().getMediaManager().play(MusicType.TITLE_BGM);
 	}
 	/**
 	 * バックグラウンド時
 	 */
 	@Override
 	public void onPause() {
-		if (titleBGM != null && !titleBGM.isReleased() && titleBGM.isPlaying()) {
-			titleBGM.pause();
-		}
+		getBaseActivity().getMediaManager().pause(MusicType.TITLE_BGM);
 	}
 	
 	@Override
@@ -172,7 +164,7 @@ public class InitialScene extends SrpgBaseScene
 	public void onClick(ButtonSprite pButtonSprite, float pTouchAreaLocalX,
 			float pTouchAreaLocalY) {
 		// 効果音を再生
-		btnPressedSound.play();
+		getMediaManager().play(SoundType.BTN_PRESSED_SE);
 		
 		switch (pButtonSprite.getTag()) {
 		case INITIAL_START:
@@ -196,9 +188,6 @@ public class InitialScene extends SrpgBaseScene
 
 	@Override
 	public void showScene(KeyListenScene scene) {
-		if(!titleBGM.isReleased()) {
-			titleBGM.release();
-		}
 		super.showScene(scene);
 	}
 

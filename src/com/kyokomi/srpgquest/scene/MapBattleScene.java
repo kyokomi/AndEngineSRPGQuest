@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.andengine.audio.music.Music;
-import org.andengine.audio.sound.Sound;
 import org.andengine.entity.IEntity;
 import org.andengine.entity.modifier.AlphaModifier;
 import org.andengine.entity.modifier.DelayModifier;
@@ -28,6 +26,7 @@ import org.andengine.util.color.Color;
 import org.andengine.util.modifier.IModifier;
 import org.andengine.util.modifier.ease.EaseBackInOut;
 
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 
@@ -46,12 +45,14 @@ import com.kyokomi.srpgquest.layer.MapBattleCutInLayer.MapBattleCutInLayerType;
 import com.kyokomi.srpgquest.layer.MapBattleSelectMenuLayer;
 import com.kyokomi.srpgquest.layer.MapBattleTouchLayer.MapBattleTouchLayerType;
 import com.kyokomi.srpgquest.layer.MapBattleTouchLayer;
+import com.kyokomi.srpgquest.manager.MediaManager.MusicType;
+import com.kyokomi.srpgquest.manager.MediaManager.SoundType;
 import com.kyokomi.srpgquest.map.common.MapPoint;
 import com.kyokomi.srpgquest.sprite.CursorRectangle;
 
 public class MapBattleScene extends SrpgBaseScene 
 	implements IOnSceneTouchListener{
-	
+	private static final String TAG = "MapBattleScene";
 	public enum LayerZIndex {
 		TALK_LAYER(80),
 		CUTIN_LAYER(70),
@@ -98,13 +99,6 @@ public class MapBattleScene extends SrpgBaseScene
 	private MapBattleCutInLayer mMapBattleCutInLayer;
 	private MapBattleTouchLayer mMapBattleTouchLayer;
 	
-	// ----- SE, BGM -----
-	private Sound mAttackSound;
-	private Music mTutorialBGM;
-	private Music mBattleBGM;
-	private Music mClearBGM;
-	private Music mGameOverBGM;
-	
 	/** このマップのシナリオ情報. */
 	private MScenarioEntity mScenarioEntity;
 	@Override
@@ -125,93 +119,32 @@ public class MapBattleScene extends SrpgBaseScene
 	 */
 	@Override
 	public void onResume() {
-		// TODO: 本当はどのBGMが再生中か調べて再生するけど一旦バトルで
-		playMusic(mBattleBGM);
+		getMediaManager().playPauseingMusic();
 	}
 	/**
 	 * バックグラウンド時
 	 */
 	@Override
 	public void onPause() {
-		stopPlayMusic();
+		getMediaManager().pausePlayingMusic();
 	}
 	@Override
 	public void initSoundAndMusic() {
 		// 効果音をロード
 		try {
-			mAttackSound = createSoundFromFileName("SE_ATTACK_ZANGEKI_01.wav");
-			mTutorialBGM = createMusicFromFileName("tutorial_bgm1.mp3");
-			mBattleBGM = createMusicFromFileName("battle_bgm1.mp3");
-			mClearBGM = createMusicFromFileName("clear_bgm1.mp3");
-			mGameOverBGM = createMusicFromFileName("game_over_bgm1.mp3");
+			getMediaManager().resetAllMedia();
+			getMediaManager().createMedia(SoundType.BTN_PRESSED_SE);
+			getMediaManager().createMedia(SoundType.ATTACK_SE);
+			getMediaManager().createMedia(MusicType.TUTORIAL_BGM);
+			getMediaManager().createMedia(MusicType.BATTLE1_BGM);
+			getMediaManager().createMedia(MusicType.CLEAR_BGM);
+			getMediaManager().createMedia(MusicType.GAME_OVER_BGM);
 		} catch (IOException e) {
+			Log.e(TAG, "sound file io error");
 			e.printStackTrace();
 		}	
 	}
 
-	// ------- BGM関連 -----------
-	public enum SoundType {
-		ATTACK_SOUND,
-		BTN_PRESSED_SOUND
-	}
-	public void playSound(SoundType soundType) {
-		switch (soundType) {
-		case ATTACK_SOUND:
-			mAttackSound.play();
-			break;
-		case BTN_PRESSED_SOUND:
-			getBtnPressedSound().play();
-			break;
-		default:
-			break;
-		}
-		
-	}
-	private void playMusic(Music music) {
-		if (music.isPlaying()) {
-			return;
-		}
-		stopPlayMusic();
-		
-		music.setLooping(true);
-		music.play();
-	}
-	private Music getPlayMusic() {
-		if (mTutorialBGM.isPlaying()) {
-			return mTutorialBGM;
-		}
-		if (mBattleBGM.isPlaying()) {
-			return mBattleBGM;
-		}
-		if (mClearBGM.isPlaying()) {
-			return mClearBGM;
-		}
-		if (mGameOverBGM.isPlaying()) {
-			return mGameOverBGM;
-		}
-		return null;
-	}
-	private void stopPlayMusic() {
-		Music music = getPlayMusic();
-		if (music != null) {
-			music.pause();
-		}
-	}
-	private void releseMusic() {
-		if (!mTutorialBGM.isReleased()) {
-			mTutorialBGM.release();
-		}
-		if (!mBattleBGM.isReleased()) {
-			mBattleBGM.release();
-		}
-		if (!mClearBGM.isReleased()) {
-			mClearBGM.release();
-		}
-		if (!mGameOverBGM.isReleased()) {
-			mGameOverBGM.release();
-		}
-	}
-	
 	/**
 	 * キーイベント制御.
 	 */
@@ -267,7 +200,7 @@ public class MapBattleScene extends SrpgBaseScene
 		initTalk();
 		
 		// BGM再生開始
-		playMusic(mTutorialBGM);
+		getMediaManager().playStart(MusicType.TUTORIAL_BGM);
 		// Sceneのタッチリスナーを登録
 		setOnSceneTouchListener(this);
 		// FPS表示
@@ -581,7 +514,7 @@ public class MapBattleScene extends SrpgBaseScene
 	 */
 	public void showDamageText(final int damage, final MapPoint mapPoint) {
 		
-		playSound(SoundType.ATTACK_SOUND);
+		getMediaManager().play(SoundType.ATTACK_SE);
 		
 		mDamageText.setScale(0.5f);
 		mDamageText.setX(mapPoint.getX());
@@ -625,16 +558,16 @@ public class MapBattleScene extends SrpgBaseScene
 			final IAnimationCallback pAnimationCallback) {
 		switch (pMapBattleCutInLayerType) {
 		case PLAYER_TURN_CUTIN:
-			playMusic(mBattleBGM);
+			getMediaManager().play(MusicType.BATTLE1_BGM);
 			break;
 		case ENEMY_TURN_CUTIN:
-			playMusic(mBattleBGM);
+			getMediaManager().play(MusicType.BATTLE1_BGM);
 			break;
 		case PLAYER_WIN_CUTIN:
-			playMusic(mClearBGM);
+			getMediaManager().play(MusicType.CLEAR_BGM);
 			break;
 		case GAME_OVER_CUTIN:
-			playMusic(mGameOverBGM);
+			getMediaManager().play(MusicType.GAME_OVER_BGM);
 			break;
 		default:
 			return;
@@ -726,7 +659,7 @@ public class MapBattleScene extends SrpgBaseScene
 			// TODO: 一旦会話はGameManager外にする
 			if (mTalkLayer != null && mTalkLayer.contains(x, y)) {
 				
-				playSound(SoundType.BTN_PRESSED_SOUND);
+				getMediaManager().play(SoundType.BTN_PRESSED_SE);
 				
 				if (mTalkLayer.isNextTalk()) {
 					mTalkLayer.nextTalk();
@@ -738,7 +671,7 @@ public class MapBattleScene extends SrpgBaseScene
 					mTalkLayer = null;
 					
 					// 勝利条件表示
-					playMusic(mBattleBGM);
+					getMediaManager().play(MusicType.BATTLE1_BGM);
 					registerTouchArea(mMapBattleTouchLayer.showTouchLayer(
 							MapBattleTouchLayerType.CLEAR_CONDITION_TOUCH));
 				}
@@ -746,7 +679,7 @@ public class MapBattleScene extends SrpgBaseScene
 			} else if (mMapBattleTouchLayer.isTouchClerCondition(
 					MapBattleTouchLayerType.CLEAR_CONDITION_TOUCH, x, y)) {
 				
-				playSound(SoundType.BTN_PRESSED_SOUND);
+				getMediaManager().play(SoundType.BTN_PRESSED_SE);
 				
 				// 勝利条件を非表示にする
 				unregisterTouchArea(mMapBattleTouchLayer.hideTouchLayer(
@@ -765,15 +698,14 @@ public class MapBattleScene extends SrpgBaseScene
 	
 	// ---- クリア時の処理 ----
 	public void clearMapBattle() {
-		// 音源を開放
-		releseMusic();
+		getMediaManager().stopPlayingMusic();
 		// 次のシナリオへ
 		nextScenario(getScenarioEntity());
 	}
 	public void gameOverMapBattle() {
+		getMediaManager().stopPlayingMusic();
 		// TODO: タイトルへ？
-		releseMusic();
-		getBaseActivity().backToInitial();
+		showScene(new InitialScene(getBaseActivity()));
 	}
 	// ---- グリッド表示 ----
 	
