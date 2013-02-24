@@ -11,7 +11,7 @@ import com.kyokomi.core.dto.ActorPlayerEquipDto;
 import com.kyokomi.core.dto.ActorPlayerSkillDto;
 import com.kyokomi.core.entity.MActorEntity;
 import com.kyokomi.core.entity.TActorStatusEntity;
-import com.kyokomi.srpgquest.scene.SrpgBaseScene;
+import com.kyokomi.core.scene.KeyListenScene;
 
 public class ActorPlayerLogic {
 
@@ -22,7 +22,7 @@ public class ActorPlayerLogic {
 		mActorDao = new MActorDao();
 		tActorStatusDao = new TActorStatusDao();
 	}
-	public ActorPlayerDto createActorPlayerDto(SrpgBaseScene pBaseScene, int playerId) {
+	public ActorPlayerDto createActorPlayerDto(KeyListenScene pBaseScene, int playerId) {
 		ActorPlayerDto actorPlayer = new ActorPlayerDto();
 		actorPlayer.setPlayerId(playerId);
 		// ---------------------------------------------
