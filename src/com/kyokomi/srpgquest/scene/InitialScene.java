@@ -17,8 +17,8 @@ import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.entity.MScenarioEntity;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.pazuruquest.scene.MjPazuruQuestScene;
-import com.kyokomi.srpgquest.manager.MediaManager.MusicType;
-import com.kyokomi.srpgquest.manager.MediaManager.SoundType;
+import com.kyokomi.core.manager.MediaManager.MusicType;
+import com.kyokomi.core.manager.MediaManager.SoundType;
 
 import android.view.KeyEvent;
 

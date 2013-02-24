@@ -24,7 +24,7 @@ import org.andengine.util.color.Color;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.utils.ResourceUtil;
-import com.kyokomi.srpgquest.manager.MediaManager;
+import com.kyokomi.core.manager.MediaManager;
 
 import android.content.Intent;
 import android.graphics.Typeface;

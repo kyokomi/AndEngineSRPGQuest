@@ -1,4 +1,4 @@
-package com.kyokomi.srpgquest.manager;
+package com.kyokomi.core.manager;
 
 import java.io.IOException;
 

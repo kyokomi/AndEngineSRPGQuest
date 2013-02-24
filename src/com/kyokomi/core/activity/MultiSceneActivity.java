@@ -11,8 +11,8 @@ import android.widget.Toast;
 import com.kyokomi.core.db.GameBaseDBOpenHelper;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.core.utils.ResourceUtil;
-import com.kyokomi.srpgquest.GameController;
-import com.kyokomi.srpgquest.manager.MediaManager;
+import com.kyokomi.core.manager.GameController;
+import com.kyokomi.core.manager.MediaManager;
 
 /**
  * {@link BaseGameActivity}のサブクラスであり、XMLLayoutを利用してActivityを生成するクラス.

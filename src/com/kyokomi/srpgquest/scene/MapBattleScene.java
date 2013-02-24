@@ -45,8 +45,8 @@ import com.kyokomi.srpgquest.layer.MapBattleCutInLayer.MapBattleCutInLayerType;
 import com.kyokomi.srpgquest.layer.MapBattleSelectMenuLayer;
 import com.kyokomi.srpgquest.layer.MapBattleTouchLayer.MapBattleTouchLayerType;
 import com.kyokomi.srpgquest.layer.MapBattleTouchLayer;
-import com.kyokomi.srpgquest.manager.MediaManager.MusicType;
-import com.kyokomi.srpgquest.manager.MediaManager.SoundType;
+import com.kyokomi.core.manager.MediaManager.MusicType;
+import com.kyokomi.core.manager.MediaManager.SoundType;
 import com.kyokomi.srpgquest.map.common.MapPoint;
 import com.kyokomi.srpgquest.sprite.CursorRectangle;
 

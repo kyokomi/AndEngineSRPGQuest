@@ -1,4 +1,4 @@
-package com.kyokomi.srpgquest;
+package com.kyokomi.core.manager;
 
 import android.util.Log;
 
