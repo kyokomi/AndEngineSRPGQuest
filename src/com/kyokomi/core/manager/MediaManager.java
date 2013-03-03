@@ -92,7 +92,7 @@ public class MediaManager {
 	}
 	
 	public void createMedia(SoundType pSoundType) throws IOException {
-		if (mSoundArray.indexOfKey(pSoundType.getValue()) >= 0) {
+		if (mSoundArray.get(pSoundType.getValue()) != null) {
 			return;
 		}
 		mSoundArray.put(pSoundType.getValue(), 
@@ -101,7 +101,7 @@ public class MediaManager {
 					pSoundType.getFileName()));
 	}
 	public void createMedia(MusicType pMusicType) throws IOException {
-		if (mMusicArray.indexOfKey(pMusicType.getValue()) >= 0) {
+		if (mMusicArray.get(pMusicType.getValue()) != null) {
 			return;
 		}
 		mMusicArray.put(pMusicType.getValue(), 
