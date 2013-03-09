@@ -36,6 +36,7 @@ import com.kyokomi.core.dto.PlayerTalkDto;
 import com.kyokomi.core.entity.MScenarioEntity;
 import com.kyokomi.core.sprite.ActorSprite;
 import com.kyokomi.core.sprite.PlayerStatusRectangle;
+import com.kyokomi.core.sprite.PlayerStatusRectangle.PlayerStatusRectangleType;
 import com.kyokomi.core.sprite.TalkLayer;
 import com.kyokomi.core.utils.JsonUtil;
 import com.kyokomi.srpgquest.GameManager;
@@ -607,7 +608,7 @@ public class MapBattleScene extends SrpgBaseScene
 		}
 		mPlayerStatusRect = players.get(playerSeqNo).getPlayerStatusRectangle();
 		if (mPlayerStatusRect != null) {
-			mPlayerStatusRect.setVisible(true);
+			mPlayerStatusRect.show(PlayerStatusRectangleType.MINI_STATUS);
 			mPlayerStatusRect.setX(x);
 			mPlayerStatusRect.setY(y);
 			attachChild(mPlayerStatusRect);	
@@ -625,7 +626,7 @@ public class MapBattleScene extends SrpgBaseScene
 		}
 		mEnemyStatusRect = enemys.get(enemySeqNo).getPlayerStatusRectangle();
 		if (mEnemyStatusRect != null) {
-			mEnemyStatusRect.setVisible(true);
+			mEnemyStatusRect.show(PlayerStatusRectangleType.MINI_STATUS);
 			mEnemyStatusRect.setY(y);
 			attachChild(mEnemyStatusRect);
 		}
@@ -633,12 +634,12 @@ public class MapBattleScene extends SrpgBaseScene
 	}
 	public void hidePlayerStatusWindow() {
 		if (mPlayerStatusRect != null) {
-			mPlayerStatusRect.setVisible(false);
+			mPlayerStatusRect.hide();
 		}
 	}
 	public void hideEnemyStatusWindow() {
 		if (mEnemyStatusRect != null) {
-			mEnemyStatusRect.setVisible(false);
+			mEnemyStatusRect.hide();
 		}
 	}
 	// --------------- イベント系 -------------------

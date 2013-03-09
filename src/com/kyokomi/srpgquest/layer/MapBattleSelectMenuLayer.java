@@ -124,9 +124,13 @@ public class MapBattleSelectMenuLayer {
 		} else {
 			x = x - mMenuRectangle.getWidth();
 		}
-		// 縦が画面外に入る場合は補正
+		// 縦の下が画面外に入る場合は補正
 		if ((y + mMenuRectangle.getHeight()) > pBaseScene.getWindowHeight()) {
 			y = pBaseScene.getWindowHeight() - mMenuRectangle.getHeight();
+		}
+		// 縦の上が画面外に入る場合補正(上の1/4はステータス用)
+		if (y < (pBaseScene.getWindowHeight() / 4)) {
+			y = (pBaseScene.getWindowHeight() / 4);
 		}
 		mMenuRectangle.setX(x);
 		mMenuRectangle.setY(y);
