@@ -59,18 +59,6 @@ public class ActorPlayerLogic {
 		ActorPlayerEquipDto equipDto = itemLogic.createActorPlayerEquipDto(pBaseScene, 
 				tActorStatusEntity.getWeaponId(), 
 				tActorStatusEntity.getAccessoryId());
-		
-		// TODO: DBとかから取得
-//		ActorPlayerEquipDto equipDto = new ActorPlayerEquipDto();
-//		// 武器
-//		equipDto.setWeaponName("レイピア");
-//		equipDto.setWeaponImgResId(3);
-//		equipDto.setWeaponStr(10);
-//		// アクセサリー
-//		equipDto.setAccessoryName("普通の指輪");
-//		equipDto.setAccessoryImgResId(33);
-//		equipDto.setAccessoryDef(5);
-		
 		actorPlayer.setEquipDto(equipDto);
 		
 		// ---------------------------------------------
