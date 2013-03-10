@@ -44,8 +44,7 @@ import com.kyokomi.srpgquest.dto.MapBattleInfoDto;
 import com.kyokomi.srpgquest.layer.MapBattleCutInLayer;
 import com.kyokomi.srpgquest.layer.MapBattleCutInLayer.MapBattleCutInLayerType;
 import com.kyokomi.srpgquest.layer.MapBattleSelectMenuLayer;
-import com.kyokomi.srpgquest.layer.MapBattleTouchLayer.MapBattleTouchLayerType;
-import com.kyokomi.srpgquest.layer.MapBattleTouchLayer;
+import com.kyokomi.srpgquest.layer.MapBattleClearConditionTouchLayer;
 import com.kyokomi.core.manager.MediaManager.MusicType;
 import com.kyokomi.core.manager.MediaManager.SoundType;
 import com.kyokomi.srpgquest.map.common.MapPoint;
@@ -98,7 +97,7 @@ public class MapBattleScene extends SrpgBaseScene
 	
 	/** カットインレイヤー. */
 	private MapBattleCutInLayer mMapBattleCutInLayer;
-	private MapBattleTouchLayer mMapBattleTouchLayer;
+	private MapBattleClearConditionTouchLayer mMapBattleTouchLayer;
 	
 	/** このマップのシナリオ情報. */
 	private MScenarioEntity mScenarioEntity;
@@ -176,7 +175,7 @@ public class MapBattleScene extends SrpgBaseScene
 		// カットイン初期化
 		mMapBattleCutInLayer = new MapBattleCutInLayer(this);
 		// タッチレイヤー初期化
-		mMapBattleTouchLayer = new MapBattleTouchLayer(this);
+		mMapBattleTouchLayer = new MapBattleClearConditionTouchLayer(this);
 		// メニュー初期化
 		mMapBattleSelectMenuLayer = new MapBattleSelectMenuLayer(this, new ButtonSprite.OnClickListener() {
 			@Override
@@ -673,18 +672,15 @@ public class MapBattleScene extends SrpgBaseScene
 					
 					// 勝利条件表示
 					getMediaManager().play(MusicType.BATTLE1_BGM);
-					registerTouchArea(mMapBattleTouchLayer.showTouchLayer(
-							MapBattleTouchLayerType.CLEAR_CONDITION_TOUCH));
+					mMapBattleTouchLayer.showTouchLayer(this);
 				}
 				
-			} else if (mMapBattleTouchLayer.isTouchClerCondition(
-					MapBattleTouchLayerType.CLEAR_CONDITION_TOUCH, x, y)) {
+			} else if (mMapBattleTouchLayer.isTouchLayer(x, y)) {
 				
 				getMediaManager().play(SoundType.BTN_PRESSED_SE);
 				
 				// 勝利条件を非表示にする
-				unregisterTouchArea(mMapBattleTouchLayer.hideTouchLayer(
-						MapBattleTouchLayerType.CLEAR_CONDITION_TOUCH));
+				mMapBattleTouchLayer.hideTouchLayer(this);
 				
 				// ゲーム開始
 				gameManager.gameStart();

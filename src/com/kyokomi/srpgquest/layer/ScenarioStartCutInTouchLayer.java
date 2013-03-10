@@ -11,7 +11,6 @@ import org.andengine.util.color.Color;
 import android.graphics.Typeface;
 
 import com.kyokomi.core.entity.MScenarioEntity;
-import com.kyokomi.srpgquest.layer.MapBattleTouchLayer.MapBattleTouchLayerType;
 import com.kyokomi.srpgquest.scene.SrpgBaseScene;
 import com.kyokomi.srpgquest.scene.MapBattleScene.LayerZIndex;
 
@@ -56,7 +55,7 @@ public class ScenarioStartCutInTouchLayer extends ACutInTouchLayer {
 		pBaseScene.placeToCenterX(gameOverConditionDetial, winConditionTitle.getY() + winConditionTitle.getHeight() + 20);
 		mLayer.attachChild(gameOverConditionDetial);
 		
-		mLayer.setTag(MapBattleTouchLayerType.CLEAR_CONDITION_TOUCH.getValue());
+		mLayer.setTag(2);
 	}
 
 	@Override
