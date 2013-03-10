@@ -3,6 +3,7 @@ package com.kyokomi.core.constants;
 public enum SceneType {
 	SCENE_TYPE_NOVEL(1),
 	SCENE_TYPE_MAP(2),
+	SCENE_TYPE_RESULT(3),
 	;
 	
 	private Integer value;

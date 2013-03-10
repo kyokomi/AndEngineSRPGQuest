@@ -229,6 +229,9 @@ public abstract class SrpgBaseScene extends KeyListenScene {
 		case SCENE_TYPE_NOVEL:
 			showScene(new NovelScene(getBaseActivity(), mScenarioEntity));
 			break;
+		case SCENE_TYPE_RESULT:
+			showScene(new ResultScene(getBaseActivity(), mScenarioEntity));
+			break;	
 		default:
 			getBaseActivity().backToInitial();
 			break;
