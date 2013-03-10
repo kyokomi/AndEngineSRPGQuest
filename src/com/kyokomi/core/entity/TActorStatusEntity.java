@@ -29,6 +29,8 @@ public class TActorStatusEntity implements IDatabaseEntity {
 	private Integer magicPoint;
 	private Integer movePoint;
 	private Integer attackRange;
+	private Integer weaponId;
+	private Integer accessoryId;
 	
 	public TActorStatusEntity() {
 		
@@ -47,6 +49,8 @@ public class TActorStatusEntity implements IDatabaseEntity {
 		this.magicPoint     = pCursor.getInt(6);
 		this.movePoint      = pCursor.getInt(7);
 		this.attackRange    = pCursor.getInt(8);
+		this.weaponId       = pCursor.getInt(9);
+		this.accessoryId    = pCursor.getInt(10);
 	}
 	public Integer getActorId() {
 		return actorId;
@@ -101,6 +105,18 @@ public class TActorStatusEntity implements IDatabaseEntity {
 	}
 	public void setAttackRange(Integer attackRange) {
 		this.attackRange = attackRange;
+	}
+	public Integer getWeaponId() {
+		return weaponId;
+	}
+	public void setWeaponId(Integer weaponId) {
+		this.weaponId = weaponId;
+	}
+	public Integer getAccessoryId() {
+		return accessoryId;
+	}
+	public void setAccessoryId(Integer accessoryId) {
+		this.accessoryId = accessoryId;
 	}
 	@Override
 	public ContentValues createContentValues() {

@@ -43,9 +43,7 @@ public abstract class AGameBaseDao<T extends IDatabaseEntity> {
 		
 		return dtos;
 	}
-	public T selectById(SQLiteDatabase pSqLiteDatabase, int id) {
-		String where = "_id = ?";
-		String[] whereArgs = {String.valueOf(id)};
+	public T queryOne(SQLiteDatabase pSqLiteDatabase, String where, String[] whereArgs) {
 		String limit = "1";
 		Iterator<T> it = query(pSqLiteDatabase, null, where, whereArgs, null, null, null, limit).iterator();
 		if (it.hasNext()) {
@@ -53,6 +51,12 @@ public abstract class AGameBaseDao<T extends IDatabaseEntity> {
 		} else {
 			return null;
 		}
+	}
+	
+	public T selectById(SQLiteDatabase pSqLiteDatabase, int id) {
+		String where = "_id = ?";
+		String[] whereArgs = {String.valueOf(id)};
+		return queryOne(pSqLiteDatabase, where, whereArgs); 
 	}
 	
 	public long insert(SQLiteDatabase pSqLiteDatabase, T entity) {

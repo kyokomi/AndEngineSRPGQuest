@@ -29,13 +29,13 @@ public class ActorPlayerLogic {
 		// 基本ステータス
 		// ---------------------------------------------
 		
-		MActorEntity mActorEntity = mActorDao.selectByActorId(
+		MActorEntity mActorEntity = mActorDao.selectById(
 				pBaseScene.getBaseActivity().getDB(), playerId);
 		if (mActorEntity == null) {
 			pBaseScene.getBaseActivity().closeDB();
 			throw new RuntimeException("マスタエラー id=" + playerId);
 		}
-		TActorStatusEntity tActorStatusEntity = tActorStatusDao.selectByActorId(
+		TActorStatusEntity tActorStatusEntity = tActorStatusDao.selectById(
 				pBaseScene.getBaseActivity().getDB(), playerId);
 		pBaseScene.getBaseActivity().closeDB();
 		
@@ -55,16 +55,21 @@ public class ActorPlayerLogic {
 		// ---------------------------------------------
 		// 装備
 		// ---------------------------------------------
+		ItemLogic itemLogic = new ItemLogic();
+		ActorPlayerEquipDto equipDto = itemLogic.createActorPlayerEquipDto(pBaseScene, 
+				tActorStatusEntity.getWeaponId(), 
+				tActorStatusEntity.getAccessoryId());
+		
 		// TODO: DBとかから取得
-		ActorPlayerEquipDto equipDto = new ActorPlayerEquipDto();
-		// 武器
-		equipDto.setWeaponName("レイピア");
-		equipDto.setWeaponImgResId(3);
-		equipDto.setWeaponStr(10);
-		// アクセサリー
-		equipDto.setAccessoryName("普通の指輪");
-		equipDto.setAccessoryImgResId(33);
-		equipDto.setAccessoryDef(5);
+//		ActorPlayerEquipDto equipDto = new ActorPlayerEquipDto();
+//		// 武器
+//		equipDto.setWeaponName("レイピア");
+//		equipDto.setWeaponImgResId(3);
+//		equipDto.setWeaponStr(10);
+//		// アクセサリー
+//		equipDto.setAccessoryName("普通の指輪");
+//		equipDto.setAccessoryImgResId(33);
+//		equipDto.setAccessoryDef(5);
 		
 		actorPlayer.setEquipDto(equipDto);
 		

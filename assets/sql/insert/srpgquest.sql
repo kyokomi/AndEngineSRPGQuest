@@ -18,7 +18,13 @@ insert into M_ACTOR values(2, "ラーティ・クルス", 34);
 insert into M_ACTOR values(3, "スライム的な何か", 901);
 insert into M_ACTOR values(4, "村長", 902);
 
-insert into T_ACTOR_STATUS values(1, 1, 0, 60, 30, 100, 0, 5, 1);
-insert into T_ACTOR_STATUS values(2, 1, 0, 30, 20, 100, 0, 5, 1);
-insert into T_ACTOR_STATUS values(3, 1, 0, 10, 10,  40, 0, 4, 1);
-insert into T_ACTOR_STATUS values(4, 1, 0, 10, 10,  40, 0, 4, 1);
+insert into M_ITEM values(1, "レイピア", 3, 2, 1);
+insert into M_ITEM values(2, "普通の指輪", 33, 3, 1);
+
+insert into M_WEAPON values(1, 10, 90, 1, 1, 0, 0);
+insert into M_ACCESSORY values(1, 10, 0, 0);
+
+insert into T_ACTOR_STATUS values(1, 1, 0, 60, 30, 100, 0, 5, 1, 1, 2);
+insert into T_ACTOR_STATUS values(2, 1, 0, 30, 20, 100, 0, 5, 1, 0, 0);
+insert into T_ACTOR_STATUS values(3, 1, 0, 10, 10,  40, 0, 4, 1, 0, 0);
+insert into T_ACTOR_STATUS values(4, 1, 0, 10, 10,  40, 0, 4, 1, 0, 0);

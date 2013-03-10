@@ -40,8 +40,10 @@ public class GameController {
 		} else {
 			tSaveDataEntity = new TSaveDataEntity();
 			tSaveDataEntity.setSaveId(START_SAVE_ID);
-			tSaveDataEntity.setScenariNo(mScenarioEntity.getScenarioNo());
-			tSaveDataEntity.setSeqNo(mScenarioEntity.getSeqNo());
+			tSaveDataEntity.setScenariId(mScenarioEntity.getScenarioId());
+			tSaveDataEntity.setPartyId(1); // PartyIdは1スタート
+			tSaveDataEntity.setGold(0);
+			tSaveDataEntity.setExp(0);
 			tSaveDataDao.insert(pBaseActivity.getDB(), tSaveDataEntity);
 		}
 		
@@ -54,8 +56,7 @@ public class GameController {
 	 * @return
 	 */
 	public boolean save(MultiSceneActivity pBaseActivity, MScenarioEntity pScenarioEntity) {
-		tSaveDataEntity.setScenariNo(pScenarioEntity.getScenarioNo());
-		tSaveDataEntity.setSeqNo(pScenarioEntity.getSeqNo());
+		tSaveDataEntity.setScenariId(pScenarioEntity.getScenarioId());
 		return save(pBaseActivity, tSaveDataEntity);
 	}
 	/**

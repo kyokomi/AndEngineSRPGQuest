@@ -162,7 +162,7 @@ public abstract class SrpgBaseScene extends KeyListenScene {
 		int count = talks.size();
 		for (int i = 0; i < count; i++) {
 			PlayerTalkDto playerTalkDto = talks.get(i);
-			MActorEntity mActorEntity = mActorDao.selectByActorId(getBaseActivity().getDB(), playerTalkDto.getPlayerId());
+			MActorEntity mActorEntity = mActorDao.selectById(getBaseActivity().getDB(), playerTalkDto.getPlayerId());
 			playerTalkDto.setName(mActorEntity.getActorName());
 			if (actorFaces.indexOfKey(mActorEntity.getActorId()) >= 0 ) {
 				continue;
@@ -187,9 +187,9 @@ public abstract class SrpgBaseScene extends KeyListenScene {
 		// セーブデータを読み込み
 		TSaveDataEntity saveData = getBaseActivity().getGameController().getSaveData();
 		// シナリオを検索
-		MScenarioEntity scenarioEntity = mScenarioDao.selectByScenarioNoAndSeqNo(
+		MScenarioEntity scenarioEntity = mScenarioDao.selectById(
 				getBaseActivity().getDB(),
-				saveData.getScenariNo(), saveData.getSeqNo());
+				saveData.getScenariId());
 		// シナリオ開始
 		startScenario(scenarioEntity);
 		getBaseActivity().closeDB();
