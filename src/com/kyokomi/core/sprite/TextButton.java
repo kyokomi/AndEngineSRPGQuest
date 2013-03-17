@@ -21,6 +21,7 @@ public class TextButton extends Rectangle {
 	private boolean mEnabled = true;
 	private State mState;
 	private Text mButtonText;
+	private String baseText;
 
 	// ===========================================================
 	// Constructors
@@ -34,6 +35,7 @@ public class TextButton extends Rectangle {
 		this.mOnClickListener = pOnClickListener;
 		
 		this.mButtonText = pText;
+		this.baseText = mButtonText.getText().toString();
 		this.mButtonText.setPosition(pAddWidth / 2, pAddHeight / 2);
 		attachChild(mButtonText);
 		
@@ -117,7 +119,12 @@ public class TextButton extends Rectangle {
 
 		// TODO: 色の変化、スケール変化、透明度変化、背景色変化など色々できるようにしたい
 		this.mState = pState;
-		this.mButtonText.setText(mState.getText());
+		if (baseText != null && baseText.length() > 0 && this.mState == State.NORMAL) {
+			this.mButtonText.setText(baseText);
+		} else {
+			this.mButtonText.setText(mState.getText());
+		}
+		
 		this.setColor(mState.getColor());
 	}
 

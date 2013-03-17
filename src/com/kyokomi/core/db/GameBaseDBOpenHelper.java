@@ -55,5 +55,4 @@ public class GameBaseDBOpenHelper extends SQLiteOpenHelper {
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 		
 	}
-
 }

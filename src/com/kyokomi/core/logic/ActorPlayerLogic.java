@@ -43,6 +43,7 @@ public class ActorPlayerLogic {
 		actorPlayer.setImageResId(mActorEntity.getImageResId());
 		actorPlayer.setLv(tActorStatusEntity.getLevel());
 		actorPlayer.setExp(tActorStatusEntity.getExp());
+		actorPlayer.setNextExp(tActorStatusEntity.getNextExp());
 		
 		actorPlayer.setMovePoint(tActorStatusEntity.getMovePoint());
 		actorPlayer.setAttackRange(tActorStatusEntity.getAttackRange());

@@ -7,7 +7,7 @@ import com.kyokomi.core.entity.MItemEntity;
 
 public class MItemDao extends AGameBaseDao<MItemEntity> {
 
-private static final String TBL_NAME = "M_ITEM";
+	private static final String TBL_NAME = "M_ITEM";
 	
 	public MItemDao() {
 		

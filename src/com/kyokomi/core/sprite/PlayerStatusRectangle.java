@@ -50,6 +50,22 @@ public class PlayerStatusRectangle extends Rectangle {
 	
 	private float baseWidth;
 	private float baseHeight;
+
+	public PlayerStatusRectangle(SrpgBaseScene pBaseScene, final Font pFont, 
+			final ActorPlayerDto pActorPlayerDto, final String pFaceFileName, 
+			float pX, float pY) {
+		super(pX, pY, 
+				pBaseScene.getWindowWidth() / 2, 
+				pBaseScene.getWindowHeight() / 2, 
+				pBaseScene.getBaseActivity().getVertexBufferObjectManager());
+		this.baseWidth = getWidth();
+		this.baseHeight = getHeight();		
+		this.setColor(Color.WHITE);
+		this.setAlpha(0.5f);
+		
+		this.mActorPlayerDto = pActorPlayerDto;
+		init(pBaseScene, pFont, pFaceFileName);
+	}
 	
 	public PlayerStatusRectangle(SrpgBaseScene pBaseScene, final Font pFont, 
 			final ActorPlayerDto pActorPlayerDto, final String pFaceFileName, 
@@ -115,21 +131,12 @@ public class PlayerStatusRectangle extends Rectangle {
 		attachChildText(mDefencePointText);
 	
 		// スキル領域を作成
-//		mSkillIconRectangle = new Rectangle(0, getHeight() / 2, 
-//				getWidth() / 2, getHeight() / 2, 
-//				pBaseScene.getBaseActivity().getVertexBufferObjectManager());
 		mSkillIconRectangle = new Rectangle(mMoveAttackDirectionText.getX(), mMoveAttackDirectionText.getY() + mMoveAttackDirectionText.getHeight(), 
 				getWidth() / 2, getHeight() / 6, 
 				pBaseScene.getBaseActivity().getVertexBufferObjectManager());
 		mSkillIconRectangle.setColor(Color.TRANSPARENT);
 		attachChild(mSkillIconRectangle);
 		// スキル欄ヘッダー
-//		mSkillHeaderText = new Text(0, 0, pFont, 
-//				"[スキル]", 
-//				pBaseScene.getBaseActivity().getVertexBufferObjectManager());
-//		attachChildText(mSkillIconRectangle, mSkillHeaderText);
-//		float skillHeadX = mSkillHeaderText.getX();
-//		float skillHeadY = mSkillHeaderText.getY() + mSkillHeaderText.getHeight();
 		float skillHeadX = 0;
 		float skillHeadY = 10;
 		
@@ -149,21 +156,11 @@ public class PlayerStatusRectangle extends Rectangle {
 		}
 		
 		// 装備領域を作成
-//		mEquipIconRectangle = new Rectangle(getWidth() / 2, getHeight() / 2, 
-//				getWidth() / 2, getHeight() / 2, 
-//				pBaseScene.getBaseActivity().getVertexBufferObjectManager());
 		mEquipIconRectangle = new Rectangle(nameRigthX, mDefencePointText.getY() + mDefencePointText.getHeight(), 
 				getWidth() / 2, getHeight() / 4, 
 				pBaseScene.getBaseActivity().getVertexBufferObjectManager());
 		mEquipIconRectangle.setColor(Color.TRANSPARENT);
 		attachChild(mEquipIconRectangle);
-//		// 装備欄ヘッダー
-//		mEquipHeaderText = new Text(0, 0, pFont, 
-//				"[装備]", 
-//				pBaseScene.getBaseActivity().getVertexBufferObjectManager());
-//		attachChildText(mEquipIconRectangle, mEquipHeaderText);
-//		float equipHeadX = mEquipHeaderText.getX();
-//		float equipHeadY = mEquipHeaderText.getY() + mEquipHeaderText.getHeight();
 		float equipHeadX = 0;
 		float equipHeadY = 5;
 		
@@ -225,10 +222,6 @@ public class PlayerStatusRectangle extends Rectangle {
 		mDefencePointText.setText( 
 				String.format("防御力 %3d", mActorPlayerDto.getDefencePoint()));
 	
-		// スキル欄ヘッダー
-//		mSkillHeaderText.setText("[スキル]");
-		// 装備欄ヘッダー
-//		mEquipHeaderText.setText("[装備]");
 		// 武器テキスト
 		if (mActorPlayerDto.getEquipDto() != null) {
 			mWeaponNameText.setText(mActorPlayerDto.getEquipDto().getWeaponName()); 
@@ -239,21 +232,29 @@ public class PlayerStatusRectangle extends Rectangle {
 
 	public enum PlayerStatusRectangleType {
 		MINI_STATUS,
-		ALL_STATUS
+		ALL_STATUS,
+		LVUP_STATUS
 	}
 	public void show(PlayerStatusRectangleType rectangleType) {
 		switch (rectangleType) {
 		case MINI_STATUS:
-//			setWidth(this.baseWidth / 2);
 			setHeight(this.baseHeight / 2);
-//			skillVisible(true);
-//			equipVisible(true);
 			break;
 		case ALL_STATUS:
 			setWidth(this.baseWidth);
 			setHeight(this.baseHeight);
-//			skillVisible(true);
-//			equipVisible(true);
+			break;
+		case LVUP_STATUS:
+			allTextVisible(false);
+			skillVisible(false);
+			equipVisible(false);
+			// 名前とレベルだけ表示
+			mNameText.setVisible(true);
+			mLevelExpText.setVisible(true);
+			
+			// 顔グラのサイズにする
+			setHeight(mFaceTiledSprite.getHeight());
+			setWidth(this.baseWidth / 2);
 			break;
 		default:
 			break;
@@ -267,7 +268,6 @@ public class PlayerStatusRectangle extends Rectangle {
 	
 	public void skillVisible(boolean pVisible) {
 		// スキル
-//		mSkillHeaderText.setVisible(pVisible);
 		mSkillIconRectangle.setVisible(pVisible);
 		for (TiledSprite sprite : mSkillIconSpriteList) {
 			sprite.setVisible(pVisible);
@@ -275,11 +275,16 @@ public class PlayerStatusRectangle extends Rectangle {
 	}
 	public void equipVisible(boolean pVisible) {
 		// 装備
-//		mEquipHeaderText.setVisible(pVisible);
 		mEquipIconRectangle.setVisible(pVisible);
 		mWeaponNameText.setVisible(pVisible);
 		mWeaponIconSprite.setVisible(pVisible);
 		mAccessoryNameText.setVisible(pVisible);
 		mAccessoryIconSprite.setVisible(pVisible);
+	}
+	public void allTextVisible(boolean pVisible) {
+		// 全テキスト非表示
+		for (Text text : mTextList) {
+			text.setVisible(pVisible);
+		}
 	}
 }

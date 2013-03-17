@@ -21,6 +21,10 @@ public abstract class AGameBaseDao<T extends IDatabaseEntity> {
 	}
 	
 	protected List<T> query(SQLiteDatabase pSqLiteDatabase,
+			String selection, String[] selectionArgs) {
+		return query(pSqLiteDatabase, null, selection, selectionArgs, null, null, null, null);
+	}
+	protected List<T> query(SQLiteDatabase pSqLiteDatabase,
 		String[] columns, 
 		String selection, String[] selectionArgs, 
 		String groupBy, String having, String orderBy, String limit) {

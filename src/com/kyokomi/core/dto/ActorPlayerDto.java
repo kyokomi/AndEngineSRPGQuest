@@ -21,6 +21,8 @@ public class ActorPlayerDto {
 	private int lv;
 	/** 経験値. */
 	private int exp;
+	/** 次のレベルまでの経験値 */
+	private int nextExp;
 	/** HP. */
 	private int hitPoint;
 	/** HP最大値. */
@@ -190,6 +192,14 @@ public class ActorPlayerDto {
 	 */
 	public void setExp(int exp) {
 		this.exp = exp;
+	}
+
+	public int getNextExp() {
+		return nextExp;
+	}
+
+	public void setNextExp(int nextExp) {
+		this.nextExp = nextExp;
 	}
 
 	/**

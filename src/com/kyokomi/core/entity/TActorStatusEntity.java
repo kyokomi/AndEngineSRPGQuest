@@ -23,6 +23,7 @@ public class TActorStatusEntity implements IDatabaseEntity {
 	private Integer actorId;
 	private Integer level;
 	private Integer exp;
+	private Integer nextExp;
 	private Integer attackPoint;
 	private Integer defencePoint;
 	private Integer hitPoint;
@@ -40,17 +41,19 @@ public class TActorStatusEntity implements IDatabaseEntity {
 	}
 	@Override
 	public void initCursor(Cursor pCursor) {
-		this.actorId        = pCursor.getInt(0);
-		this.level          = pCursor.getInt(1);
-		this.exp            = pCursor.getInt(2);
-		this.attackPoint    = pCursor.getInt(3);
-		this.defencePoint   = pCursor.getInt(4);
-		this.hitPoint       = pCursor.getInt(5);
-		this.magicPoint     = pCursor.getInt(6);
-		this.movePoint      = pCursor.getInt(7);
-		this.attackRange    = pCursor.getInt(8);
-		this.weaponId       = pCursor.getInt(9);
-		this.accessoryId    = pCursor.getInt(10);
+		int count = 0;
+		this.actorId        = pCursor.getInt(count); count++;
+		this.level          = pCursor.getInt(count); count++;
+		this.exp            = pCursor.getInt(count); count++;
+		this.nextExp        = pCursor.getInt(count); count++;
+		this.attackPoint    = pCursor.getInt(count); count++;
+		this.defencePoint   = pCursor.getInt(count); count++;
+		this.hitPoint       = pCursor.getInt(count); count++;
+		this.magicPoint     = pCursor.getInt(count); count++;
+		this.movePoint      = pCursor.getInt(count); count++;
+		this.attackRange    = pCursor.getInt(count); count++;
+		this.weaponId       = pCursor.getInt(count); count++;
+		this.accessoryId    = pCursor.getInt(count); count++;
 	}
 	public Integer getActorId() {
 		return actorId;
@@ -66,6 +69,12 @@ public class TActorStatusEntity implements IDatabaseEntity {
 	}
 	public Integer getExp() {
 		return exp;
+	}
+	public Integer getNextExp() {
+		return nextExp;
+	}
+	public void setNextExp(Integer nextExp) {
+		this.nextExp = nextExp;
 	}
 	public void setExp(Integer exp) {
 		this.exp = exp;
