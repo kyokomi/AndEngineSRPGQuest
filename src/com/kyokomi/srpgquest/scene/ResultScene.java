@@ -174,4 +174,10 @@ public class ResultScene extends SrpgBaseScene {
 		attachChild(text);
 		return text;
 	}
+
+	@Override
+	public void destory() {
+		// TODO Auto-generated method stub
+		
+	}
 }

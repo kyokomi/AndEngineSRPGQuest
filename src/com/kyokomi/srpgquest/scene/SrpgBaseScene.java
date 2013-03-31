@@ -195,6 +195,9 @@ public abstract class SrpgBaseScene extends KeyListenScene {
 		getBaseActivity().closeDB();
 	}
 	// 次シナリオ読み込み
+	public void nextScenario() {
+		nextScenario(getScenarioEntity());
+	}
 	public void nextScenario(MScenarioEntity scenarioEntity) {
 		getBaseActivity().openDB();
 		ditactionScene(mScenarioDao.selectNextSeq(getBaseActivity().getDB(), 
@@ -237,4 +240,6 @@ public abstract class SrpgBaseScene extends KeyListenScene {
 			break;
 		}
 	}
+	
+	public abstract void destory();
 }

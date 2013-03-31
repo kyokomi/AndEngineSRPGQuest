@@ -499,4 +499,10 @@ public class SandboxScene extends SrpgBaseScene
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	public void destory() {
+		// TODO Auto-generated method stub
+		
+	}
 }

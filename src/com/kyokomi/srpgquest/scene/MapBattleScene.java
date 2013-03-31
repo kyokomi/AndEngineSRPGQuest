@@ -78,6 +78,7 @@ public class MapBattleScene extends SrpgBaseScene
 	/** プレイヤーと敵情報. */
 	private SparseArray<ActorSprite> players;
 	private SparseArray<ActorSprite> enemys;
+	private List<TiledSprite> obstacleList;
 	/** カーソル表示リスト. */
 	private List<CursorRectangle> cursorList;
 
@@ -163,6 +164,7 @@ public class MapBattleScene extends SrpgBaseScene
 		players = new SparseArray<ActorSprite>();
 		enemys = new SparseArray<ActorSprite>();
 		cursorList = new ArrayList<CursorRectangle>();
+		obstacleList = new ArrayList<TiledSprite>();
 		// デフォルトフォント初期化
 		initFont(16);
 		// 背景
@@ -282,6 +284,7 @@ public class MapBattleScene extends SrpgBaseScene
 		obstacle.setCurrentTileIndex(currentTileIndex);
 		obstacle.setSize(mapPoint.getGridSize(), mapPoint.getGridSize());
 		obstacle.setZIndex(LayerZIndex.ACTOR_LAYER.getValue());
+		obstacleList.add(obstacle);
 		attachChild(obstacle);
 	}
 	
@@ -727,5 +730,25 @@ public class MapBattleScene extends SrpgBaseScene
 			line.setAlpha(0.5f);
 			attachChild(line);
 		}
+	}
+	
+	@Override
+	public void destory() {
+		for (int i = 0; i < players.size(); i++) {
+			detachEntity(players.valueAt(i));
+		}
+		players = null;
+		for (int i = 0; i < enemys.size(); i++) {
+			detachEntity(enemys.valueAt(i));
+		}
+		enemys = null;
+		for (int i = 0; i < cursorList.size(); i++) {
+			detachEntity(cursorList.get(i));
+		}
+		cursorList = null;
+		for (int i = 0; i < obstacleList.size(); i++) {
+			detachEntity(obstacleList.get(i));
+		}
+		obstacleList = null;
 	}
 }

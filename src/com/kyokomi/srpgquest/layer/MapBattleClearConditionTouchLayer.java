@@ -68,4 +68,8 @@ public class MapBattleClearConditionTouchLayer extends ACutInTouchLayer {
 	public IAreaShape getTouchLayer() {
 		return mTouchLayer;
 	}
+	
+	public void removeAll() {
+		mTouchLayer.detachSelf();
+	}
 }

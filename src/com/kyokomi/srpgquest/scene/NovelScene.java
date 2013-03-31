@@ -137,4 +137,9 @@ public class NovelScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		}
 		return false;
 	}
+	@Override
+	public void destory() {
+		// TODO Auto-generated method stub
+		
+	}
 }

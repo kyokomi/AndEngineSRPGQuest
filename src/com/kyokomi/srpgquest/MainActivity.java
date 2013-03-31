@@ -17,6 +17,8 @@ import com.kyokomi.srpgquest.scene.SrpgBaseScene;
 
 import android.os.Bundle;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
 
 
 /**
@@ -136,9 +138,9 @@ public class MainActivity extends MultiSceneActivity {
 				}
 			}
 			return true;
-		} else if (e.getAction() == KeyEvent.ACTION_DOWN && e.getKeyCode() == KeyEvent.KEYCODE_MENU) {
-			getSceneArray().get(getSceneArray().size() - 1).dispatchKeyEvent(e);
-			return true;
+//		} else if (e.getAction() == KeyEvent.ACTION_DOWN && e.getKeyCode() == KeyEvent.KEYCODE_MENU) {
+//			getSceneArray().get(getSceneArray().size() - 1).dispatchKeyEvent(e);
+//			return true;
 		}
 		return false;
 	}
@@ -160,5 +162,28 @@ public class MainActivity extends MultiSceneActivity {
 		if (getEngine().getScene() instanceof SrpgBaseScene) {
 			((SrpgBaseScene) getEngine().getScene()).onResume();
 		}
+	}
+	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		menu.add(Menu.NONE, 0, Menu.NONE, "Clear");
+//		menu.add("");
+//		menu.add("");
+		return super.onCreateOptionsMenu(menu);
+	}
+	
+	@Override
+	public boolean onMenuItemSelected(int featureId, MenuItem item) {
+		if (item.getItemId() == 0) {
+			// デバッグクリア
+			getMediaManager().stopPlayingMusic();
+			// 次のシナリオへ
+			if (getEngine().getScene() instanceof SrpgBaseScene) {
+				((SrpgBaseScene) getEngine().getScene()).destory();
+				((SrpgBaseScene) getEngine().getScene()).nextScenario();
+				
+			}
+		}
+		return super.onMenuItemSelected(featureId, item);
 	}
 }

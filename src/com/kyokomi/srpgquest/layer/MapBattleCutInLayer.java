@@ -125,4 +125,11 @@ public class MapBattleCutInLayer {
 			}
 		}));
 	}
+
+	public void removeAll() {
+		mPlayerTurnCutInSprite.detachSelf();
+		mEnemyTurnCutInSprite.detachSelf();
+		mPlayerWinCutInSprite.detachSelf();
+		mGameOverCutInSprite.detachSelf();
+	}
 }

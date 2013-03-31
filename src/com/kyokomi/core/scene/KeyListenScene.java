@@ -191,7 +191,7 @@ public abstract class KeyListenScene extends Scene {
 	 * 画面破棄.
 	 * detachChildrenとdetachSelfを呼ぶときは別スレッドで行う。
 	 */
-	protected void detachEntity(final Entity entity) {
+	protected void detachEntity(final IEntity entity) {
 		getBaseActivity().runOnUpdateThread(new Runnable() {
 			@Override
 			public void run() {
