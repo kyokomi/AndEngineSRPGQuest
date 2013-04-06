@@ -21,20 +21,30 @@ insert into M_ACTOR values(2, "ラーティ・クルス", 34);
 insert into M_ACTOR values(3, "スライム的な何か", 901);
 insert into M_ACTOR values(4, "村長", 902);
 
-insert into M_ITEM values(1, "レイピア", 3, 2, 1);
-insert into M_ITEM values(2, "普通の指輪", 33, 3, 1);
+insert into M_ITEM values(1000, "ポーション", 64,	 3, 1);
+insert into M_ITEM values(2000, "赤魔道師のマント", 47, 3, 3);
+insert into M_ITEM values(2001, "風のマント", 46, 3, 4);
+insert into M_ITEM values(2002, "皮の靴", 48, 3, 2);
+insert into M_ITEM values(2003, "普通の指輪", 33, 3, 1);
+insert into M_ITEM values(3000, "レイピア", 3, 2, 1);
 
 insert into M_WEAPON values(1, 10, 90, 1, 1, 0, 0);
-insert into M_ACCESSORY values(1, 10, 0, 0);
 
-insert into T_ACTOR_STATUS values(1, 1, 0, 100, 60, 30, 100, 0, 5, 1, 1, 2);
+insert into M_ACCESSORY values(1, 10, 0, 0);
+insert into M_ACCESSORY values(2, 12, 0, 0);
+insert into M_ACCESSORY values(3, 15, 0, 0);
+insert into M_ACCESSORY values(4, 8, 0, 0);
+
+insert into T_ACTOR_STATUS values(1, 1, 0, 100, 60, 30, 100, 0, 5, 1, 3000, 2001);
 insert into T_ACTOR_STATUS values(2, 1, 0, 100, 30, 20, 100, 0, 5, 1, 0, 0);
 insert into T_ACTOR_STATUS values(3, 1, 0, 100, 10, 10,  40, 0, 4, 1, 0, 0);
 insert into T_ACTOR_STATUS values(4, 1, 0, 100, 10, 10,  40, 0, 4, 1, 0, 0);
 
 insert into M_MAP_BATTLE_REWARD values(1, 1, 1, 100);
 insert into M_MAP_BATTLE_REWARD values(2, 1, 2, 1000);
-insert into M_MAP_BATTLE_REWARD values(3, 2, 1, 300);
-insert into M_MAP_BATTLE_REWARD values(4, 2, 2, 5000);
-insert into M_MAP_BATTLE_REWARD values(5, 3, 1, 500);
-insert into M_MAP_BATTLE_REWARD values(6, 3, 2, 7000);
+insert into M_MAP_BATTLE_REWARD values(3, 1, 3, 1000);
+insert into M_MAP_BATTLE_REWARD values(4, 1, 3, 2003);
+insert into M_MAP_BATTLE_REWARD values(5, 2, 1, 300);
+insert into M_MAP_BATTLE_REWARD values(6, 2, 2, 5000);
+insert into M_MAP_BATTLE_REWARD values(7, 3, 1, 500);
+insert into M_MAP_BATTLE_REWARD values(8, 3, 2, 7000);

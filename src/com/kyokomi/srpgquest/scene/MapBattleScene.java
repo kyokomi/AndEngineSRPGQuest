@@ -35,6 +35,7 @@ import com.kyokomi.core.dto.ActorPlayerDto;
 import com.kyokomi.core.dto.PlayerTalkDto;
 import com.kyokomi.core.entity.MScenarioEntity;
 import com.kyokomi.core.sprite.ActorSprite;
+import com.kyokomi.core.sprite.CommonWindowRectangle;
 import com.kyokomi.core.sprite.PlayerStatusRectangle;
 import com.kyokomi.core.sprite.PlayerStatusRectangle.PlayerStatusRectangleType;
 import com.kyokomi.core.sprite.TalkLayer;
@@ -305,6 +306,12 @@ public class MapBattleScene extends SrpgBaseScene
 					getWindowWidth() / 2, y, 
 					getWindowWidth() / 2, getWindowHeight() / 2);
 			mPlayerStatusRectangle.setZIndex(LayerZIndex.POPUP_LAYER.getValue());
+			CommonWindowRectangle commonWindowRectangle = new CommonWindowRectangle(
+					0, 0, 
+					mPlayerStatusRectangle.getWidth(), 
+					mPlayerStatusRectangle.getHeight() / 2,
+					Color.TRANSPARENT, 0.0f, this);
+			mPlayerStatusRectangle.attachChild(commonWindowRectangle);
 		}
 		return mPlayerStatusRectangle;
 	}
@@ -600,6 +607,15 @@ public class MapBattleScene extends SrpgBaseScene
 	
 	// --------------- ステータスウィンドウ --------------
 	public void showPlayerStatusWindow(int playerSeqNo, float x) {
+//		// 共通ウィンドウを作成
+//		if (commonWindowRectangle == null) {
+//			commonWindowRectangle = new CommonWindowRectangle(
+//					0, 0,
+//					getWindowWidth() / 2, getWindowHeight() / 2,
+//					this);
+//			attachChild(commonWindowRectangle);
+//		}
+		
 		if (mPlayerStatusRect != null) {
 			detachChild(mPlayerStatusRect);
 		}

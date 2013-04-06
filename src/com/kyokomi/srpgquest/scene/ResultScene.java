@@ -3,7 +3,10 @@ package com.kyokomi.srpgquest.scene;
 import java.io.IOException;
 
 import org.andengine.entity.primitive.Line;
+import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.sprite.ButtonSprite;
+import org.andengine.entity.sprite.Sprite;
+import org.andengine.entity.sprite.TiledSprite;
 import org.andengine.entity.text.Text;
 import org.andengine.entity.text.TextOptions;
 import org.andengine.opengl.font.Font;
@@ -17,12 +20,14 @@ import android.view.KeyEvent;
 import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.dto.ActorPlayerDto;
 import com.kyokomi.core.dto.MapBattleRewardDto;
+import com.kyokomi.core.entity.MItemEntity;
 import com.kyokomi.core.entity.MScenarioEntity;
 import com.kyokomi.core.logic.ActorPlayerLogic;
 import com.kyokomi.core.logic.MapBattleRewardLogic;
 import com.kyokomi.core.manager.MediaManager.MusicType;
 import com.kyokomi.core.manager.MediaManager.SoundType;
 import com.kyokomi.core.sprite.ActorSprite;
+import com.kyokomi.core.sprite.CommonWindowRectangle;
 import com.kyokomi.core.sprite.PlayerStatusRectangle;
 import com.kyokomi.core.sprite.TextButton;
 import com.kyokomi.core.sprite.PlayerStatusRectangle.PlayerStatusRectangleType;
@@ -91,70 +96,118 @@ public class ResultScene extends SrpgBaseScene {
 		MapBattleRewardDto mapBattleRewardDto = mapBattleRewardLogic.createMapBattleRewardDto(
 				this, mScenarioEntity.getSceneId());
 
+		// 背景
+		Sprite backImage = getResourceSprite("bk/back_mori2.jpg");
+		backImage.setSize(getWindowWidth(), getWindowHeight());
+		attachChild(backImage);
+
+		// 共通ウィンドウを作成
+		CommonWindowRectangle comonWindowRectangle = new CommonWindowRectangle(
+				getWindowWidth() / 4, 5,
+				getWindowWidth() / 2, getWindowHeight() / 2 + getWindowHeight() / 4,
+				this);
+		attachChild(comonWindowRectangle);
+		
 		// ---------------------------------------------------------------
 		// 獲得物表示
 		// ---------------------------------------------------------------
 		Text titleText = createWithAttachText(largeFont, "- Result -");
 		placeToCenterX(titleText, 20);
 		
-		Text expText = createWithAttachText(defaultFont, "獲得経験値:" + mapBattleRewardDto.getTotalExp());
-		placeToCenterX(expText, titleText.getY() + titleText.getHeight() + 20);
+		float titleBaseX = (getWindowWidth() / 2) - (getWindowWidth() / 6);
+		Text expTitleText = createWithAttachText(defaultFont, "獲得経験値:");
+		expTitleText.setPosition(titleBaseX, titleText.getY() + titleText.getHeight() + 20);
+		
+		Text expText = createWithAttachText(defaultFont, mapBattleRewardDto.getTotalExp() + " Exp");
+		expText.setPosition(getWindowWidth() / 2, titleText.getY() + titleText.getHeight() + 20);
 
-		Text goldText = createWithAttachText(defaultFont, "獲得ゴールド:" + mapBattleRewardDto.getTotalGold());
-		placeToCenterX(goldText, expText.getY() + expText.getHeight() + 20);
+		Text goldTitleText = createWithAttachText(defaultFont, "獲得ゴールド:");
+		goldTitleText.setPosition(titleBaseX, expText.getY() + expText.getHeight() + 20);
+		
+		Text goldText = createWithAttachText(defaultFont, mapBattleRewardDto.getTotalGold() + " Gold");
+		goldText.setPosition(getWindowWidth() / 2, expText.getY() + expText.getHeight() + 20);
 		
 		Text itemTitleText = createWithAttachText(defaultFont, "獲得アイテム:");
-		placeToCenterX(itemTitleText, goldText.getY() + goldText.getHeight() + 20);
+		itemTitleText.setPosition(titleBaseX, goldText.getY() + goldText.getHeight() + 20);
 		if (mapBattleRewardDto.getItemList().isEmpty()) {
 			Text notGetItemText = createWithAttachText(defaultFont, "なし");
 			placeToCenterX(notGetItemText, itemTitleText.getY() + itemTitleText.getHeight() + 20);
 		} else {
-//			for (MItemEntity itemEntity : mapBattleRewardDto.getItemList()) {
-//				// TODO: アイコンを描画？
-//			}
+			Rectangle itemIconRectangle = new Rectangle(0, 
+					itemTitleText.getY() + itemTitleText.getHeight() + 20, 
+					getWindowWidth() / 4, getWindowHeight() / 4, 
+					getBaseActivity().getVertexBufferObjectManager());
+			itemIconRectangle.setColor(Color.TRANSPARENT);
+			attachChild(itemIconRectangle);
+			
+			float baseX = 0;
+			float baseY = 0;
+			for (MItemEntity itemEntity : mapBattleRewardDto.getItemList()) {
+				// アイコン
+				TiledSprite itemIconTiled = getIconSetTiledSprite();
+				itemIconTiled.setCurrentTileIndex(itemEntity.getItemImageId());
+				itemIconTiled.setPosition(baseX, baseY);
+				itemIconRectangle.attachChild(itemIconTiled);
+				baseX += itemIconTiled.getWidth() + 5;
+				
+				// テキスト
+				Text itemText = createText(defaultFont, itemEntity.getItemName());
+				itemText.setPosition(baseX, baseY);
+				itemIconRectangle.attachChild(itemText);
+				baseX += itemText.getWidth() + 5;
+				
+				baseY += itemIconTiled.getHeight() + 5;
+				baseX = 0;
+			}
+			placeToCenterX(itemIconRectangle, itemIconRectangle.getY());
 		}
 		
 		// ---------------------------------------------------------------
 		// レベルアップ選択
 		// ---------------------------------------------------------------
-		final Line line = new Line(20, getWindowHeight() / 2, getWindowWidth() - 20, getWindowHeight() / 2,
-				getBaseActivity().getVertexBufferObjectManager());
-		line.setLineWidth(1);
-		line.setColor(Color.WHITE);
-		attachChild(line);
+//		final Line line = new Line(20, getWindowHeight() / 2, getWindowWidth() - 20, getWindowHeight() / 2,
+//				getBaseActivity().getVertexBufferObjectManager());
+//		line.setLineWidth(1);
+//		line.setColor(Color.WHITE);
+//		attachChild(line);
+//		
+//		// プレイヤーパーティーを表示
+//		ActorPlayerLogic actorPlayerLogic  = new ActorPlayerLogic();
+//		// TODO: とりあえず１キャラなので...
+//		ActorPlayerDto actorPlayerDto = actorPlayerLogic.createActorPlayerDto(this, 1);
+//		PlayerStatusRectangle statusRect = new PlayerStatusRectangle(
+//				this, getFont(), actorPlayerDto, 
+//				ActorSprite.getFaceFileName(actorPlayerDto.getImageResId()), 0, 0);
+//		statusRect.setPosition(20, getWindowHeight() / 2 + 20);
+//		statusRect.show(PlayerStatusRectangleType.LVUP_STATUS);
+//		attachChild(statusRect);
+//		
+//		Text levelUpText = new Text(0, 0, getFont(), "LEVEL UP", 
+//				getBaseActivity().getVertexBufferObjectManager());
+//		// レベルアップボタン表示
+//		TextButton textButton = new TextButton(levelUpText, 0, 0, 8, 8, 
+//				getBaseActivity().getVertexBufferObjectManager(), 
+//				new TextButton.OnClickListener() {
+//			@Override
+//			public void onClick(TextButton pTextButtonSprite, float pTouchAreaLocalX,
+//					float pTouchAreaLocalY) {
+//				// 経験値減らす
+//				
+//				// レベルアップ呼び出し(DB更新）
+//				
+//				// プレイヤーウィンドウを再描画
+//				
+//			}
+//		});
+//		textButton.setPosition(
+//				statusRect.getX() + statusRect.getWidth() / 2 + textButton.getWidth() / 4, 
+//				statusRect.getY() + statusRect.getHeight() / 2 + textButton.getHeight() / 2);
+//		registerTouchArea(textButton);
+//		attachChild(textButton);
 		
-		// プレイヤーパーティーを表示
-		ActorPlayerLogic actorPlayerLogic  = new ActorPlayerLogic();
-		// TODO: とりあえず１キャラなので...
-		ActorPlayerDto actorPlayerDto = actorPlayerLogic.createActorPlayerDto(this, 1);
-		PlayerStatusRectangle statusRect = new PlayerStatusRectangle(
-				this, getFont(), actorPlayerDto, 
-				ActorSprite.getFaceFileName(actorPlayerDto.getImageResId()), 0, 0);
-		statusRect.setPosition(20, getWindowHeight() / 2 + 20);
-		statusRect.show(PlayerStatusRectangleType.LVUP_STATUS);
-		attachChild(statusRect);
-		
-		Text levelUpText = new Text(0, 0, getFont(), "LEVEL UP", 
-				getBaseActivity().getVertexBufferObjectManager());
-		// レベルアップボタン表示
-		TextButton textButton = new TextButton(levelUpText, 0, 0, 8, 8, 
-				getBaseActivity().getVertexBufferObjectManager(), 
-				new TextButton.OnClickListener() {
-			@Override
-			public void onClick(TextButton pTextButtonSprite, float pTouchAreaLocalX,
-					float pTouchAreaLocalY) {
-				
-			}
-		});
-		textButton.setPosition(
-				statusRect.getX() + statusRect.getWidth() / 2 + textButton.getWidth() / 4, 
-				statusRect.getY() + statusRect.getHeight() / 2 + textButton.getHeight() / 2);
-		registerTouchArea(textButton);
-		attachChild(textButton);
-		
-		// ボタン生成
+		// 次へボタン生成
 		ButtonSprite nextSceneButtonSprite = getResourceButtonSprite("btn/next_btn.png", "btn/next_btn_p.png");
-		placeToCenterX(nextSceneButtonSprite, getWindowHeight() - nextSceneButtonSprite.getHeight() - 20);
+		placeToCenterX(nextSceneButtonSprite, getWindowHeight() - nextSceneButtonSprite.getHeight() - 40);
 		registerTouchArea(nextSceneButtonSprite);
 		nextSceneButtonSprite.setOnClickListener(new ButtonSprite.OnClickListener() {
 			@Override
@@ -168,10 +221,14 @@ public class ResultScene extends SrpgBaseScene {
 	}
 
 	private Text createWithAttachText(Font font, String textStr) {
+		Text text = createText(font, textStr);
+		attachChild(text);
+		return text;
+	}
+	private Text createText(Font font, String textStr) {
 		Text text = new Text(16, 16, font, textStr, 
 				new TextOptions(HorizontalAlign.CENTER), 
 				getBaseActivity().getVertexBufferObjectManager());
-		attachChild(text);
 		return text;
 	}
 

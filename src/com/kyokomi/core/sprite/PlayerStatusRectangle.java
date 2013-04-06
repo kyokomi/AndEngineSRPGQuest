@@ -22,6 +22,9 @@ import com.kyokomi.srpgquest.scene.SrpgBaseScene;
  */
 public class PlayerStatusRectangle extends Rectangle {
 
+	private final static float BASE_X = 8;
+	private final static float BASE_Y = 14;
+	
 	private final ActorPlayerDto mActorPlayerDto;
 	
 	// 顔、名前
@@ -93,10 +96,12 @@ public class PlayerStatusRectangle extends Rectangle {
 		
 		mFaceTiledSprite = pBaseScene.getResourceFaceSprite(
 				mActorPlayerDto.getPlayerId(), pFaceFileName);
+		mFaceTiledSprite.setPosition(BASE_X, BASE_Y);
 		attachChild(mFaceTiledSprite);
 		
-		float faceRigthX = mFaceTiledSprite.getWidth();
-		mNameText = new Text(faceRigthX, 0, pFont, 
+		float faceRigthX = mFaceTiledSprite.getWidth() + mFaceTiledSprite.getX();
+		float faceRigthY = mFaceTiledSprite.getY() - 4;
+		mNameText = new Text(faceRigthX, faceRigthY, pFont, 
 				mActorPlayerDto.getName(), 
 				pBaseScene.getBaseActivity().getVertexBufferObjectManager());
 		attachChildText(mNameText);
@@ -119,17 +124,6 @@ public class PlayerStatusRectangle extends Rectangle {
 				pBaseScene.getBaseActivity().getVertexBufferObjectManager());
 		attachChildText(mMoveAttackDirectionText);
 		
-		float nameRigthX = (getWidth() - faceRigthX) / 2 + faceRigthX;
-		float nameBottomY = mNameText.getY() + mNameText.getHeight();
-		mAttackPointText = new Text(nameRigthX, nameBottomY, pFont, 
-				String.format("攻撃力 %3d" ,mActorPlayerDto.getAttackPoint()), 
-				pBaseScene.getBaseActivity().getVertexBufferObjectManager());
-		attachChildText(mAttackPointText);
-		mDefencePointText = new Text(nameRigthX, mAttackPointText.getY() + mAttackPointText.getHeight(), pFont, 
-				String.format("防御力 %3d", mActorPlayerDto.getDefencePoint()), 
-				pBaseScene.getBaseActivity().getVertexBufferObjectManager());
-		attachChildText(mDefencePointText);
-	
 		// スキル領域を作成
 		mSkillIconRectangle = new Rectangle(mMoveAttackDirectionText.getX(), mMoveAttackDirectionText.getY() + mMoveAttackDirectionText.getHeight(), 
 				getWidth() / 2, getHeight() / 6, 
@@ -138,7 +132,7 @@ public class PlayerStatusRectangle extends Rectangle {
 		attachChild(mSkillIconRectangle);
 		// スキル欄ヘッダー
 		float skillHeadX = 0;
-		float skillHeadY = 10;
+		float skillHeadY = 2;
 		
 		if (mActorPlayerDto.getSkillDtoList() != null && !mActorPlayerDto.getSkillDtoList().isEmpty()) {
 			// スキルアイコン
@@ -155,6 +149,19 @@ public class PlayerStatusRectangle extends Rectangle {
 			}
 		}
 		
+		float nameRigthX = (getWidth() - faceRigthX) / 2 + faceRigthX - (BASE_X * 2);
+		float nameBottomY = mNameText.getY() + mNameText.getHeight();
+		mAttackPointText = new Text(nameRigthX, nameBottomY, pFont, 
+				String.format("攻撃 %3d" ,mActorPlayerDto.getAttackPoint()), 
+				pBaseScene.getBaseActivity().getVertexBufferObjectManager());
+		attachChildText(mAttackPointText);
+		mDefencePointText = new Text(
+				mAttackPointText.getX() + mAttackPointText.getWidth() + 8,
+				nameBottomY, pFont, 
+				String.format("防御 %3d", mActorPlayerDto.getDefencePoint()), 
+				pBaseScene.getBaseActivity().getVertexBufferObjectManager());
+		attachChildText(mDefencePointText);
+	
 		// 装備領域を作成
 		mEquipIconRectangle = new Rectangle(nameRigthX, mDefencePointText.getY() + mDefencePointText.getHeight(), 
 				getWidth() / 2, getHeight() / 4, 
@@ -218,9 +225,9 @@ public class PlayerStatusRectangle extends Rectangle {
 		mMoveAttackDirectionText.setText( 
 				String.format("移動力 %d 射程 %d", mActorPlayerDto.getMovePoint(), mActorPlayerDto.getAttackRange()));
 		mAttackPointText.setText( 
-				String.format("攻撃力 %3d" ,mActorPlayerDto.getAttackPoint()));
+				String.format("攻撃 %3d" ,mActorPlayerDto.getAttackPoint()));
 		mDefencePointText.setText( 
-				String.format("防御力 %3d", mActorPlayerDto.getDefencePoint()));
+				String.format("防御 %3d", mActorPlayerDto.getDefencePoint()));
 	
 		// 武器テキスト
 		if (mActorPlayerDto.getEquipDto() != null) {
