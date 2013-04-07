@@ -27,7 +27,6 @@ import com.kyokomi.core.dto.PlayerTalkDto;
 import com.kyokomi.core.dto.PlayerTalkDto.TalkDirection;
 import com.kyokomi.core.entity.MActorEntity;
 import com.kyokomi.core.entity.MScenarioEntity;
-import com.kyokomi.core.entity.TSaveDataEntity;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.core.sprite.ActorSprite;
 
@@ -184,12 +183,10 @@ public abstract class SrpgBaseScene extends KeyListenScene {
 	// 現在のセーブをロードしシナリオを読み込む
 	public void loadScenario() {
 		getBaseActivity().openDB();
-		// セーブデータを読み込み
-		TSaveDataEntity saveData = getBaseActivity().getGameController().getSaveData();
 		// シナリオを検索
 		MScenarioEntity scenarioEntity = mScenarioDao.selectById(
 				getBaseActivity().getDB(),
-				saveData.getScenariId());
+				getBaseActivity().getGameController().getScenarioId());
 		// シナリオ開始
 		startScenario(scenarioEntity);
 		getBaseActivity().closeDB();

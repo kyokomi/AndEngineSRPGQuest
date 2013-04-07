@@ -32,6 +32,7 @@ import android.view.KeyEvent;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.dto.ActorPlayerDto;
+import com.kyokomi.core.dto.MapBattleRewardDto;
 import com.kyokomi.core.dto.PlayerTalkDto;
 import com.kyokomi.core.entity.MScenarioEntity;
 import com.kyokomi.core.sprite.ActorSprite;
@@ -46,6 +47,7 @@ import com.kyokomi.srpgquest.layer.MapBattleCutInLayer;
 import com.kyokomi.srpgquest.layer.MapBattleCutInLayer.MapBattleCutInLayerType;
 import com.kyokomi.srpgquest.layer.MapBattleSelectMenuLayer;
 import com.kyokomi.srpgquest.layer.MapBattleClearConditionTouchLayer;
+import com.kyokomi.core.logic.MapBattleRewardLogic;
 import com.kyokomi.core.manager.MediaManager.MusicType;
 import com.kyokomi.core.manager.MediaManager.SoundType;
 import com.kyokomi.srpgquest.map.common.MapPoint;
@@ -714,7 +716,17 @@ public class MapBattleScene extends SrpgBaseScene
 	
 	// ---- クリア時の処理 ----
 	public void clearMapBattle() {
+		int mapBattleId = getScenarioEntity().getSceneId();
+		
 		getMediaManager().stopPlayingMusic();
+		// 報酬振込み(アイテムだけ)
+		MapBattleRewardLogic mapBattleRewardLogic = new MapBattleRewardLogic();
+		MapBattleRewardDto mapBattleRewardDto = mapBattleRewardLogic.addMapBattleReward(this, 
+				getBaseActivity().getGameController().getSaveId(), mapBattleId);
+		// セーブ更新(DB更新はしません。シナリオ進行時にまとめて更新してもらいます）
+		getBaseActivity().getGameController().addExp(mapBattleRewardDto.getTotalExp());
+		getBaseActivity().getGameController().addGold(mapBattleRewardDto.getTotalGold());
+				
 		// 次のシナリオへ
 		nextScenario(getScenarioEntity());
 	}

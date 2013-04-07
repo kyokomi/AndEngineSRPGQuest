@@ -8,20 +8,19 @@ import android.database.sqlite.SQLiteDatabase;
 import com.kyokomi.core.constants.GameObjectType;
 import com.kyokomi.core.dao.MItemDao;
 import com.kyokomi.core.dao.MMapBattleRewardDao;
+import com.kyokomi.core.dao.TUserItemDao;
 import com.kyokomi.core.dto.MapBattleRewardDto;
 import com.kyokomi.core.entity.MItemEntity;
 import com.kyokomi.core.entity.MMapBattleRewardEntity;
+import com.kyokomi.core.entity.TUserItemEntity;
 import com.kyokomi.core.scene.KeyListenScene;
 
 public class MapBattleRewardLogic {
-	private MItemDao mItemDao;
-	private MMapBattleRewardDao mMapBattleRewardDao;
-	public MapBattleRewardLogic() {
-		mItemDao = new MItemDao();
-		mMapBattleRewardDao = new MMapBattleRewardDao();
-	}
 	
 	public MapBattleRewardDto createMapBattleRewardDto(KeyListenScene pBaseScene, int mapBattleId) {
+		MMapBattleRewardDao mMapBattleRewardDao = new MMapBattleRewardDao(); 
+		MItemDao mItemDao = new MItemDao();
+		
 		MapBattleRewardDto mapBattleRewardDto = new MapBattleRewardDto();
 		
 		SQLiteDatabase database = pBaseScene.getBaseActivity().getDB();
@@ -46,7 +45,6 @@ public class MapBattleRewardLogic {
 				MItemEntity itemEntity = mItemDao.selectById(
 						database, mMapBattleReward.getObjectId());
 				itemList.add(itemEntity);
-				totalExp += mMapBattleReward.getObjectId();
 				break;
 			}
 		}
@@ -59,4 +57,32 @@ public class MapBattleRewardLogic {
 		return mapBattleRewardDto;
 	}
 	
+	public MapBattleRewardDto addMapBattleReward(KeyListenScene pBaseScene, int saveId, int mapBattleId) {
+		// 報酬取得
+		MapBattleRewardDto mapBattleRewardDto = createMapBattleRewardDto(pBaseScene, mapBattleId);
+		
+		// DBオープン
+		SQLiteDatabase database = pBaseScene.getBaseActivity().getDB();
+		TUserItemDao tUserItemDao = new TUserItemDao();
+		
+		// 所持アイテム更新
+		for (MItemEntity itemEntity : mapBattleRewardDto.getItemList()) {
+			TUserItemEntity tUserItemEntity = tUserItemDao.selectById(database, itemEntity.getItemId());
+			if (tUserItemEntity != null) {
+				// update
+				tUserItemEntity.setItemCount(tUserItemEntity.getItemCount() + 1);
+				tUserItemDao.update(database, tUserItemEntity);
+			} else {
+				// insert
+				tUserItemEntity = new TUserItemEntity();
+				tUserItemEntity.setItemId(itemEntity.getItemId());
+				tUserItemEntity.setItemCount(1);
+				tUserItemEntity.setSaveId(saveId);
+				tUserItemDao.insert(database, tUserItemEntity);
+			}
+		}
+		pBaseScene.getBaseActivity().closeDB();
+		
+		return mapBattleRewardDto;
+	}
 }

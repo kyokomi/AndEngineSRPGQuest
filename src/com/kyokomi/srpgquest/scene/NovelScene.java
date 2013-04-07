@@ -78,14 +78,14 @@ public class NovelScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	 */
 	@Override
 	public void onResume() {
-		
+		getMediaManager().playPauseingMusic();
 	}
 	/**
 	 * バックグラウンド時
 	 */
 	@Override
 	public void onPause() {
-	
+		getMediaManager().pausePlayingMusic();
 	}
 	
 	@Override

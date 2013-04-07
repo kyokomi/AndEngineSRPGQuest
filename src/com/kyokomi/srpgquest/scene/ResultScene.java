@@ -2,7 +2,6 @@ package com.kyokomi.srpgquest.scene;
 
 import java.io.IOException;
 
-import org.andengine.entity.primitive.Line;
 import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.sprite.ButtonSprite;
 import org.andengine.entity.sprite.Sprite;
@@ -18,19 +17,13 @@ import android.util.Log;
 import android.view.KeyEvent;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
-import com.kyokomi.core.dto.ActorPlayerDto;
 import com.kyokomi.core.dto.MapBattleRewardDto;
 import com.kyokomi.core.entity.MItemEntity;
 import com.kyokomi.core.entity.MScenarioEntity;
-import com.kyokomi.core.logic.ActorPlayerLogic;
 import com.kyokomi.core.logic.MapBattleRewardLogic;
 import com.kyokomi.core.manager.MediaManager.MusicType;
 import com.kyokomi.core.manager.MediaManager.SoundType;
-import com.kyokomi.core.sprite.ActorSprite;
 import com.kyokomi.core.sprite.CommonWindowRectangle;
-import com.kyokomi.core.sprite.PlayerStatusRectangle;
-import com.kyokomi.core.sprite.TextButton;
-import com.kyokomi.core.sprite.PlayerStatusRectangle.PlayerStatusRectangleType;
 
 public class ResultScene extends SrpgBaseScene {
 	private static final String TAG = "ResultScene";

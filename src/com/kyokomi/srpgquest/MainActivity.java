@@ -9,10 +9,12 @@ import org.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
 import org.andengine.entity.scene.Scene;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
+import com.kyokomi.core.dto.SaveDataDto;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.core.utils.ResourceUtil;
 import com.kyokomi.srpgquest.R;
 import com.kyokomi.srpgquest.scene.InitialScene;
+import com.kyokomi.srpgquest.scene.MapBattleScene;
 import com.kyokomi.srpgquest.scene.SrpgBaseScene;
 
 import android.os.Bundle;
@@ -167,7 +169,7 @@ public class MainActivity extends MultiSceneActivity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		menu.add(Menu.NONE, 0, Menu.NONE, "Clear");
-//		menu.add("");
+		menu.add(Menu.NONE, 1, Menu.NONE, "Reset");
 //		menu.add("");
 		return super.onCreateOptionsMenu(menu);
 	}
@@ -180,8 +182,20 @@ public class MainActivity extends MultiSceneActivity {
 			// 次のシナリオへ
 			if (getEngine().getScene() instanceof SrpgBaseScene) {
 				((SrpgBaseScene) getEngine().getScene()).destory();
-				((SrpgBaseScene) getEngine().getScene()).nextScenario();
-				
+				if (getEngine().getScene() instanceof MapBattleScene) {
+					((MapBattleScene) getEngine().getScene()).clearMapBattle();
+				} else {
+					((SrpgBaseScene) getEngine().getScene()).nextScenario();
+				}
+			}
+			
+		// ExpとGoldをリセット(DB保存はしません)
+		} else if (item.getItemId() == 1) {
+			if (getEngine().getScene() instanceof KeyListenScene) {
+				SaveDataDto saveDataDto = getGameController().createSaveDataDto(
+						(KeyListenScene) getEngine().getScene());
+				getGameController().addExp(saveDataDto.getExp() * -1);
+				getGameController().addGold(saveDataDto.getGold() * -1);
 			}
 		}
 		return super.onMenuItemSelected(featureId, item);

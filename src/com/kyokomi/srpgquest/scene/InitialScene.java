@@ -16,14 +16,11 @@ import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.dto.ActorPlayerDto;
 import com.kyokomi.core.dto.SaveDataDto;
 import com.kyokomi.core.entity.MScenarioEntity;
-import com.kyokomi.core.entity.TSaveDataEntity;
-import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.core.sprite.ActorSprite;
 import com.kyokomi.core.sprite.CommonWindowRectangle;
 import com.kyokomi.core.sprite.PlayerStatusRectangle;
 import com.kyokomi.core.sprite.PlayerStatusRectangle.PlayerStatusRectangleType;
 import com.kyokomi.core.logic.ActorPlayerLogic;
-import com.kyokomi.core.logic.SaveDataLogic;
 import com.kyokomi.core.manager.MediaManager.MusicType;
 import com.kyokomi.core.manager.MediaManager.SoundType;
 
@@ -55,11 +52,9 @@ public class InitialScene extends SrpgBaseScene
 		attachChild(bg);
 		
 		// セーブデータを取得
-		TSaveDataEntity tSaveDataEntity = getBaseActivity().getGameController().getSaveData();
-		if (tSaveDataEntity == null) {
+		if (getBaseActivity().getGameController().load(getBaseActivity()) == false) {
 			// セーブデータが無いときは作ってあげる
 			getBaseActivity().getGameController().start(getBaseActivity());
-			tSaveDataEntity = getBaseActivity().getGameController().getSaveData();
 		}
 		
 		// タイトル
@@ -100,9 +95,7 @@ public class InitialScene extends SrpgBaseScene
 		attachChild(statusRect);
 		
 		// セーブデータの情報
-		SaveDataLogic saveDataLogic = new SaveDataLogic();
-		SaveDataDto saveDataDto = saveDataLogic.createSaveDataDto(
-				this, tSaveDataEntity);
+		SaveDataDto saveDataDto = getBaseActivity().getGameController().createSaveDataDto(this);
 		
 		CommonWindowRectangle scenarioInfoRectangle = new CommonWindowRectangle(0, 0, 
 				getWindowWidth() / 2, getWindowHeight() / 4, Color.BLACK, 0.5f, this);
@@ -175,14 +168,14 @@ public class InitialScene extends SrpgBaseScene
 	 */
 	@Override
 	public void onResume() {
-		getBaseActivity().getMediaManager().play(MusicType.TITLE_BGM);
+		getMediaManager().playPauseingMusic();
 	}
 	/**
 	 * バックグラウンド時
 	 */
 	@Override
 	public void onPause() {
-		getBaseActivity().getMediaManager().pause(MusicType.TITLE_BGM);
+		getMediaManager().pausePlayingMusic();
 	}
 	
 	@Override
@@ -200,6 +193,8 @@ public class InitialScene extends SrpgBaseScene
 			float pTouchAreaLocalY) {
 		// 効果音を再生
 		getMediaManager().play(SoundType.BTN_PRESSED_SE);
+		// BGMなどをリセット
+		getMediaManager().resetAllMedia();
 		
 		switch (pButtonSprite.getTag()) {
 		case SAVE_LOAD: // シナリオデータ読み込み
@@ -210,11 +205,6 @@ public class InitialScene extends SrpgBaseScene
 			loadScenario();
 			break;
 		}	
-	}
-
-	@Override
-	public void showScene(KeyListenScene scene) {
-		super.showScene(scene);
 	}
 
 	@Override

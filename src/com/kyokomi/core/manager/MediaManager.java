@@ -217,6 +217,7 @@ public class MediaManager {
 		 * Activity.finish()だけだとシングルトンなクラスがnullにならない為、明示的にnullを代入
 		 */
 		self = null;
+		mPauseMusicType = null;
 		mMusicArray.clear();
 		mSoundArray.clear();
 	}

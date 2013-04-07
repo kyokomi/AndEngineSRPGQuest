@@ -5,8 +5,10 @@ import android.util.Log;
 import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.dao.MScenarioDao;
 import com.kyokomi.core.dao.TSaveDataDao;
+import com.kyokomi.core.dto.SaveDataDto;
 import com.kyokomi.core.entity.MScenarioEntity;
 import com.kyokomi.core.entity.TSaveDataEntity;
+import com.kyokomi.core.scene.KeyListenScene;
 
 /**
  * ゲーム全体を制御します.
@@ -59,6 +61,25 @@ public class GameController {
 		tSaveDataEntity.setScenariId(pScenarioEntity.getScenarioId());
 		return save(pBaseActivity, tSaveDataEntity);
 	}
+	
+	/**
+	 * 経験値を追加します。DB更新はしません。
+	 * @param addExp
+	 * @return
+	 */
+	public void addExp(int addExp) {
+		tSaveDataEntity.setExp(tSaveDataEntity.getExp() + addExp);
+	}
+	
+	/**
+	 * ゴールドを追加します。DB更新はしません。
+	 * @param addGold
+	 * @return
+	 */
+	public void addGold(int addGold) {
+		tSaveDataEntity.setGold(tSaveDataEntity.getGold() + addGold);
+	}
+	
 	/**
 	 * SaveGame
 	 * @param pBaseActivity
@@ -91,7 +112,39 @@ public class GameController {
 		return true;
 	}
 	
-	public TSaveDataEntity getSaveData() {
-		return tSaveDataEntity;
+	public int getScenarioId() {
+		return tSaveDataEntity.getScenariId();
+	}
+	public int getSaveId() {
+		return tSaveDataEntity.getSaveId();
+	}
+//	public TSaveDataEntity getSaveData() {
+//		return tSaveDataEntity;
+//	}
+	
+	public SaveDataDto createSaveDataDto(KeyListenScene pBaseScene) {
+		SaveDataDto saveDataDto = new SaveDataDto();
+		if (tSaveDataEntity == null) {
+			return null;
+		}
+		
+		saveDataDto.setSaveId(tSaveDataEntity.getSaveId());
+		saveDataDto.setExp(tSaveDataEntity.getExp());
+		saveDataDto.setGold(tSaveDataEntity.getGold());
+		
+		MScenarioDao mScenarioDao = new MScenarioDao();
+		MScenarioEntity mScenarioEntity = mScenarioDao.selectById(
+				pBaseScene.getBaseActivity().getDB(), tSaveDataEntity.getScenariId());
+		
+		saveDataDto.setScenarioId(mScenarioEntity.getScenarioId());
+		saveDataDto.setScenarioNo(mScenarioEntity.getScenarioNo());
+		
+		saveDataDto.setScenarioTitle(mScenarioEntity.getScenarioTitle());
+		saveDataDto.setSeqNo(mScenarioEntity.getSeqNo());
+		
+		saveDataDto.setSceneType(mScenarioEntity.getSceneType());
+		saveDataDto.setSceneId(mScenarioEntity.getSceneId());
+		
+		return saveDataDto;
 	}
 }
