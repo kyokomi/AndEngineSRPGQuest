@@ -81,7 +81,7 @@ public class MapBattleScene extends SrpgBaseScene
 	/** プレイヤーと敵情報. */
 	private SparseArray<ActorSprite> players;
 	private SparseArray<ActorSprite> enemys;
-	private List<TiledSprite> obstacleList;
+	private List<Sprite> obstacleList;
 	/** カーソル表示リスト. */
 	private List<CursorRectangle> cursorList;
 
@@ -167,7 +167,7 @@ public class MapBattleScene extends SrpgBaseScene
 		players = new SparseArray<ActorSprite>();
 		enemys = new SparseArray<ActorSprite>();
 		cursorList = new ArrayList<CursorRectangle>();
-		obstacleList = new ArrayList<TiledSprite>();
+		obstacleList = new ArrayList<Sprite>();
 		// デフォルトフォント初期化
 		initFont(16);
 		// 背景
@@ -282,9 +282,10 @@ public class MapBattleScene extends SrpgBaseScene
 	 * @param mapPoint
 	 */
 	public void createObstacleSprite(MapPoint mapPoint, int currentTileIndex) {
-		TiledSprite obstacle = getIconSetTiledSprite();
+//		TiledSprite obstacle = getIconSetTiledSprite();
+		Sprite obstacle = getResourceSprite("icon_ob.png");
 		obstacle.setPosition(mapPoint.getX(), mapPoint.getY());
-		obstacle.setCurrentTileIndex(currentTileIndex);
+//		obstacle.setCurrentTileIndex(currentTileIndex);
 		obstacle.setSize(mapPoint.getGridSize(), mapPoint.getGridSize());
 		obstacle.setZIndex(LayerZIndex.ACTOR_LAYER.getValue());
 		obstacleList.add(obstacle);
@@ -718,7 +719,6 @@ public class MapBattleScene extends SrpgBaseScene
 	public void clearMapBattle() {
 		int mapBattleId = getScenarioEntity().getSceneId();
 		
-		getMediaManager().stopPlayingMusic();
 		// 報酬振込み(アイテムだけ)
 		MapBattleRewardLogic mapBattleRewardLogic = new MapBattleRewardLogic();
 		MapBattleRewardDto mapBattleRewardDto = mapBattleRewardLogic.addMapBattleReward(this, 
