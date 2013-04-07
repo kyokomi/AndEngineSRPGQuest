@@ -270,17 +270,20 @@ public abstract class KeyListenScene extends Scene {
 	// --------フォント -------
 	
 	private Font mBaseFont;
-	
+	private Integer defualtFontSize = 16;
 	protected void initFont(int fontSize) {
 		mBaseFont = createFont(Typeface.DEFAULT, fontSize, Color.WHITE);
+		defualtFontSize = fontSize;
 	}
 	protected Font getFont() {
 		if (mBaseFont == null) {
-			initFont(16);
+			initFont(defualtFontSize);
 		}
 		return mBaseFont;
 	}
-	
+	protected Integer getDefualtFontSize() {
+		return defualtFontSize;
+	}
 	public Font createFont(Typeface typeface, int fontSize, Color color) {
 		Texture texture = new BitmapTextureAtlas(
 				this.getBaseActivity().getTextureManager(), 512, 512, 
