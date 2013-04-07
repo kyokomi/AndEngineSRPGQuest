@@ -79,7 +79,7 @@ public class MainActivity extends MultiSceneActivity {
 		
 		InitialScene initialScene = new InitialScene(this);
 		// 遷移管理用配列に追加
-		getSceneArray().add(initialScene);
+//		getSceneArray().add(initialScene);
 		return initialScene;
 	}
 
@@ -101,6 +101,7 @@ public class MainActivity extends MultiSceneActivity {
 
 	@Override
 	public void appendScene(KeyListenScene scene) {
+		getSceneArray().clear();
 		getSceneArray().add(scene);
 	}
 

@@ -28,7 +28,7 @@ import com.kyokomi.core.sprite.CommonWindowRectangle;
 public class ResultScene extends SrpgBaseScene {
 	private static final String TAG = "ResultScene";
 	
-	private final MScenarioEntity mScenarioEntity;
+	private MScenarioEntity mScenarioEntity;
 	
 	public ResultScene(MultiSceneActivity baseActivity, MScenarioEntity pScenarioEntity) {
 		super(baseActivity);
@@ -227,7 +227,6 @@ public class ResultScene extends SrpgBaseScene {
 
 	@Override
 	public void destory() {
-		// TODO Auto-generated method stub
 		
 	}
 }

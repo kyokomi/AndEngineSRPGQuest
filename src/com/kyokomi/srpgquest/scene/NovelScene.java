@@ -26,7 +26,7 @@ public class NovelScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	/** 章カットイン. */
 	private ACutInTouchLayer mScenarioStartCutInTouchLayer;
 
-	private final MScenarioEntity mScenarioEntity;
+	private MScenarioEntity mScenarioEntity;
 	
 	@Override
 	public MScenarioEntity getScenarioEntity() {
@@ -139,7 +139,14 @@ public class NovelScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	}
 	@Override
 	public void destory() {
-		// TODO Auto-generated method stub
+		if (mScenarioStartCutInTouchLayer != null) {
+			detachEntity(mScenarioStartCutInTouchLayer.getTouchLayer());
+			mScenarioStartCutInTouchLayer = null;
+		}
 		
+		if (mTalkLayer != null) {
+			detachEntity(mTalkLayer);
+			mTalkLayer = null;
+		}
 	}
 }

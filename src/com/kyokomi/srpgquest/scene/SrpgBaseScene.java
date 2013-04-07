@@ -218,6 +218,7 @@ public abstract class SrpgBaseScene extends KeyListenScene {
 			getBaseActivity().backToInitial();
 			return;
 		}
+		
 		// セーブ
 		getBaseActivity().getGameController().save(getBaseActivity(), mScenarioEntity);
 		
@@ -236,6 +237,9 @@ public abstract class SrpgBaseScene extends KeyListenScene {
 			getBaseActivity().backToInitial();
 			break;
 		}
+		// 開放
+		destory();
+		reset();
 	}
 	
 	public abstract void destory();

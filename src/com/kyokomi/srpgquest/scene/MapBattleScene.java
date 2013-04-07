@@ -762,21 +762,74 @@ public class MapBattleScene extends SrpgBaseScene
 	
 	@Override
 	public void destory() {
-		for (int i = 0; i < players.size(); i++) {
-			detachEntity(players.valueAt(i));
+		if (players != null) {
+			for (int i = 0; i < players.size(); i++) {
+				detachEntity(players.valueAt(i));
+			}
+			players = null;
 		}
-		players = null;
-		for (int i = 0; i < enemys.size(); i++) {
-			detachEntity(enemys.valueAt(i));
+		if (enemys != null) {
+			for (int i = 0; i < enemys.size(); i++) {
+				detachEntity(enemys.valueAt(i));
+			}
+			enemys = null;
 		}
-		enemys = null;
-		for (int i = 0; i < cursorList.size(); i++) {
-			detachEntity(cursorList.get(i));
+		
+		if (cursorList != null) {
+			for (int i = 0; i < cursorList.size(); i++) {
+				detachEntity(cursorList.get(i));
+			}
+			cursorList = null;
 		}
-		cursorList = null;
-		for (int i = 0; i < obstacleList.size(); i++) {
-			detachEntity(obstacleList.get(i));
+		if (obstacleList != null) {
+			for (int i = 0; i < obstacleList.size(); i++) {
+				detachEntity(obstacleList.get(i));
+			}
+			obstacleList = null;
 		}
-		obstacleList = null;
+		
+		gameManager = null;
+		if (mDamageText != null) {
+			detachEntity(mDamageText);
+		}
+	
+		if (mBackgroundSprite != null) {
+			detachEntity(mBackgroundSprite);
+		}
+		
+		if (mMapBattleSelectMenuLayer != null) {
+			detachEntity(mMapBattleSelectMenuLayer.getMenuRectangle());
+			mMapBattleSelectMenuLayer = null;
+		}
+		if (mMapBattleCutInLayer != null) {
+			getBaseActivity().runOnUpdateThread(new Runnable() {
+				@Override
+				public void run() {
+					mMapBattleCutInLayer.removeAll();
+					mMapBattleCutInLayer = null;
+				}
+			});
+		}
+		if (mMapBattleTouchLayer != null) {
+			getBaseActivity().runOnUpdateThread(new Runnable() {
+				@Override
+				public void run() {
+					mMapBattleTouchLayer.removeAll();
+				}
+			});
+		}
+		if (mPlayerStatusRect != null) {
+			detachEntity(mPlayerStatusRect);
+		}
+		if (mEnemyStatusRect != null) {
+			detachEntity(mEnemyStatusRect);
+		}
+		
+		if (mTalkLayer != null) {
+			detachEntity(mTalkLayer);
+			mTalkLayer = null;
+		}
+		
+		mMapBattleInfoDto = null;
 	}
 }

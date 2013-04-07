@@ -109,6 +109,7 @@ public abstract class KeyListenScene extends Scene {
 	protected void showScene(KeyListenScene scene) {
 		ResourceUtil.getInstance(getBaseActivity()).resetAllTexture();
 		getBaseActivity().getEngine().setScene(scene);
+		// 履歴は残さない
 		getBaseActivity().appendScene(scene);
 	}
 	
