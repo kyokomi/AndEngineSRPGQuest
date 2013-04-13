@@ -14,9 +14,9 @@ import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.dto.PlayerTalkDto;
 import com.kyokomi.core.entity.MScenarioEntity;
 import com.kyokomi.core.sprite.TalkLayer;
+import com.kyokomi.srpgquest.constant.LayerZIndexType;
 import com.kyokomi.srpgquest.layer.ACutInTouchLayer;
 import com.kyokomi.srpgquest.layer.ScenarioStartCutInTouchLayer;
-import com.kyokomi.srpgquest.scene.MapBattleScene.LayerZIndex;
 
 public class NovelScene extends SrpgBaseScene implements IOnSceneTouchListener {
 //	private final static String TAG = "NovelScene";
@@ -50,7 +50,7 @@ public class NovelScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		mTalkLayer = new TalkLayer(this);
 		mTalkLayer.initTalk(actorFaces, talks);
 		mTalkLayer.hide();
-		mTalkLayer.setZIndex(LayerZIndex.TALK_LAYER.getValue());
+		mTalkLayer.setZIndex(LayerZIndexType.TALK_LAYER.getValue());
 		mTalkLayer.setTag(999);
 		attachChild(mTalkLayer);
 		

@@ -8,7 +8,7 @@ import org.andengine.entity.sprite.Sprite;
 import org.andengine.util.modifier.IModifier;
 
 import com.kyokomi.core.scene.KeyListenScene;
-import com.kyokomi.srpgquest.scene.MapBattleScene.LayerZIndex;
+import com.kyokomi.srpgquest.constant.LayerZIndexType;
 import com.kyokomi.srpgquest.scene.SrpgBaseScene;
 
 public class MapBattleCutInLayer {
@@ -87,7 +87,7 @@ public class MapBattleCutInLayer {
 		pBaseScene.placeToCenter(sprite);
 		sprite.setAlpha(0.0f);
 		sprite.setVisible(false);
-		sprite.setZIndex(LayerZIndex.CUTIN_LAYER.getValue());
+		sprite.setZIndex(LayerZIndexType.CUTIN_LAYER.getValue());
 		pBaseScene.attachChild(sprite);
 	}
 	

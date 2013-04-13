@@ -11,7 +11,7 @@ import org.andengine.util.color.Color;
 import android.graphics.Typeface;
 
 import com.kyokomi.srpgquest.scene.SrpgBaseScene;
-import com.kyokomi.srpgquest.scene.MapBattleScene.LayerZIndex;
+import com.kyokomi.srpgquest.constant.LayerZIndexType;
 
 /**
  * TODO: ACutInTouchLayerを継承する
@@ -36,7 +36,7 @@ public class MapBattleClearConditionTouchLayer extends ACutInTouchLayer {
 		mTouchLayer.setColor(Color.BLACK);
 		mTouchLayer.setAlpha(0.7f);
 		mTouchLayer.setVisible(false);
-		mTouchLayer.setZIndex(LayerZIndex.CUTIN_LAYER.getValue());
+		mTouchLayer.setZIndex(LayerZIndexType.CUTIN_LAYER.getValue());
 		
 		// TODO: 文字ベタ書き
 		Text winConditionTitle = new Text(16, 16, blueFont, "- 勝利条件 -", 

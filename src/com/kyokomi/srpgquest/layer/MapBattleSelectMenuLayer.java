@@ -6,7 +6,7 @@ import org.andengine.entity.sprite.ButtonSprite;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.core.sprite.MenuRectangle;
 import com.kyokomi.core.sprite.MenuRectangle.MenuDirection;
-import com.kyokomi.srpgquest.scene.MapBattleScene.LayerZIndex;
+import com.kyokomi.srpgquest.constant.LayerZIndexType;
 import com.kyokomi.srpgquest.scene.SrpgBaseScene;
 
 public class MapBattleSelectMenuLayer {
@@ -57,7 +57,7 @@ public class MapBattleSelectMenuLayer {
 		// ベースメニューを作成
 		mMenuRectangle = new MenuRectangle(
 				pBaseScene.getBaseActivity().getVertexBufferObjectManager());
-		mMenuRectangle.setZIndex(LayerZIndex.POPUP_LAYER.getValue());
+		mMenuRectangle.setZIndex(LayerZIndexType.POPUP_LAYER.getValue());
 		
 		// 各ボタン配置
 		creatButtonWithAddMenu(pBaseScene, SelectMenuType.SELECT_MENU_ATTACK_TYPE);

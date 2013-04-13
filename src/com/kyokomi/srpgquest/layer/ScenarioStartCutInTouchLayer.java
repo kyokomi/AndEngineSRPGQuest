@@ -12,7 +12,7 @@ import android.graphics.Typeface;
 
 import com.kyokomi.core.entity.MScenarioEntity;
 import com.kyokomi.srpgquest.scene.SrpgBaseScene;
-import com.kyokomi.srpgquest.scene.MapBattleScene.LayerZIndex;
+import com.kyokomi.srpgquest.constant.LayerZIndexType;
 
 public class ScenarioStartCutInTouchLayer extends ACutInTouchLayer {
 	
@@ -30,7 +30,7 @@ public class ScenarioStartCutInTouchLayer extends ACutInTouchLayer {
 		mLayer.setColor(Color.BLACK);
 		mLayer.setAlpha(0.7f);
 		mLayer.setVisible(false);
-		mLayer.setZIndex(LayerZIndex.CUTIN_LAYER.getValue());
+		mLayer.setZIndex(LayerZIndexType.CUTIN_LAYER.getValue());
 		// 現在のシナリオを取得
 		MScenarioEntity mScenarioEntity = pBaseScene.getScenarioEntity();
 		if (mScenarioEntity == null) {

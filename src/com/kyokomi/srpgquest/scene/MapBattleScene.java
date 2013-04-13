@@ -42,6 +42,7 @@ import com.kyokomi.core.sprite.PlayerStatusRectangle.PlayerStatusRectangleType;
 import com.kyokomi.core.sprite.TalkLayer;
 import com.kyokomi.core.utils.JsonUtil;
 import com.kyokomi.srpgquest.GameManager;
+import com.kyokomi.srpgquest.constant.LayerZIndexType;
 import com.kyokomi.srpgquest.dto.MapBattleInfoDto;
 import com.kyokomi.srpgquest.layer.MapBattleCutInLayer;
 import com.kyokomi.srpgquest.layer.MapBattleCutInLayer.MapBattleCutInLayerType;
@@ -56,25 +57,7 @@ import com.kyokomi.srpgquest.sprite.CursorRectangle;
 public class MapBattleScene extends SrpgBaseScene 
 	implements IOnSceneTouchListener{
 	private static final String TAG = "MapBattleScene";
-	public enum LayerZIndex {
-		TALK_LAYER(80),
-		CUTIN_LAYER(70),
-		TEXT_LAYER(60),
-		EFFETCT_LAYER(50),
-		POPUP_LAYER(40),
-		ATTACKCURSOR_LAYER(30),
-		ACTOR_LAYER(20),
-		MOVECURSOR_LAYER(10),
-		BACKGROUND_LAYER(0),
-		;
-		private Integer value;
-		private LayerZIndex(Integer value) {
-			this.value = value;
-		}
-		public Integer getValue() {
-			return value;
-		}
-	}
+	
 	/** SRPGゲームマネージャー. */
 	private GameManager gameManager;
 	
@@ -227,7 +210,7 @@ public class MapBattleScene extends SrpgBaseScene
 	private void initDamageText() {
 		mDamageText = new Text(0, 0, getFont(), "00000", getBaseActivity().getVertexBufferObjectManager());
 		mDamageText.setColor(Color.TRANSPARENT);
-		mDamageText.setZIndex(LayerZIndex.TEXT_LAYER.getValue());
+		mDamageText.setZIndex(LayerZIndexType.TEXT_LAYER.getValue());
 		attachChild(mDamageText);
 	}
 	
@@ -245,12 +228,12 @@ public class MapBattleScene extends SrpgBaseScene
 		player.setPlayerToDefaultPosition();
 		player.setPlayerPosition(mapPoint.getX(), mapPoint.getY());
 		player.setPlayerSize(mapPoint.getGridSize(), mapPoint.getGridSize());
-		player.setZIndex(LayerZIndex.ACTOR_LAYER.getValue());
+		player.setZIndex(LayerZIndexType.ACTOR_LAYER.getValue());
 		attachChild(player);
 		players.put(playerSeqNo, player);
 		
 		PlayerStatusRectangle playerStatusRect = initStatusWindow(player, 0);
-		playerStatusRect.setZIndex(LayerZIndex.POPUP_LAYER.getValue());
+		playerStatusRect.setZIndex(LayerZIndexType.POPUP_LAYER.getValue());
 		playerStatusRect.setColor(Color.BLUE);
 		playerStatusRect.setAlpha(0.5f);
 	}
@@ -267,12 +250,12 @@ public class MapBattleScene extends SrpgBaseScene
 		enemy.setPlayerToDefaultPosition();
 		enemy.setPlayerPosition(mapPoint.getX(), mapPoint.getY());
 		enemy.setPlayerSize(mapPoint.getGridSize(), mapPoint.getGridSize());
-		enemy.setZIndex(LayerZIndex.ACTOR_LAYER.getValue());
+		enemy.setZIndex(LayerZIndexType.ACTOR_LAYER.getValue());
 		attachChild(enemy);
 		enemys.put(enemySeqNo, enemy);
 		
 		PlayerStatusRectangle enemyStatusRect = initStatusWindow(enemy, 0);
-		enemyStatusRect.setZIndex(LayerZIndex.POPUP_LAYER.getValue());
+		enemyStatusRect.setZIndex(LayerZIndexType.POPUP_LAYER.getValue());
 		enemyStatusRect.setColor(Color.RED);
 		enemyStatusRect.setAlpha(0.5f);
 	}
@@ -287,7 +270,7 @@ public class MapBattleScene extends SrpgBaseScene
 		obstacle.setPosition(mapPoint.getX(), mapPoint.getY());
 //		obstacle.setCurrentTileIndex(currentTileIndex);
 		obstacle.setSize(mapPoint.getGridSize(), mapPoint.getGridSize());
-		obstacle.setZIndex(LayerZIndex.ACTOR_LAYER.getValue());
+		obstacle.setZIndex(LayerZIndexType.ACTOR_LAYER.getValue());
 		obstacleList.add(obstacle);
 		attachChild(obstacle);
 	}
@@ -308,7 +291,7 @@ public class MapBattleScene extends SrpgBaseScene
 					this, getFont(), 
 					getWindowWidth() / 2, y, 
 					getWindowWidth() / 2, getWindowHeight() / 2);
-			mPlayerStatusRectangle.setZIndex(LayerZIndex.POPUP_LAYER.getValue());
+			mPlayerStatusRectangle.setZIndex(LayerZIndexType.POPUP_LAYER.getValue());
 			CommonWindowRectangle commonWindowRectangle = new CommonWindowRectangle(
 					0, 0, 
 					mPlayerStatusRectangle.getWidth(), 
@@ -373,7 +356,7 @@ public class MapBattleScene extends SrpgBaseScene
 	 */
 	public void createMoveCursorSprite(MapPoint mapPoint) {
 		CursorRectangle cursorRectangle = createCursorSprite(mapPoint, Color.GREEN);
-		cursorRectangle.setZIndex(LayerZIndex.MOVECURSOR_LAYER.getValue());
+		cursorRectangle.setZIndex(LayerZIndexType.MOVECURSOR_LAYER.getValue());
 	}
 	/**
 	 * 攻撃カーソル描画.
@@ -381,7 +364,7 @@ public class MapBattleScene extends SrpgBaseScene
 	 */
 	public void createAttackCursorSprite(MapPoint mapPoint) {
 		CursorRectangle cursorRectangle = createCursorSprite(mapPoint, Color.YELLOW);
-		cursorRectangle.setZIndex(LayerZIndex.ATTACKCURSOR_LAYER.getValue());
+		cursorRectangle.setZIndex(LayerZIndexType.ATTACKCURSOR_LAYER.getValue());
 	}
 	/**
 	 * カーソル選択.
@@ -602,7 +585,7 @@ public class MapBattleScene extends SrpgBaseScene
 		mTalkLayer = new TalkLayer(this);
 		mTalkLayer.initTalk(actorFaces, talks);
 		mTalkLayer.hide();
-		mTalkLayer.setZIndex(LayerZIndex.TALK_LAYER.getValue());
+		mTalkLayer.setZIndex(LayerZIndexType.TALK_LAYER.getValue());
 		attachChild(mTalkLayer);
 		// 会話表示
 		mTalkLayer.nextTalk();
