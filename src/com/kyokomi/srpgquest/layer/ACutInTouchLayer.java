@@ -1,21 +1,27 @@
 package com.kyokomi.srpgquest.layer;
 
+import org.andengine.entity.primitive.Rectangle;
+import org.andengine.entity.primitive.vbo.IRectangleVertexBufferObject;
 import org.andengine.entity.shape.IAreaShape;
 
-import com.kyokomi.srpgquest.scene.SrpgBaseScene;
+import com.kyokomi.core.scene.KeyListenScene;
 
-public abstract class ACutInTouchLayer {
+public abstract class ACutInTouchLayer extends Rectangle {
 	
-	public ACutInTouchLayer(SrpgBaseScene pBaseScene) {
-		initLayer(pBaseScene);
+	public ACutInTouchLayer(KeyListenScene pBaseScene) {
+		super(0, 0, pBaseScene.getWindowWidth(), pBaseScene.getWindowHeight(), 
+				pBaseScene.getBaseActivity().getVertexBufferObjectManager());
 	}
-	protected abstract void initLayer(SrpgBaseScene pBaseScene);
+	public ACutInTouchLayer(float pX, float pY, float pWidth, float pHeight,
+			IRectangleVertexBufferObject pRectangleVertexBufferObject) {
+		super(pX, pY, pWidth, pHeight, pRectangleVertexBufferObject);
+	}
 	
-	public void showTouchLayer(SrpgBaseScene pBaseScene) {
+	public void showTouchLayer(KeyListenScene pBaseScene) {
 		pBaseScene.attachChild(getTouchLayer());
 		setVisibleTouchLayer(true);
 	}
-	public void hideTouchLayer(SrpgBaseScene pBaseScene) {
+	public void hideTouchLayer(KeyListenScene pBaseScene) {
 		pBaseScene.detachChild(getTouchLayer());
 		setVisibleTouchLayer(false);
 	}
@@ -26,7 +32,9 @@ public abstract class ACutInTouchLayer {
 		}
 	}
 	
-	public abstract IAreaShape getTouchLayer();
+	public IAreaShape getTouchLayer() {
+		return this;
+	}
 	
 	public boolean isTouchLayer(float x, float y) {
 		IAreaShape areaShape = getTouchLayer();

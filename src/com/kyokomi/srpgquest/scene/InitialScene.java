@@ -198,7 +198,8 @@ public class InitialScene extends SrpgBaseScene
 		
 		switch (pButtonSprite.getTag()) {
 		case SAVE_LOAD: // シナリオデータ読み込み
-			loadScenario();
+			showScene(new MainScene(getBaseActivity()));
+//			loadScenario();
 			break;
 		case NEW_GAME: // NewGame
 			getBaseActivity().getGameController().start(getBaseActivity());

@@ -820,12 +820,7 @@ public class MapBattleScene extends SrpgBaseScene
 			});
 		}
 		if (mMapBattleTouchLayer != null) {
-			getBaseActivity().runOnUpdateThread(new Runnable() {
-				@Override
-				public void run() {
-					mMapBattleTouchLayer.removeAll();
-				}
-			});
+			detachEntity(mMapBattleTouchLayer);
 		}
 		if (mPlayerStatusRect != null) {
 			detachEntity(mPlayerStatusRect);

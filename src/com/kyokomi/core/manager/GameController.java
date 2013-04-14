@@ -57,6 +57,16 @@ public class GameController {
 	 * @param pBaseActivity
 	 * @return
 	 */
+	public boolean save(MultiSceneActivity pBaseActivity, int scenarioId) {
+		tSaveDataEntity.setScenariId(scenarioId);
+		return save(pBaseActivity, tSaveDataEntity);
+	}
+	
+	/**
+	 * SaveGame
+	 * @param pBaseActivity
+	 * @return
+	 */
 	public boolean save(MultiSceneActivity pBaseActivity, MScenarioEntity pScenarioEntity) {
 		tSaveDataEntity.setScenariId(pScenarioEntity.getScenarioId());
 		return save(pBaseActivity, tSaveDataEntity);
@@ -122,7 +132,33 @@ public class GameController {
 //		return tSaveDataEntity;
 //	}
 	
+	public SaveDataDto nextScenarioAndSave(KeyListenScene pBaseScene) {
+		SaveDataDto saveDataDto = createSaveDataDto(pBaseScene);
+		
+		pBaseScene.getBaseActivity().openDB(); // --- DB OPNE ---
+		
+		MScenarioDao mScenarioDao = new MScenarioDao();
+		MScenarioEntity nextScenario = mScenarioDao.selectNextScenario(
+				pBaseScene.getBaseActivity().getDB(), 
+				saveDataDto.getScenarioNo());
+		// save
+		save(pBaseScene.getBaseActivity(), nextScenario.getScenarioNo());
+		// 次のシナリオでセーブデータ作成
+		saveDataDto = createSaveDataDto(pBaseScene, nextScenario);
+		
+		return saveDataDto;
+	}
 	public SaveDataDto createSaveDataDto(KeyListenScene pBaseScene) {
+		pBaseScene.getBaseActivity().openDB(); // --- DB OPNE ---
+		MScenarioDao mScenarioDao = new MScenarioDao();
+		MScenarioEntity mScenarioEntity = mScenarioDao.selectById(
+				pBaseScene.getBaseActivity().getDB(), tSaveDataEntity.getScenariId());	
+		pBaseScene.getBaseActivity().closeDB(); // --- DB CLOSE ---
+		
+		return createSaveDataDto(pBaseScene, mScenarioEntity);
+	}
+	
+	private SaveDataDto createSaveDataDto(KeyListenScene pBaseScene, MScenarioEntity mScenarioEntity) {
 		SaveDataDto saveDataDto = new SaveDataDto();
 		if (tSaveDataEntity == null) {
 			return null;
@@ -132,10 +168,6 @@ public class GameController {
 		saveDataDto.setExp(tSaveDataEntity.getExp());
 		saveDataDto.setGold(tSaveDataEntity.getGold());
 		
-		MScenarioDao mScenarioDao = new MScenarioDao();
-		MScenarioEntity mScenarioEntity = mScenarioDao.selectById(
-				pBaseScene.getBaseActivity().getDB(), tSaveDataEntity.getScenariId());
-		
 		saveDataDto.setScenarioId(mScenarioEntity.getScenarioId());
 		saveDataDto.setScenarioNo(mScenarioEntity.getScenarioNo());
 		
@@ -144,7 +176,7 @@ public class GameController {
 		
 		saveDataDto.setSceneType(mScenarioEntity.getSceneType());
 		saveDataDto.setSceneId(mScenarioEntity.getSceneId());
-		
 		return saveDataDto;
 	}
+	
 }
