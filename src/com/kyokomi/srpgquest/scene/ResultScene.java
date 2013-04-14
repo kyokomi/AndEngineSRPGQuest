@@ -35,7 +35,7 @@ public class ResultScene extends SrpgBaseScene {
 		this.mScenarioEntity = pScenarioEntity;
 		init();
 		
-		getMediaManager().play(MusicType.CLEAR_BGM);
+//		getMediaManager().play(MusicType.CLEAR_BGM);
 	}
 
 	@Override
@@ -46,24 +46,24 @@ public class ResultScene extends SrpgBaseScene {
 	@Override
 	public void initSoundAndMusic() {
 		// 効果音をロード
-		try {
-			getMediaManager().resetAllMedia();
-			getMediaManager().createMedia(SoundType.BTN_PRESSED_SE);
-			getMediaManager().createMedia(MusicType.CLEAR_BGM);
-		} catch (IOException e) {
-			Log.e(TAG, "sound file io error");
-			e.printStackTrace();
-		}
+//		try {
+//			getMediaManager().resetAllMedia();
+//			getMediaManager().createMedia(SoundType.BTN_PRESSED_SE);
+//			getMediaManager().createMedia(MusicType.CLEAR_BGM);
+//		} catch (IOException e) {
+//			Log.e(TAG, "sound file io error");
+//			e.printStackTrace();
+//		}
 	}
 	
 	@Override
 	public void onResume() {
-		getMediaManager().playPauseingMusic();
+//		getMediaManager().playPauseingMusic();
 	}
 
 	@Override
 	public void onPause() {
-		getMediaManager().pausePlayingMusic();
+//		getMediaManager().pausePlayingMusic();
 	}
 
 	@Override

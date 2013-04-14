@@ -39,7 +39,7 @@ public class InitialScene extends SrpgBaseScene
 		
 		init();
 		
-		getMediaManager().playStart(MusicType.TITLE_BGM);
+//		getMediaManager().playStart(MusicType.TITLE_BGM);
 	}
 
 	@Override
@@ -154,13 +154,13 @@ public class InitialScene extends SrpgBaseScene
 	@Override
 	public void initSoundAndMusic() {
 		// 効果音をロード
-		try {
-			getMediaManager().resetAllMedia();
-			getMediaManager().createMedia(SoundType.BTN_PRESSED_SE);
-			getMediaManager().createMedia(MusicType.TITLE_BGM);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+//		try {
+//			getMediaManager().resetAllMedia();
+//			getMediaManager().createMedia(SoundType.BTN_PRESSED_SE);
+//			getMediaManager().createMedia(MusicType.TITLE_BGM);
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
 	}
 
 	/**
@@ -168,14 +168,14 @@ public class InitialScene extends SrpgBaseScene
 	 */
 	@Override
 	public void onResume() {
-		getMediaManager().playPauseingMusic();
+//		getMediaManager().playPauseingMusic();
 	}
 	/**
 	 * バックグラウンド時
 	 */
 	@Override
 	public void onPause() {
-		getMediaManager().pausePlayingMusic();
+//		getMediaManager().pausePlayingMusic();
 	}
 	
 	@Override
@@ -191,10 +191,10 @@ public class InitialScene extends SrpgBaseScene
 	@Override
 	public void onClick(ButtonSprite pButtonSprite, float pTouchAreaLocalX,
 			float pTouchAreaLocalY) {
-		// 効果音を再生
-		getMediaManager().play(SoundType.BTN_PRESSED_SE);
-		// BGMなどをリセット
-		getMediaManager().resetAllMedia();
+//		// 効果音を再生
+//		getMediaManager().play(SoundType.BTN_PRESSED_SE);
+//		// BGMなどをリセット
+//		getMediaManager().resetAllMedia();
 		
 		switch (pButtonSprite.getTag()) {
 		case SAVE_LOAD: // シナリオデータ読み込み

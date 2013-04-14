@@ -69,20 +69,20 @@ public abstract class SrpgBaseScene extends KeyListenScene {
 	// ----- DB ------
 	private MScenarioDao mScenarioDao;
 	
-	// ----- SE, BGM -----
-	private Sound mBtnPressedSound;
-	public Sound getBtnPressedSound() {
-		return mBtnPressedSound;
-	}
+//	// ----- SE, BGM -----
+//	private Sound mBtnPressedSound;
+//	public Sound getBtnPressedSound() {
+//		return mBtnPressedSound;
+//	}
 	
 	/** サウンドの準備. */
 	@Override
 	public void prepareSoundAndMusic() {
-		try {
-			mBtnPressedSound = createSoundFromFileName("btn_se1.wav");
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+//		try {
+//			mBtnPressedSound = createSoundFromFileName("btn_se1.wav");
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
 		initSoundAndMusic();
 	}
 	public abstract void initSoundAndMusic();

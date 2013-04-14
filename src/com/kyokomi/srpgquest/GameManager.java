@@ -240,7 +240,7 @@ public class GameManager {
 						
 			// プレイヤーキャラ選択が可能なので行動可能であればウィンドウ表示
 			if (touchMapDataType == MapDataType.PLAYER) {
-				mBaseScene.getMediaManager().play(SoundType.BTN_PRESSED_SE);
+//				mBaseScene.getMediaManager().play(SoundType.BTN_PRESSED_SE);
 				
 				ActorPlayerMapItem actorPlayerMapItem = (ActorPlayerMapItem) mapItem;
 				
@@ -258,7 +258,7 @@ public class GameManager {
 					showPlayerStatusWindow(actorPlayerMapItem);
 				}
 			} else if (touchMapDataType == MapDataType.ENEMY) {
-				mBaseScene.getMediaManager().play(SoundType.BTN_PRESSED_SE);
+//				mBaseScene.getMediaManager().play(SoundType.BTN_PRESSED_SE);
 				
 				ActorPlayerMapItem actorEnemyMapItem = (ActorPlayerMapItem) mapItem;
 				// プレイヤーのステータス非表示
@@ -280,7 +280,7 @@ public class GameManager {
 		case PLAYER_ATTACK:
 			// 攻撃を選択したときは敵しかタップイベントに反応しない
 			if (touchMapDataType == MapDataType.ATTACK_DIST) {
-				mBaseScene.getMediaManager().play(SoundType.BTN_PRESSED_SE);
+//				mBaseScene.getMediaManager().play(SoundType.BTN_PRESSED_SE);
 				
 				// 敵が存在するカーソルかチェック
 				ActorPlayerMapItem enemy = mMapManager.getMapPointToActorPlayer(mapPoint);
@@ -314,7 +314,7 @@ public class GameManager {
 		case PLAYER_MOVE:
 			// 移動を選択したときは移動可能カーソルにしか反応しない
 			if (touchMapDataType == MapDataType.MOVE_DIST) {
-				mBaseScene.getMediaManager().play(SoundType.BTN_PRESSED_SE);
+//				mBaseScene.getMediaManager().play(SoundType.BTN_PRESSED_SE);
 				
 				if (mSelectActorPlayer != null) {
 					
@@ -323,7 +323,7 @@ public class GameManager {
 							mSelectActorPlayer, mapPoint);
 					
 					// 移動先のカーソルの色を変える
-					mBaseScene.selectCursor(mapPoint);
+					mBaseScene.touchedCusorRectangle(mapPoint);
 					
 					// 移動リストを引数にScene側の移動アニメーションを呼び出す
 					mBaseScene.movePlayerAnimation(mSelectActorPlayer.getSeqNo(), moveMapPointList, 
@@ -457,19 +457,19 @@ public class GameManager {
 		if (mSelectActorPlayer != null) {
 			switch (SelectMenuType.findTag(pressedBtnTag)) {
 			case MENU_ATTACK: // 攻撃
-				mBaseScene.getMediaManager().play(SoundType.BTN_PRESSED_SE);
+//				mBaseScene.getMediaManager().play(SoundType.BTN_PRESSED_SE);
 				changeGameState(GameStateType.PLAYER_ATTACK);
 				showAttackDistCursor(mSelectActorPlayer);
 				break;
 			case MENU_MOVE: // 移動
-				mBaseScene.getMediaManager().play(SoundType.BTN_PRESSED_SE);
+//				mBaseScene.getMediaManager().play(SoundType.BTN_PRESSED_SE);
 				changeGameState(GameStateType.PLAYER_MOVE);
 				if (!showMoveDistCursor(mSelectActorPlayer)) {
 					changeGameState(GameStateType.PLAYER_TURN);
 				}
 				break;
 			case MENU_WAIT: // 待機
-				mBaseScene.getMediaManager().play(SoundType.BTN_PRESSED_SE);
+//				mBaseScene.getMediaManager().play(SoundType.BTN_PRESSED_SE);
 				// 待機状態にする
 				mSelectActorPlayer.setWaitDone(true);
 				// アニメーション停止
@@ -479,7 +479,7 @@ public class GameManager {
 				mBaseScene.hideCursorSprite();
 				break;
 			case MENU_CANCEL: // キャンセル
-				mBaseScene.getMediaManager().play(SoundType.BTN_PRESSED_SE);
+//				mBaseScene.getMediaManager().play(SoundType.BTN_PRESSED_SE);
 				break;
 			default:
 				break;
@@ -687,7 +687,7 @@ public class GameManager {
 					enemyMapItem, enemyMovePoint);
 			if (moveMapPointList != null) {
 				// 移動先のカーソルの色を変える
-				mBaseScene.selectCursor(enemyMovePoint);
+				mBaseScene.touchedCusorRectangle(enemyMovePoint);
 				
 				// 移動リストを引数にScene側の移動アニメーションを呼び出す
 				mBaseScene.moveEnemyAnimation(enemyMapItem.getSeqNo(), moveMapPointList, 

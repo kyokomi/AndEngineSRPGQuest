@@ -78,14 +78,14 @@ public class NovelScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	 */
 	@Override
 	public void onResume() {
-		getMediaManager().playPauseingMusic();
+//		getMediaManager().playPauseingMusic();
 	}
 	/**
 	 * バックグラウンド時
 	 */
 	@Override
 	public void onPause() {
-		getMediaManager().pausePlayingMusic();
+//		getMediaManager().pausePlayingMusic();
 	}
 	
 	@Override
@@ -119,7 +119,7 @@ public class NovelScene extends SrpgBaseScene implements IOnSceneTouchListener {
 				
 			} else if (mTalkLayer != null && mTalkLayer.contains(x, y)) {
 				
-				getBtnPressedSound().play();
+//				getBtnPressedSound().play();
 				
 				if (mTalkLayer.isNextTalk()) {
 					mTalkLayer.nextTalk();

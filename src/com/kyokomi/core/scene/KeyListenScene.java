@@ -209,15 +209,15 @@ public abstract class KeyListenScene extends Scene {
 	}
 	
 	// ------- サウンド ------
-	protected Sound createSoundFromFileName(String fileName) throws IOException {
-		return SoundFactory.createSoundFromAsset(
-				getBaseActivity().getSoundManager(), 
-				getBaseActivity(), 
-				fileName);
-	}
-	public MediaManager getMediaManager() {
-		return getBaseActivity().getMediaManager();
-	}
+//	protected Sound createSoundFromFileName(String fileName) throws IOException {
+//		return SoundFactory.createSoundFromAsset(
+//				getBaseActivity().getSoundManager(), 
+//				getBaseActivity(), 
+//				fileName);
+//	}
+//	public MediaManager getMediaManager() {
+//		return getBaseActivity().getMediaManager();
+//	}
 //	// ------- BGM -------
 //	protected Music createMusicFromFileName(String fileName) throws IOException {
 //		return MusicFactory.createMusicFromAsset(

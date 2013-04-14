@@ -37,6 +37,7 @@ public class ActorSprite extends Rectangle {
 
 	/**
 	 * プレイヤーステータスウィンドウ.
+	 * TODO: ActorSpriteと別にした方がいい
 	 */
 	private PlayerStatusRectangle mPlayerStatusRectangle;
 	public PlayerStatusRectangle createPlayerStatusWindow(SrpgBaseScene pBaseScene, Font pFont, float pX, float pY, float pWidth, float pHeight) {

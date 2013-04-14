@@ -43,6 +43,7 @@ import com.kyokomi.core.sprite.TalkLayer;
 import com.kyokomi.core.utils.JsonUtil;
 import com.kyokomi.srpgquest.GameManager;
 import com.kyokomi.srpgquest.constant.LayerZIndexType;
+import com.kyokomi.srpgquest.constant.MapDataType;
 import com.kyokomi.srpgquest.dto.MapBattleInfoDto;
 import com.kyokomi.srpgquest.layer.MapBattleCutInLayer;
 import com.kyokomi.srpgquest.layer.MapBattleCutInLayer.MapBattleCutInLayerType;
@@ -62,11 +63,11 @@ public class MapBattleScene extends SrpgBaseScene
 	private GameManager gameManager;
 	
 	/** プレイヤーと敵情報. */
-	private SparseArray<ActorSprite> players;
-	private SparseArray<ActorSprite> enemys;
-	private List<Sprite> obstacleList;
-	/** カーソル表示リスト. */
-	private List<CursorRectangle> cursorList;
+//	private SparseArray<ActorSprite> players;
+//	private SparseArray<ActorSprite> enemys;
+//	private List<Sprite> obstacleList;
+//	/** カーソル表示リスト. */
+//	private List<CursorRectangle> cursorList;
 
 	/** ダメージ表示用テキスト. */
 	private Text mDamageText;
@@ -106,30 +107,30 @@ public class MapBattleScene extends SrpgBaseScene
 	 */
 	@Override
 	public void onResume() {
-		getMediaManager().playPauseingMusic();
+//		getMediaManager().playPauseingMusic();
 	}
 	/**
 	 * バックグラウンド時
 	 */
 	@Override
 	public void onPause() {
-		getMediaManager().pausePlayingMusic();
+//		getMediaManager().pausePlayingMusic();
 	}
 	@Override
 	public void initSoundAndMusic() {
 		// 効果音をロード
-		try {
-			getMediaManager().resetAllMedia();
-			getMediaManager().createMedia(SoundType.BTN_PRESSED_SE);
-			getMediaManager().createMedia(SoundType.ATTACK_SE);
-			getMediaManager().createMedia(MusicType.TUTORIAL_BGM);
-			getMediaManager().createMedia(MusicType.BATTLE1_BGM);
-			getMediaManager().createMedia(MusicType.CLEAR_BGM);
-			getMediaManager().createMedia(MusicType.GAME_OVER_BGM);
-		} catch (IOException e) {
-			Log.e(TAG, "sound file io error");
-			e.printStackTrace();
-		}	
+//		try {
+//			getMediaManager().resetAllMedia();
+//			getMediaManager().createMedia(SoundType.BTN_PRESSED_SE);
+//			getMediaManager().createMedia(SoundType.ATTACK_SE);
+//			getMediaManager().createMedia(MusicType.TUTORIAL_BGM);
+//			getMediaManager().createMedia(MusicType.BATTLE1_BGM);
+//			getMediaManager().createMedia(MusicType.CLEAR_BGM);
+//			getMediaManager().createMedia(MusicType.GAME_OVER_BGM);
+//		} catch (IOException e) {
+//			Log.e(TAG, "sound file io error");
+//			e.printStackTrace();
+//		}	
 	}
 
 	/**
@@ -147,10 +148,10 @@ public class MapBattleScene extends SrpgBaseScene
 	@Override
 	public void init() {
 		// 初期化
-		players = new SparseArray<ActorSprite>();
-		enemys = new SparseArray<ActorSprite>();
-		cursorList = new ArrayList<CursorRectangle>();
-		obstacleList = new ArrayList<Sprite>();
+//		players = new SparseArray<ActorSprite>();
+//		enemys = new SparseArray<ActorSprite>();
+//		cursorList = new ArrayList<CursorRectangle>();
+//		obstacleList = new ArrayList<Sprite>();
 		// デフォルトフォント初期化
 		initFont(16);
 		// 背景
@@ -188,7 +189,7 @@ public class MapBattleScene extends SrpgBaseScene
 		initTalk();
 		
 		// BGM再生開始
-		getMediaManager().playStart(MusicType.TUTORIAL_BGM);
+//		getMediaManager().playStart(MusicType.TUTORIAL_BGM);
 		// Sceneのタッチリスナーを登録
 		setOnSceneTouchListener(this);
 		// FPS表示
@@ -229,8 +230,9 @@ public class MapBattleScene extends SrpgBaseScene
 		player.setPlayerPosition(mapPoint.getX(), mapPoint.getY());
 		player.setPlayerSize(mapPoint.getGridSize(), mapPoint.getGridSize());
 		player.setZIndex(LayerZIndexType.ACTOR_LAYER.getValue());
+		player.setTag(playerSeqNo);
 		attachChild(player);
-		players.put(playerSeqNo, player);
+//		players.put(playerSeqNo, player);
 		
 		PlayerStatusRectangle playerStatusRect = initStatusWindow(player, 0);
 		playerStatusRect.setZIndex(LayerZIndexType.POPUP_LAYER.getValue());
@@ -251,8 +253,9 @@ public class MapBattleScene extends SrpgBaseScene
 		enemy.setPlayerPosition(mapPoint.getX(), mapPoint.getY());
 		enemy.setPlayerSize(mapPoint.getGridSize(), mapPoint.getGridSize());
 		enemy.setZIndex(LayerZIndexType.ACTOR_LAYER.getValue());
+		enemy.setTag(enemySeqNo);
 		attachChild(enemy);
-		enemys.put(enemySeqNo, enemy);
+//		enemys.put(enemySeqNo, enemy);
 		
 		PlayerStatusRectangle enemyStatusRect = initStatusWindow(enemy, 0);
 		enemyStatusRect.setZIndex(LayerZIndexType.POPUP_LAYER.getValue());
@@ -260,18 +263,19 @@ public class MapBattleScene extends SrpgBaseScene
 		enemyStatusRect.setAlpha(0.5f);
 	}
 	
+	private static final int OBSTACLE_TAG_START = 10000;
+	private int obstacleIndex = 0;
+	
 	/**
 	 * 障害物描画.
 	 * @param mapPoint
 	 */
 	public void createObstacleSprite(MapPoint mapPoint, int currentTileIndex) {
-//		TiledSprite obstacle = getIconSetTiledSprite();
 		Sprite obstacle = getResourceSprite("icon_ob.png");
 		obstacle.setPosition(mapPoint.getX(), mapPoint.getY());
-//		obstacle.setCurrentTileIndex(currentTileIndex);
 		obstacle.setSize(mapPoint.getGridSize(), mapPoint.getGridSize());
 		obstacle.setZIndex(LayerZIndexType.ACTOR_LAYER.getValue());
-		obstacleList.add(obstacle);
+		obstacle.setTag(OBSTACLE_TAG_START + obstacleIndex); obstacleIndex++;
 		attachChild(obstacle);
 	}
 	
@@ -307,7 +311,7 @@ public class MapBattleScene extends SrpgBaseScene
 	 * @param playerSeqNo
 	 */
 	public void refreshPlayerStatusWindow(int playerSeqNo) {
-		ActorSprite player = players.get(playerSeqNo);
+		ActorSprite player = getActorSprite(playerSeqNo);
 		player.getPlayerStatusRectangle().refresh();
 	}
 	/**
@@ -315,7 +319,7 @@ public class MapBattleScene extends SrpgBaseScene
 	 * @param enemySeqNo
 	 */
 	public void refreshEnemyStatusWindow(int enemySeqNo) {
-		ActorSprite enemy = enemys.get(enemySeqNo);
+		ActorSprite enemy = getActorSprite(enemySeqNo);
 		enemy.getPlayerStatusRectangle().refresh();
 	}
 	/**
@@ -327,9 +331,9 @@ public class MapBattleScene extends SrpgBaseScene
 		getBaseActivity().runOnUpdateThread(new Runnable() {
 			@Override
 			public void run() {
-				ActorSprite player = players.get(playerSeqNo);
+				ActorSprite player = getActorSprite(playerSeqNo);
+				player.detachChildren();
 				player.detachSelf();
-				players.remove(playerSeqNo);
 			}
 		});
 	}
@@ -342,9 +346,9 @@ public class MapBattleScene extends SrpgBaseScene
 		getBaseActivity().runOnUpdateThread(new Runnable() {
 			@Override
 			public void run() {
-				ActorSprite enemy = enemys.get(enemyId);
+				ActorSprite enemy = getActorSprite(enemyId);
+				enemy.detachChildren();
 				enemy.detachSelf();
-				enemys.remove(enemyId);
 			}
 		});
 	}
@@ -369,14 +373,24 @@ public class MapBattleScene extends SrpgBaseScene
 	/**
 	 * カーソル選択.
 	 */
-	public void selectCursor(MapPoint mapPoint) {
-		for (CursorRectangle cursorRectangle : cursorList) {
-			if (mapPoint.isMuchMapPoint(cursorRectangle.getmMapPointX(), cursorRectangle.getmMapPointY())) {
-				cursorRectangle.setColor(Color.BLUE);
-				break;
+	public void touchedCusorRectangle(final MapPoint mapPoint) {
+		getBaseActivity().runOnUpdateThread(new Runnable() {
+			@Override
+			public void run() {
+				int count = getChildCount();
+				for (int i = 0; i < count; i++) {
+					if (getChildByIndex(i) instanceof CursorRectangle) {
+						CursorRectangle cursorRectangle = (CursorRectangle) getChildByIndex(i);
+						if (mapPoint.isMuchMapPoint(cursorRectangle.getmMapPointX(), 
+								cursorRectangle.getmMapPointY())) {
+							cursorRectangle.setColor(Color.BLUE);
+							break;
+						}
+					}
+				}
+				sortChildren();
 			}
-		}
-		sortChildren();
+		});
 	}
 	/**
 	 * カーソル描画.
@@ -398,7 +412,6 @@ public class MapBattleScene extends SrpgBaseScene
 				new AlphaModifier(0.5f, 0.6f, 0.2f)
 				)));
 		attachChild(cursor);
-		cursorList.add(cursor);
 		
 		return cursor;
 	}
@@ -411,11 +424,11 @@ public class MapBattleScene extends SrpgBaseScene
 		getBaseActivity().runOnUpdateThread(new Runnable() {
 			@Override
 			public void run() {
-				for (Rectangle cursor : cursorList) {
-					cursor.detachChildren();
-					cursor.detachSelf();
+				for (int i = 0; i < getChildCount(); i++) {
+					if (getChildByIndex(i) instanceof CursorRectangle) {
+						detachEntity(getChildByIndex(i));
+					}
 				}
-				cursorList = new ArrayList<CursorRectangle>();
 			}
 		});
 	}
@@ -437,7 +450,7 @@ public class MapBattleScene extends SrpgBaseScene
 	 */
 	public void movePlayerAnimation(int playerSeqNo, List<MapPoint> moveMapPointList, 
 			final IAnimationCallback animationCallback) {
-		ActorSprite ActorSprite = players.get(playerSeqNo);
+		ActorSprite ActorSprite = getActorSprite(playerSeqNo);
 		ActorSprite.move(1.0f, moveMapPointList, new IEntityModifier.IEntityModifierListener() {
 			@Override
 			public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
@@ -456,7 +469,7 @@ public class MapBattleScene extends SrpgBaseScene
 	 */
 	public void moveEnemyAnimation(int enemySeqNo, List<MapPoint> moveMapPointList, 
 			final IAnimationCallback animationCallback) {
-		ActorSprite enemySprite = enemys.get(enemySeqNo);
+		ActorSprite enemySprite = getActorSprite(enemySeqNo);
 		enemySprite.move(1.0f, moveMapPointList, new IEntityModifier.IEntityModifierListener() {
 			@Override
 			public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
@@ -473,7 +486,7 @@ public class MapBattleScene extends SrpgBaseScene
 	 * @param playerSeqNo
 	 */
 	public void startWalkingPlayerAnimation(int playerSeqNo) {
-		ActorSprite ActorSprite = players.get(playerSeqNo);
+		ActorSprite ActorSprite = getActorSprite(playerSeqNo);
 		ActorSprite.setPlayerToDefaultPosition();
 	}
 	/**
@@ -481,7 +494,7 @@ public class MapBattleScene extends SrpgBaseScene
 	 * @param playerSeqNo
 	 */
 	public void stopWalkingPlayerAnimation(int playerSeqNo) {
-		ActorSprite ActorSprite = players.get(playerSeqNo);
+		ActorSprite ActorSprite = getActorSprite(playerSeqNo);
 		ActorSprite.setPlayerToDefaultPositionStop();
 	}
 
@@ -490,7 +503,7 @@ public class MapBattleScene extends SrpgBaseScene
 	 * @param enemySeqNo
 	 */
 	public void startWalkingEnemyAnimation(int enemySeqNo) {
-		ActorSprite enemySprite = enemys.get(enemySeqNo);
+		ActorSprite enemySprite = getActorSprite(enemySeqNo);
 		enemySprite.setPlayerToDefaultPosition();
 	}
 	/**
@@ -498,7 +511,7 @@ public class MapBattleScene extends SrpgBaseScene
 	 * @param enemySeqNo
 	 */
 	public void stopWalkingEnemyAnimation(int enemySeqNo) {
-		ActorSprite enemySprite = enemys.get(enemySeqNo);
+		ActorSprite enemySprite = getActorSprite(enemySeqNo);
 		enemySprite.setPlayerToDefaultPositionStop();
 	}
 	
@@ -510,7 +523,7 @@ public class MapBattleScene extends SrpgBaseScene
 	 */
 	public void showDamageText(final int damage, final MapPoint mapPoint) {
 		
-		getMediaManager().play(SoundType.ATTACK_SE);
+//		getMediaManager().play(SoundType.ATTACK_SE);
 		
 		mDamageText.setScale(0.5f);
 		mDamageText.setX(mapPoint.getX());
@@ -552,22 +565,22 @@ public class MapBattleScene extends SrpgBaseScene
 	// ---------------- カットイン関連 ----------------------
 	public void showCutIn(MapBattleCutInLayerType pMapBattleCutInLayerType, 
 			final IAnimationCallback pAnimationCallback) {
-		switch (pMapBattleCutInLayerType) {
-		case PLAYER_TURN_CUTIN:
-			getMediaManager().play(MusicType.BATTLE1_BGM);
-			break;
-		case ENEMY_TURN_CUTIN:
-			getMediaManager().play(MusicType.BATTLE1_BGM);
-			break;
-		case PLAYER_WIN_CUTIN:
-			getMediaManager().play(MusicType.CLEAR_BGM);
-			break;
-		case GAME_OVER_CUTIN:
-			getMediaManager().play(MusicType.GAME_OVER_BGM);
-			break;
-		default:
-			return;
-		}
+//		switch (pMapBattleCutInLayerType) {
+//		case PLAYER_TURN_CUTIN:
+//			getMediaManager().play(MusicType.BATTLE1_BGM);
+//			break;
+//		case ENEMY_TURN_CUTIN:
+//			getMediaManager().play(MusicType.BATTLE1_BGM);
+//			break;
+//		case PLAYER_WIN_CUTIN:
+//			getMediaManager().play(MusicType.CLEAR_BGM);
+//			break;
+//		case GAME_OVER_CUTIN:
+//			getMediaManager().play(MusicType.GAME_OVER_BGM);
+//			break;
+//		default:
+//			return;
+//		}
 		// カットイン表示
 		mMapBattleCutInLayer.showCutIn(pMapBattleCutInLayerType, new MapBattleCutInLayer.ICutInCallback() {
 			@Override public void doAction() { if (pAnimationCallback != null) pAnimationCallback.doAction(); }
@@ -610,7 +623,7 @@ public class MapBattleScene extends SrpgBaseScene
 		if (mEnemyStatusRect != null && mEnemyStatusRect.isVisible()) {
 			y = mEnemyStatusRect.getY() + mEnemyStatusRect.getHeight();
 		}
-		mPlayerStatusRect = players.get(playerSeqNo).getPlayerStatusRectangle();
+		mPlayerStatusRect = getActorSprite(playerSeqNo).getPlayerStatusRectangle();
 		if (mPlayerStatusRect != null) {
 			mPlayerStatusRect.show(PlayerStatusRectangleType.MINI_STATUS);
 			mPlayerStatusRect.setX(x);
@@ -628,7 +641,7 @@ public class MapBattleScene extends SrpgBaseScene
 		if (mPlayerStatusRect != null && mPlayerStatusRect.isVisible()) {
 			y = mPlayerStatusRect.getY() + mPlayerStatusRect.getHeight();
 		}
-		mEnemyStatusRect = enemys.get(enemySeqNo).getPlayerStatusRectangle();
+		mEnemyStatusRect = getActorSprite(enemySeqNo).getPlayerStatusRectangle();
 		if (mEnemyStatusRect != null) {
 			mEnemyStatusRect.show(PlayerStatusRectangleType.MINI_STATUS);
 			mEnemyStatusRect.setY(y);
@@ -664,7 +677,7 @@ public class MapBattleScene extends SrpgBaseScene
 			// TODO: 一旦会話はGameManager外にする
 			if (mTalkLayer != null && mTalkLayer.contains(x, y)) {
 				
-				getMediaManager().play(SoundType.BTN_PRESSED_SE);
+//				getMediaManager().play(SoundType.BTN_PRESSED_SE);
 				
 				if (mTalkLayer.isNextTalk()) {
 					mTalkLayer.nextTalk();
@@ -676,13 +689,13 @@ public class MapBattleScene extends SrpgBaseScene
 					mTalkLayer = null;
 					
 					// 勝利条件表示
-					getMediaManager().play(MusicType.BATTLE1_BGM);
+//					getMediaManager().play(MusicType.BATTLE1_BGM);
 					mMapBattleTouchLayer.showTouchLayer(this);
 				}
 				
 			} else if (mMapBattleTouchLayer.isTouchLayer(x, y)) {
 				
-				getMediaManager().play(SoundType.BTN_PRESSED_SE);
+//				getMediaManager().play(SoundType.BTN_PRESSED_SE);
 				
 				// 勝利条件を非表示にする
 				mMapBattleTouchLayer.hideTouchLayer(this);
@@ -714,7 +727,7 @@ public class MapBattleScene extends SrpgBaseScene
 		nextScenario(getScenarioEntity());
 	}
 	public void gameOverMapBattle() {
-		getMediaManager().stopPlayingMusic();
+//		getMediaManager().stopPlayingMusic();
 		// TODO: タイトルへ？
 		showScene(new InitialScene(getBaseActivity()));
 	}
@@ -743,33 +756,46 @@ public class MapBattleScene extends SrpgBaseScene
 		}
 	}
 	
+	
+	private ActorSprite getActorSprite(int playerSeqNo) {
+		int count = getChildCount();
+		for (int i = 0; i < count; i++) {
+			if (getChildByIndex(i) instanceof ActorSprite) {
+				if (playerSeqNo == getChildByIndex(i).getTag()) {
+					return (ActorSprite) getChildByIndex(i);
+				}
+			}
+		}
+		return null;
+	}
+	
 	@Override
 	public void destory() {
-		if (players != null) {
-			for (int i = 0; i < players.size(); i++) {
-				detachEntity(players.valueAt(i));
-			}
-			players = null;
-		}
-		if (enemys != null) {
-			for (int i = 0; i < enemys.size(); i++) {
-				detachEntity(enemys.valueAt(i));
-			}
-			enemys = null;
-		}
-		
-		if (cursorList != null) {
-			for (int i = 0; i < cursorList.size(); i++) {
-				detachEntity(cursorList.get(i));
-			}
-			cursorList = null;
-		}
-		if (obstacleList != null) {
-			for (int i = 0; i < obstacleList.size(); i++) {
-				detachEntity(obstacleList.get(i));
-			}
-			obstacleList = null;
-		}
+//		if (players != null) {
+//			for (int i = 0; i < players.size(); i++) {
+//				detachEntity(players.valueAt(i));
+//			}
+//			players = null;
+//		}
+//		if (enemys != null) {
+//			for (int i = 0; i < enemys.size(); i++) {
+//				detachEntity(enemys.valueAt(i));
+//			}
+//			enemys = null;
+//		}
+//		
+//		if (cursorList != null) {
+//			for (int i = 0; i < cursorList.size(); i++) {
+//				detachEntity(cursorList.get(i));
+//			}
+//			cursorList = null;
+//		}
+//		if (obstacleList != null) {
+//			for (int i = 0; i < obstacleList.size(); i++) {
+//				detachEntity(obstacleList.get(i));
+//			}
+//			obstacleList = null;
+//		}
 		
 		gameManager = null;
 		if (mDamageText != null) {
