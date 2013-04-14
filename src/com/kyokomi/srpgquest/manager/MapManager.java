@@ -1,12 +1,12 @@
-package com.kyokomi.srpgquest.map;
+package com.kyokomi.srpgquest.manager;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import com.kyokomi.core.dto.ActorPlayerDto;
-import com.kyokomi.srpgquest.GameManager;
 import com.kyokomi.srpgquest.constant.MapDataType;
 import com.kyokomi.srpgquest.constant.MoveDirectionType;
+import com.kyokomi.srpgquest.map.MapItemManager;
 import com.kyokomi.srpgquest.map.common.MapPoint;
 import com.kyokomi.srpgquest.map.item.ActorPlayerMapItem;
 import com.kyokomi.srpgquest.map.item.MapItem;
@@ -17,7 +17,7 @@ import android.util.Log;
  * マップ全体を管理するクラス.
  * マップとスプライトを全て保持する。
  * それぞれ個別のリストとまとめて管理するsprite、マップ位置をもとに管理するmap_dataというように多重管理。
- * @deprecated 廃止
+ * 
  * @author kyokomi
  *
  */

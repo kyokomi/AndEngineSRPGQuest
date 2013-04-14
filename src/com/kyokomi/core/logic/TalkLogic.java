@@ -18,6 +18,7 @@ import com.kyokomi.core.entity.MActorEntity;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.core.sprite.ActorSprite;
 import com.kyokomi.srpgquest.scene.AbstractGameScene;
+import com.kyokomi.srpgquest.scene.SrpgBaseScene;
 
 public class TalkLogic {
 
@@ -64,7 +65,7 @@ public class TalkLogic {
 		return talks;
 	}
 	
-	public SparseArray<TiledSprite> getTalkFaceSparse(AbstractGameScene pBaseScene, List<PlayerTalkDto> talks) {
+	public SparseArray<TiledSprite> getTalkFaceSparse(SrpgBaseScene pBaseScene, List<PlayerTalkDto> talks) {
 		pBaseScene.getBaseActivity().openDB();// DB OPEN
 		
 		MActorDao mActorDao = new MActorDao();
@@ -80,7 +81,7 @@ public class TalkLogic {
 			}
 			String faceName = ActorSprite.getFaceFileName(mActorEntity.getImageResId());
 			TiledSprite faceSprite = pBaseScene.getResourceFaceSprite(
-					pBaseScene, mActorEntity.getActorId(), faceName);
+					mActorEntity.getActorId(), faceName);
 			actorFaces.put(mActorEntity.getActorId(), faceSprite);
 		}
 		pBaseScene.getBaseActivity().closeDB(); // DB CLOSE

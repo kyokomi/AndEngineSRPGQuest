@@ -15,6 +15,7 @@ insert into M_SCENARIO values(11, 3, 3, 3, 3, "バトル３リザルト");
 insert into M_SCENARIO values(12, 3, 4, 1, 1, "バトル後");
 
 insert into M_SCENARIO values(99, 99, 1, 1, 1, "開発中により・・・");
+insert into M_SCENARIO values(100, 99, 99, 99, 99, "クリア済み・・・");
 
 insert into M_ACTOR values(1, "アスリーン", 110);
 insert into M_ACTOR values(2, "ラーティ・クルス", 34);

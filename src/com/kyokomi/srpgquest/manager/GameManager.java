@@ -1,4 +1,4 @@
-package com.kyokomi.srpgquest;
+package com.kyokomi.srpgquest.manager;
 
 import java.util.List;
 
@@ -15,19 +15,17 @@ import com.kyokomi.srpgquest.dto.MapBattleInfoDto;
 import com.kyokomi.srpgquest.dto.MapBattleInfoDto.MapSymbol;
 import com.kyokomi.srpgquest.layer.MapBattleCutInLayer.MapBattleCutInLayerType;
 import com.kyokomi.srpgquest.logic.BattleLogic;
-import com.kyokomi.core.manager.MediaManager.SoundType;
-import com.kyokomi.srpgquest.map.MapManager;
 import com.kyokomi.srpgquest.map.common.MapPoint;
 import com.kyokomi.srpgquest.map.item.ActorPlayerMapItem;
 import com.kyokomi.srpgquest.map.item.MapItem;
-import com.kyokomi.srpgquest.scene.MapBattleScene;
+import com.kyokomi.srpgquest.scene.MainScene;
+import com.kyokomi.srpgquest.scene.MainScene;
 
 import android.util.Log;
 import android.util.SparseArray;
 
 /**
  * ゲーム全体を管理するクラス.
- * @deprecated 廃止
  * @author kyokomi
  *
  */
@@ -38,7 +36,7 @@ public class GameManager {
 	
 	private MapBattleInfoDto mMapBattleInfoDto;
 	
-	private MapBattleScene mBaseScene;
+	private MainScene mBaseScene;
 	
 	private GameStateType mGameState;
 	
@@ -68,7 +66,7 @@ public class GameManager {
 	 * コンストラクタ.
 	 * @param mainActivity
 	 */
-	public GameManager(MapBattleScene baseScene) {
+	public GameManager(MainScene baseScene) {
 		this.mBaseScene = baseScene;
 
 		// 初期化
@@ -328,7 +326,7 @@ public class GameManager {
 					
 					// 移動リストを引数にScene側の移動アニメーションを呼び出す
 					mBaseScene.movePlayerAnimation(mSelectActorPlayer.getSeqNo(), moveMapPointList, 
-							new MapBattleScene.IAnimationCallback() {
+							new MainScene.IAnimationCallback() {
 						@Override
 						public void doAction() {
 							// カーソルを消す
@@ -590,7 +588,7 @@ public class GameManager {
 	private void changePlayerTurn() {
 		// プレイヤーターン開始
 		mBaseScene.showCutIn(MapBattleCutInLayerType.PLAYER_TURN_CUTIN, 
-				new MapBattleScene.IAnimationCallback() {
+				new MainScene.IAnimationCallback() {
 			@Override
 			public void doAction() {
 				// 全プレイヤーを行動可能にしてアニメーションを再開
@@ -608,7 +606,7 @@ public class GameManager {
 	private void changeEnemyTurn() {
 		// 敵のターンアニメーション
 		mBaseScene.showCutIn(MapBattleCutInLayerType.ENEMY_TURN_CUTIN,
-				new MapBattleScene.IAnimationCallback() {
+				new MainScene.IAnimationCallback() {
 			@Override
 			public void doAction() {
 				// 全エネミーを行動可能にする
@@ -630,7 +628,7 @@ public class GameManager {
 		Log.d(TAG, "changeState Player Win");
 		// 勝利のカットインを入れてコールバックで次のシナリオへ
 		mBaseScene.showCutIn(MapBattleCutInLayerType.PLAYER_WIN_CUTIN, 
-				new MapBattleScene.IAnimationCallback() {
+				new MainScene.IAnimationCallback() {
 			@Override
 			public void doAction() {
 				mBaseScene.clearMapBattle();
@@ -643,7 +641,7 @@ public class GameManager {
 		Log.d(TAG, "changeState GameOver");
 		// 敗北のカットインを入れてコールバックでタイトル画面に戻す
 		mBaseScene.showCutIn(MapBattleCutInLayerType.GAME_OVER_CUTIN,
-				new MapBattleScene.IAnimationCallback() {
+				new MainScene.IAnimationCallback() {
 			@Override
 			public void doAction() {
 				// タイトル画面に戻る
@@ -692,7 +690,7 @@ public class GameManager {
 				
 				// 移動リストを引数にScene側の移動アニメーションを呼び出す
 				mBaseScene.moveEnemyAnimation(enemyMapItem.getSeqNo(), moveMapPointList, 
-						new MapBattleScene.IAnimationCallback() {
+						new MainScene.IAnimationCallback() {
 					@Override
 					public void doAction() {
 						

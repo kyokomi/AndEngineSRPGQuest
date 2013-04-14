@@ -18,11 +18,9 @@ public abstract class ACutInTouchLayer extends Rectangle {
 	}
 	
 	public void showTouchLayer(KeyListenScene pBaseScene) {
-		pBaseScene.attachChild(getTouchLayer());
 		setVisibleTouchLayer(true);
 	}
 	public void hideTouchLayer(KeyListenScene pBaseScene) {
-		pBaseScene.detachChild(getTouchLayer());
 		setVisibleTouchLayer(false);
 	}
 	public void setVisibleTouchLayer(boolean isVisible) {

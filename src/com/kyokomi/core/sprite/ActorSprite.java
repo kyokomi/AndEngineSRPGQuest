@@ -18,6 +18,7 @@ import com.kyokomi.core.constants.PlayerSpriteType;
 import com.kyokomi.core.dto.ActorPlayerDto;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.srpgquest.map.common.MapPoint;
+import com.kyokomi.srpgquest.scene.AbstractGameScene;
 import com.kyokomi.srpgquest.scene.SrpgBaseScene;
 
 public class ActorSprite extends Rectangle {
@@ -44,6 +45,7 @@ public class ActorSprite extends Rectangle {
 		mPlayerStatusRectangle = new PlayerStatusRectangle(pBaseScene, 
 				pFont, getActorPlayer(), getFaceFileName(getActorPlayer().getImageResId()), 
 				pX, pY, pWidth, pHeight);
+		mPlayerStatusRectangle.setTag(getActorPlayer().getPlayerId() + 90000);
 		return mPlayerStatusRectangle;
 	}
 	public PlayerStatusRectangle getPlayerStatusRectangle() {

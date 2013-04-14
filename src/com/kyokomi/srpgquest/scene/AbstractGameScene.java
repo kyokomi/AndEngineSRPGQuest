@@ -11,9 +11,16 @@ public abstract class AbstractGameScene extends KeyListenScene {
 		super(baseActivity);
 	}
 	
-	public TiledSprite getResourceFaceSprite(KeyListenScene pBaseScene, int tag, String faceFileName) {
-		TiledSprite tiledSprite = pBaseScene.getResourceTiledSprite(faceFileName, 4, 2);
+	public TiledSprite getResourceFaceSprite(int tag, String faceFileName) {
+		TiledSprite tiledSprite = getResourceTiledSprite(faceFileName, 4, 2);
 		tiledSprite.setTag(tag);
 		return tiledSprite;
+	}
+	/**
+	 * IconSetからSpriteを取得.
+	 * @return TiledSprite
+	 */
+	public TiledSprite getIconSetTiledSprite() {
+		return getBaseActivity().getResourceUtil().getTiledSprite("icon_set.png", 16, 48);
 	}
 }

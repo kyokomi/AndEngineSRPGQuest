@@ -141,11 +141,14 @@ public class GameController {
 		MScenarioEntity nextScenario = mScenarioDao.selectNextScenario(
 				pBaseScene.getBaseActivity().getDB(), 
 				saveDataDto.getScenarioNo());
-		// save
-		save(pBaseScene.getBaseActivity(), nextScenario.getScenarioNo());
-		// 次のシナリオでセーブデータ作成
-		saveDataDto = createSaveDataDto(pBaseScene, nextScenario);
-		
+		if (nextScenario != null) {
+			// save
+			save(pBaseScene.getBaseActivity(), nextScenario.getScenarioId());
+			// 次のシナリオでセーブデータ作成
+			saveDataDto = createSaveDataDto(pBaseScene, nextScenario);			
+		} else {
+			saveDataDto = null;
+		}
 		return saveDataDto;
 	}
 	public SaveDataDto createSaveDataDto(KeyListenScene pBaseScene) {

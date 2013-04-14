@@ -47,12 +47,12 @@ public class MapBattleSelectMenuLayer {
 	private MenuRectangle mMenuRectangle;
 	private ButtonSprite.OnClickListener selectMenuOnClickListener;
 	
-	public MapBattleSelectMenuLayer(SrpgBaseScene pBaseScene, ButtonSprite.OnClickListener pSelectMenuOnClickListener) {
+	public MapBattleSelectMenuLayer(KeyListenScene pBaseScene, ButtonSprite.OnClickListener pSelectMenuOnClickListener) {
 		this.selectMenuOnClickListener = pSelectMenuOnClickListener;
 		createSelectMenuSprite(pBaseScene);
 	}
 	
-	public void createSelectMenuSprite(SrpgBaseScene pBaseScene) {
+	public void createSelectMenuSprite(KeyListenScene pBaseScene) {
 		
 		// ベースメニューを作成
 		mMenuRectangle = new MenuRectangle(
@@ -74,7 +74,7 @@ public class MapBattleSelectMenuLayer {
 		hideSelectMenu();
 	}
 	
-	private ButtonSprite creatButtonWithAddMenu(SrpgBaseScene pBaseScene, SelectMenuType pSelectMenuType) {
+	private ButtonSprite creatButtonWithAddMenu(KeyListenScene pBaseScene, SelectMenuType pSelectMenuType) {
 		ButtonSprite btnSprite = pBaseScene.getResourceButtonSprite(
 				pSelectMenuType.getNormalFileName(), 
 				pSelectMenuType.getPressedFileName());

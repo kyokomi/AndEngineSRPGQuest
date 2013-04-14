@@ -174,13 +174,19 @@ public abstract class SrpgBaseScene extends KeyListenScene {
 	}
 	// ------------------ DB ----------------------
 	
+	/**
+	 * @deprecated
+	 */
 	private void initDB() {
 		 mScenarioDao = new MScenarioDao();
 	}
 	
 	// ------------------ シナリオ ----------------------
 	
-	// 現在のセーブをロードしシナリオを読み込む
+	/**
+	 * 現在のセーブをロードしシナリオを読み込む
+	 * @deprecated
+	 */
 	public void loadScenario() {
 		getBaseActivity().openDB();
 		// シナリオを検索
@@ -191,10 +197,17 @@ public abstract class SrpgBaseScene extends KeyListenScene {
 		startScenario(scenarioEntity);
 		getBaseActivity().closeDB();
 	}
-	// 次シナリオ読み込み
+	/**
+	 * 次シナリオ読み込み
+	 * @deprecated
+	 */
 	public void nextScenario() {
 		nextScenario(getScenarioEntity());
 	}
+	/**
+	 * @deprecated
+	 * @param scenarioEntity
+	 */
 	public void nextScenario(MScenarioEntity scenarioEntity) {
 		getBaseActivity().openDB();
 		ditactionScene(mScenarioDao.selectNextSeq(getBaseActivity().getDB(), 
@@ -203,7 +216,11 @@ public abstract class SrpgBaseScene extends KeyListenScene {
 		getBaseActivity().closeDB();
 	}
 	
-	// シナリオ読み込み
+	/**
+	 * シナリオ読み込み
+	 * @deprecated
+	 * @param scenarioEntity
+	 */
 	public void startScenario(MScenarioEntity scenarioEntity) {
 		getBaseActivity().openDB();
 		ditactionScene(mScenarioDao.selectByScenarioNoAndSeqNo(getBaseActivity().getDB(), 
@@ -212,7 +229,10 @@ public abstract class SrpgBaseScene extends KeyListenScene {
 		getBaseActivity().closeDB();
 	}
 	
-	// シーン振り分け
+	/**
+	 * シーン振り分け
+	 * @deprecated 
+	 */
 	private void ditactionScene(MScenarioEntity mScenarioEntity) {
 		if (mScenarioEntity == null) {
 			getBaseActivity().backToInitial();
@@ -242,5 +262,8 @@ public abstract class SrpgBaseScene extends KeyListenScene {
 		reset();
 	}
 	
+	/**
+	 * @deprecated 
+	 */
 	public abstract void destory();
 }

@@ -9,7 +9,6 @@ import org.andengine.util.modifier.IModifier;
 
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.srpgquest.constant.LayerZIndexType;
-import com.kyokomi.srpgquest.scene.SrpgBaseScene;
 
 public class MapBattleCutInLayer {
 	public enum MapBattleCutInLayerType {
@@ -59,10 +58,10 @@ public class MapBattleCutInLayer {
 		public void doAction();
 	}
 	
-	public MapBattleCutInLayer(SrpgBaseScene pBaseScene) {
+	public MapBattleCutInLayer(KeyListenScene pBaseScene) {
 		initCutInSprite(pBaseScene);
 	}
-	private void initCutInSprite(SrpgBaseScene pBaseScene) {
+	private void initCutInSprite(KeyListenScene pBaseScene) {
 		mPlayerTurnCutInSprite = createAttachCutInSprite(pBaseScene,
 				MapBattleCutInLayerType.PLAYER_TURN_CUTIN);
 		mEnemyTurnCutInSprite = createAttachCutInSprite(pBaseScene,

@@ -20,7 +20,7 @@ import com.kyokomi.srpgquest.constant.LayerZIndexType;
  *
  */
 public class MapBattleClearConditionTouchLayer extends ACutInTouchLayer {
-	
+	public static final int TAG = 4000;
 	public MapBattleClearConditionTouchLayer(KeyListenScene pBaseScene) {
 		super(pBaseScene);
 	}
