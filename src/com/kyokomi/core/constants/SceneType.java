@@ -5,6 +5,7 @@ public enum SceneType {
 	SCENE_TYPE_MAP(2),
 	SCENE_TYPE_RESULT(3),
 	SCENE_TYPE_FREE(4),
+	SCENE_TYPE_END(99)
 	;
 	
 	private Integer value;

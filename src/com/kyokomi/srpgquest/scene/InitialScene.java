@@ -203,7 +203,8 @@ public class InitialScene extends SrpgBaseScene
 			break;
 		case NEW_GAME: // NewGame
 			getBaseActivity().getGameController().start(getBaseActivity());
-			loadScenario();
+			showScene(new MainScene(getBaseActivity()));
+//			loadScenario();
 			break;
 		}	
 	}

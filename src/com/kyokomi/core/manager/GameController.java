@@ -138,9 +138,9 @@ public class GameController {
 		pBaseScene.getBaseActivity().openDB(); // --- DB OPNE ---
 		
 		MScenarioDao mScenarioDao = new MScenarioDao();
-		MScenarioEntity nextScenario = mScenarioDao.selectNextScenario(
+		MScenarioEntity nextScenario = mScenarioDao.selectNextSeq(
 				pBaseScene.getBaseActivity().getDB(), 
-				saveDataDto.getScenarioNo());
+				saveDataDto.getScenarioNo(), saveDataDto.getSeqNo());
 		if (nextScenario != null) {
 			// save
 			save(pBaseScene.getBaseActivity(), nextScenario.getScenarioId());

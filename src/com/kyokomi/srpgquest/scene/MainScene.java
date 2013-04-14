@@ -138,6 +138,7 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 			break;
 		default:
 			getBaseActivity().backToInitial();
+			return;
 		}
 		// タッチイベント登録
 		setOnSceneTouchListener(this);
@@ -148,6 +149,9 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	 */
 	@Override
 	public void nextScenario() {
+		for (int i = 0; i < getChildCount(); i++) {
+			detachEntity(getChildByIndex(i));
+		}
 		// セーブAnd次シナリオへ進行
 		getBaseActivity().getGameController().nextScenarioAndSave(this);
 		init();
@@ -871,9 +875,6 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	}
 	
 	private void endSRPGPart() {
-		for (int i = 0; i < getChildCount(); i++) {
-			detachEntity(getChildByIndex(i));
-		}
 		// 次のシナリオへ
 		nextScenario();
 	}
