@@ -245,7 +245,7 @@ public abstract class SrpgBaseScene extends KeyListenScene {
 		Log.d("SRPGBaseScene", "ditactionScene " + mScenarioEntity.getSceneType());
 		switch (mScenarioEntity.getSceneType()) {
 		case SCENE_TYPE_MAP:
-			showScene(new MapBattleScene(getBaseActivity(), mScenarioEntity));
+//			showScene(new MapBattleScene(getBaseActivity(), mScenarioEntity));
 			break;
 		case SCENE_TYPE_NOVEL:
 			showScene(new NovelScene(getBaseActivity(), mScenarioEntity));

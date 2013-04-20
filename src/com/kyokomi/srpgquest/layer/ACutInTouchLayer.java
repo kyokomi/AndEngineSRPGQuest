@@ -11,6 +11,7 @@ public abstract class ACutInTouchLayer extends Rectangle {
 	public ACutInTouchLayer(KeyListenScene pBaseScene) {
 		super(0, 0, pBaseScene.getWindowWidth(), pBaseScene.getWindowHeight(), 
 				pBaseScene.getBaseActivity().getVertexBufferObjectManager());
+		
 	}
 	public ACutInTouchLayer(float pX, float pY, float pWidth, float pHeight,
 			IRectangleVertexBufferObject pRectangleVertexBufferObject) {

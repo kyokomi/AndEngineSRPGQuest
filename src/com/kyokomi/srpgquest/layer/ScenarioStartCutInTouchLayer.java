@@ -15,11 +15,12 @@ import com.kyokomi.srpgquest.constant.LayerZIndexType;
 public class ScenarioStartCutInTouchLayer extends ACutInTouchLayer {
 	public static final int TAG = 1000000;// TODO: TAG管理しないと・・・
 	
-	public ScenarioStartCutInTouchLayer(KeyListenScene pBaseScene) {
+	public ScenarioStartCutInTouchLayer(KeyListenScene pBaseScene, SaveDataDto saveDataDto) {
 		super(pBaseScene);
+		initLayer(pBaseScene, saveDataDto);
 	}
 
-	public void initLayer(KeyListenScene pBaseScene, SaveDataDto saveDataDto) {
+	private void initLayer(KeyListenScene pBaseScene, SaveDataDto saveDataDto) {
 		// レイヤー作成
 		setColor(Color.BLACK);
 		setAlpha(0.7f);

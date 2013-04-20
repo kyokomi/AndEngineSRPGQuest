@@ -13,6 +13,7 @@ import org.andengine.entity.modifier.ParallelEntityModifier;
 import org.andengine.entity.modifier.ScaleModifier;
 import org.andengine.entity.modifier.SequenceEntityModifier;
 import org.andengine.entity.primitive.Line;
+import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.sprite.ButtonSprite;
@@ -44,11 +45,11 @@ import com.kyokomi.core.sprite.PlayerStatusRectangle.PlayerStatusRectangleType;
 import com.kyokomi.core.utils.JsonUtil;
 import com.kyokomi.srpgquest.constant.LayerZIndexType;
 import com.kyokomi.srpgquest.dto.MapBattleInfoDto;
+import com.kyokomi.srpgquest.layer.CutInLayer;
 import com.kyokomi.srpgquest.layer.MapBattleClearConditionTouchLayer;
-import com.kyokomi.srpgquest.layer.MapBattleCutInLayer;
 import com.kyokomi.srpgquest.layer.MapBattleSelectMenuLayer;
 import com.kyokomi.srpgquest.layer.ScenarioStartCutInTouchLayer;
-import com.kyokomi.srpgquest.layer.MapBattleCutInLayer.MapBattleCutInLayerType;
+import com.kyokomi.srpgquest.constant.MapBattleCutInLayerType;
 import com.kyokomi.srpgquest.manager.GameManager;
 import com.kyokomi.srpgquest.map.common.MapPoint;
 import com.kyokomi.srpgquest.sprite.CursorRectangle;
@@ -118,6 +119,9 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		init(saveDataDto);
 	}
 	public void init(SaveDataDto saveDataDto) {
+		// タッチイベントを初期化
+		setOnSceneTouchListener(null);
+		
 		// セーブを読み込み
 		if (saveDataDto == null) {
 			getBaseActivity().backToInitial();
@@ -201,10 +205,10 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		attachChild(talkLayer);
 		
 		// まずは章開始カットイン
-		if (saveDataDto.getSeqNo() == 1) {
+		if (saveDataDto.getSeqNo().intValue() == 1) {
 			ScenarioStartCutInTouchLayer scenarioStartCutInTouchLayer = 
-					new ScenarioStartCutInTouchLayer(this);
-			scenarioStartCutInTouchLayer.initLayer(this, saveDataDto);
+					new ScenarioStartCutInTouchLayer(this, saveDataDto);
+			attachChild(scenarioStartCutInTouchLayer);
 			scenarioStartCutInTouchLayer.showTouchLayer(this);
 		} else {
 			talkLayer.nextTalk();
@@ -266,7 +270,6 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		return mEnemyTurnUpdateHandler;
 	}
 	
-	MapBattleCutInLayer mMapBattleCutInLayer;
 	MapBattleSelectMenuLayer mMapBattleSelectMenuLayer;
 	/**
 	 * SRPGマップバトルパートの初期化処理
@@ -286,7 +289,11 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		attachChild(mMapBattleTouchLayer);
 		
 		// カットイン初期化
-		mMapBattleCutInLayer = new MapBattleCutInLayer(this);
+		attachWithCreateCutInLayer(MapBattleCutInLayerType.PLAYER_TURN_CUTIN);
+		attachWithCreateCutInLayer(MapBattleCutInLayerType.PLAYER_WIN_CUTIN);
+		attachWithCreateCutInLayer(MapBattleCutInLayerType.ENEMY_TURN_CUTIN);
+		attachWithCreateCutInLayer(MapBattleCutInLayerType.GAME_OVER_CUTIN);
+		
 		// メニュー初期化
 		mMapBattleSelectMenuLayer = new MapBattleSelectMenuLayer(this, new ButtonSprite.OnClickListener() {
 			@Override
@@ -721,11 +728,40 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	}
 	
 	// ---------------- カットイン関連 ----------------------
-	public void showCutIn(MapBattleCutInLayerType pMapBattleCutInLayerType, 
-			final IAnimationCallback pAnimationCallback) {
+	/**
+	 * カットイン取得.
+	 * @param pMapBattleCutInLayerType
+	 * @return カットイン
+	 */
+	private CutInLayer getCutInLayer(MapBattleCutInLayerType pMapBattleCutInLayerType) {
+		return (CutInLayer) getChildByTag(pMapBattleCutInLayerType.getValue());
+	}
+	
+	/**
+	 * カットインの追加
+	 * すでに追加済みの場合、解除してから追加します
+	 * @param pMapBattleCutInLayerType
+	 */
+	private void attachWithCreateCutInLayer(MapBattleCutInLayerType pMapBattleCutInLayerType) {
+		CutInLayer cutInLayer = getCutInLayer(pMapBattleCutInLayerType);
+		if (cutInLayer != null) {
+			cutInLayer.detachChildren();
+			cutInLayer.detachSelf();
+		}
+		cutInLayer = new CutInLayer(getDispStartX(), getDispStartY(), 
+				getWindowWidth(), getWindowHeight(), this, pMapBattleCutInLayerType);
+		attachChild(cutInLayer);
+	}
+	
+	/**
+	 * カットイン表示
+	 * TODO: GameManegerから呼ばれます
+	 * @param pMapBattleCutInLayerType
+	 * @param pAnimationCallback
+	 */
+	public void showCutIn(MapBattleCutInLayerType pMapBattleCutInLayerType, final IAnimationCallback pAnimationCallback) {
 		// カットイン表示
-		mMapBattleCutInLayer.showCutIn(pMapBattleCutInLayerType, 
-				new MapBattleCutInLayer.ICutInCallback() {
+		getCutInLayer(pMapBattleCutInLayerType).showCutInSprite(2.0f, new CutInLayer.ICutInCallback() {
 			@Override public void doAction() { 
 				if (pAnimationCallback != null) { 
 					pAnimationCallback.doAction(); 
@@ -817,8 +853,8 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 			// TODO: 一旦会話はGameManager外にする
 			TalkLayer mTalkLayer = (TalkLayer) getChildByTag(TALK_LAYER_TAG);
 			MapBattleClearConditionTouchLayer mMapBattleTouchLayer = 
-					(MapBattleClearConditionTouchLayer) getChildByTag(
-							MapBattleClearConditionTouchLayer.TAG);
+					(MapBattleClearConditionTouchLayer) getChildByTag(MapBattleClearConditionTouchLayer.TAG);
+			
 			if (mTalkLayer != null && mTalkLayer.contains(x, y)) {
 				
 //				getMediaManager().play(SoundType.BTN_PRESSED_SE);
@@ -923,4 +959,14 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		
 	}
 
+	// ----------------------------------------------------------
+	// 汎用
+	// ----------------------------------------------------------
+	private float getDispStartX() {
+		return 0;
+	}
+	
+	private float getDispStartY() {
+		return 0;
+	}
 }

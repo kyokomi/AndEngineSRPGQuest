@@ -8,17 +8,16 @@ import org.andengine.engine.handler.timer.TimerHandler;
 import com.kyokomi.core.dto.ActorPlayerDto;
 import com.kyokomi.core.logic.ActorPlayerLogic;
 import com.kyokomi.srpgquest.constant.GameStateType;
+import com.kyokomi.srpgquest.constant.MapBattleCutInLayerType;
 import com.kyokomi.srpgquest.constant.MapDataType;
 import com.kyokomi.srpgquest.constant.MoveDirectionType;
 import com.kyokomi.srpgquest.constant.SelectMenuType;
 import com.kyokomi.srpgquest.dto.MapBattleInfoDto;
 import com.kyokomi.srpgquest.dto.MapBattleInfoDto.MapSymbol;
-import com.kyokomi.srpgquest.layer.MapBattleCutInLayer.MapBattleCutInLayerType;
 import com.kyokomi.srpgquest.logic.BattleLogic;
 import com.kyokomi.srpgquest.map.common.MapPoint;
 import com.kyokomi.srpgquest.map.item.ActorPlayerMapItem;
 import com.kyokomi.srpgquest.map.item.MapItem;
-import com.kyokomi.srpgquest.scene.MainScene;
 import com.kyokomi.srpgquest.scene.MainScene;
 
 import android.util.Log;

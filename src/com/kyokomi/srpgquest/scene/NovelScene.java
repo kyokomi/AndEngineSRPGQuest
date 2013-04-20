@@ -56,7 +56,7 @@ public class NovelScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		
 		// まずは章開始カットイン
 		if (getScenarioEntity().getSeqNo() == 1) {
-			mScenarioStartCutInTouchLayer = new ScenarioStartCutInTouchLayer(this);
+//			mScenarioStartCutInTouchLayer = new ScenarioStartCutInTouchLayer(this);
 			mScenarioStartCutInTouchLayer.showTouchLayer(this);
 		} else {
 			mTalkLayer.nextTalk();

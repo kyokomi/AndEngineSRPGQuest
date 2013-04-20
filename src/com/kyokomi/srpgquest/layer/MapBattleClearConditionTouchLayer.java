@@ -1,7 +1,5 @@
 package com.kyokomi.srpgquest.layer;
 
-import org.andengine.entity.primitive.Rectangle;
-import org.andengine.entity.shape.IAreaShape;
 import org.andengine.entity.text.Text;
 import org.andengine.entity.text.TextOptions;
 import org.andengine.opengl.font.Font;
@@ -11,11 +9,9 @@ import org.andengine.util.color.Color;
 import android.graphics.Typeface;
 
 import com.kyokomi.core.scene.KeyListenScene;
-import com.kyokomi.srpgquest.scene.SrpgBaseScene;
 import com.kyokomi.srpgquest.constant.LayerZIndexType;
 
 /**
- * TODO: ACutInTouchLayerを継承する
  * @author kyokomi
  *
  */
@@ -23,9 +19,10 @@ public class MapBattleClearConditionTouchLayer extends ACutInTouchLayer {
 	public static final int TAG = 4000;
 	public MapBattleClearConditionTouchLayer(KeyListenScene pBaseScene) {
 		super(pBaseScene);
+		initLayer(pBaseScene);
 	}
 	
-	public void initLayer(KeyListenScene pBaseScene) {
+	private void initLayer(KeyListenScene pBaseScene) {
 		Font defaultFont = pBaseScene.createFont(Typeface.SANS_SERIF, 16, Color.WHITE);
 		Font blueFont = pBaseScene.createFont(Typeface.SANS_SERIF, 36, Color.BLUE);
 		Font redFont = pBaseScene.createFont(Typeface.SANS_SERIF, 36, Color.RED);
@@ -60,6 +57,6 @@ public class MapBattleClearConditionTouchLayer extends ACutInTouchLayer {
 		attachChild(gameOverConditionDetial);
 		
 		// TODO: あとでTAG管理
-		setTag(1);
+		setTag(TAG);
 	}
 }
