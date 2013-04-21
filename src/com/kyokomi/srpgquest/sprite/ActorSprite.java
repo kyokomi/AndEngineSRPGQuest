@@ -1,4 +1,4 @@
-package com.kyokomi.core.sprite;
+package com.kyokomi.srpgquest.sprite;
 
 import java.util.ArrayList;
 import java.util.List;

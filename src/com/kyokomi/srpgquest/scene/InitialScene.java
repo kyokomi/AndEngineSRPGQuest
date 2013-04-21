@@ -13,11 +13,11 @@ import org.andengine.util.color.Color;
 import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.dto.ActorPlayerDto;
 import com.kyokomi.core.dto.SaveDataDto;
-import com.kyokomi.core.sprite.ActorSprite;
 import com.kyokomi.core.sprite.CommonWindowRectangle;
-import com.kyokomi.core.sprite.PlayerStatusRectangle;
-import com.kyokomi.core.sprite.PlayerStatusRectangle.PlayerStatusRectangleType;
 import com.kyokomi.core.logic.ActorPlayerLogic;
+import com.kyokomi.srpgquest.sprite.ActorSprite;
+import com.kyokomi.srpgquest.sprite.PlayerStatusRectangle;
+import com.kyokomi.srpgquest.sprite.PlayerStatusRectangle.PlayerStatusRectangleType;
 
 import android.graphics.Typeface;
 import android.view.KeyEvent;

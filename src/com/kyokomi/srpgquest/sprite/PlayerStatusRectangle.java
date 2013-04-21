@@ -1,4 +1,4 @@
-package com.kyokomi.core.sprite;
+package com.kyokomi.srpgquest.sprite;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +13,8 @@ import org.andengine.util.color.Color;
 import com.kyokomi.core.dto.ActorPlayerDto;
 import com.kyokomi.core.dto.ActorPlayerEquipDto;
 import com.kyokomi.core.dto.ActorPlayerSkillDto;
-import com.kyokomi.srpgquest.scene.SrpgBaseScene;
+import com.kyokomi.core.scene.KeyListenScene;
+import com.kyokomi.srpgquest.utils.SRPGSpriteUtil;
 
 /**
  * プレイヤーステータスウィンドウ.
@@ -54,7 +55,7 @@ public class PlayerStatusRectangle extends Rectangle {
 	private float baseWidth;
 	private float baseHeight;
 
-	public PlayerStatusRectangle(SrpgBaseScene pBaseScene, final Font pFont, 
+	public PlayerStatusRectangle(KeyListenScene pBaseScene, final Font pFont, 
 			final ActorPlayerDto pActorPlayerDto, final String pFaceFileName, 
 			float pX, float pY) {
 		super(pX, pY, 
@@ -70,7 +71,7 @@ public class PlayerStatusRectangle extends Rectangle {
 		init(pBaseScene, pFont, pFaceFileName);
 	}
 	
-	public PlayerStatusRectangle(SrpgBaseScene pBaseScene, final Font pFont, 
+	public PlayerStatusRectangle(KeyListenScene pBaseScene, final Font pFont, 
 			final ActorPlayerDto pActorPlayerDto, final String pFaceFileName, 
 			float pX, float pY, float pWidth, float pHeight) {
 		super(pX, pY, pWidth, pHeight, pBaseScene.getBaseActivity().getVertexBufferObjectManager());
@@ -90,11 +91,11 @@ public class PlayerStatusRectangle extends Rectangle {
 	 * @param pFont
 	 * @param pVertexBufferObjectManager
 	 */
-	private void init(SrpgBaseScene pBaseScene, Font pFont, String pFaceFileName) {
+	private void init(KeyListenScene pBaseScene, Font pFont, String pFaceFileName) {
 		
 		mTextList = new ArrayList<Text>();
 		
-		mFaceTiledSprite = pBaseScene.getResourceFaceSprite(
+		mFaceTiledSprite = SRPGSpriteUtil.getResourceFaceSprite(pBaseScene,
 				mActorPlayerDto.getPlayerId(), pFaceFileName);
 		mFaceTiledSprite.setPosition(BASE_X, BASE_Y);
 		attachChild(mFaceTiledSprite);
@@ -140,7 +141,7 @@ public class PlayerStatusRectangle extends Rectangle {
 			float x = skillHeadX;
 			float y = skillHeadY;
 			for (ActorPlayerSkillDto skillDto : mActorPlayerDto.getSkillDtoList()) {
-				TiledSprite skillIcon = pBaseScene.getIconSetTiledSprite();
+				TiledSprite skillIcon = SRPGSpriteUtil.getIconSetTiledSprite(pBaseScene);
 				skillIcon.setCurrentTileIndex(skillDto.getSkillImgResId());
 				skillIcon.setPosition(x, y);
 				mSkillIconRectangle.attachChild(skillIcon);
@@ -174,7 +175,7 @@ public class PlayerStatusRectangle extends Rectangle {
 		ActorPlayerEquipDto equipDto = mActorPlayerDto.getEquipDto();
 		if (equipDto != null) {
 			// 武器アイコン
-			mWeaponIconSprite = pBaseScene.getIconSetTiledSprite();
+			mWeaponIconSprite = SRPGSpriteUtil.getIconSetTiledSprite(pBaseScene);
 			mWeaponIconSprite.setCurrentTileIndex(equipDto.getWeaponImgResId());
 			mWeaponIconSprite.setPosition(equipHeadX, equipHeadY);
 			mEquipIconRectangle.attachChild(mWeaponIconSprite);
@@ -186,7 +187,7 @@ public class PlayerStatusRectangle extends Rectangle {
 			mWeaponNameText.setY(mWeaponNameText.getY() - mWeaponNameText.getHeight() / 2);
 			attachChildText(mEquipIconRectangle, mWeaponNameText);
 			// アクセサリーアイコン
-			mAccessoryIconSprite = pBaseScene.getIconSetTiledSprite();
+			mAccessoryIconSprite = SRPGSpriteUtil.getIconSetTiledSprite(pBaseScene);
 			mAccessoryIconSprite.setCurrentTileIndex(equipDto.getAccessoryImgResId());
 			mAccessoryIconSprite.setPosition(mWeaponIconSprite.getX(), mWeaponIconSprite.getY() + mWeaponIconSprite.getHeight());
 			mEquipIconRectangle.attachChild(mAccessoryIconSprite);

@@ -1,4 +1,4 @@
-package com.kyokomi.srpgquest.map;
+package com.kyokomi.srpgquest.manager;
 
 import java.util.ArrayList;
 import java.util.List;

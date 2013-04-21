@@ -39,14 +39,11 @@ import com.kyokomi.core.dto.PlayerTalkDto;
 import com.kyokomi.core.dto.SaveDataDto;
 import com.kyokomi.core.entity.MItemEntity;
 import com.kyokomi.core.logic.MapBattleRewardLogic;
-import com.kyokomi.core.logic.TalkLogic;
 import com.kyokomi.core.scene.KeyListenScene;
-import com.kyokomi.core.sprite.ActorSprite;
 import com.kyokomi.core.sprite.CommonWindowRectangle;
-import com.kyokomi.core.sprite.PlayerStatusRectangle;
 import com.kyokomi.core.sprite.TalkLayer;
-import com.kyokomi.core.sprite.PlayerStatusRectangle.PlayerStatusRectangleType;
 import com.kyokomi.core.utils.JsonUtil;
+import com.kyokomi.srpgquest.logic.TalkLogic;
 import com.kyokomi.srpgquest.constant.LayerZIndexType;
 import com.kyokomi.srpgquest.dto.MapBattleInfoDto;
 import com.kyokomi.srpgquest.layer.CutInLayer;
@@ -56,7 +53,11 @@ import com.kyokomi.srpgquest.layer.ScenarioStartCutInTouchLayer;
 import com.kyokomi.srpgquest.constant.MapBattleCutInLayerType;
 import com.kyokomi.srpgquest.manager.GameManager;
 import com.kyokomi.srpgquest.map.common.MapPoint;
+import com.kyokomi.srpgquest.sprite.ActorSprite;
 import com.kyokomi.srpgquest.sprite.CursorRectangle;
+import com.kyokomi.srpgquest.sprite.PlayerStatusRectangle;
+import com.kyokomi.srpgquest.sprite.PlayerStatusRectangle.PlayerStatusRectangleType;
+import com.kyokomi.srpgquest.utils.SRPGSpriteUtil;
 
 public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	/**
@@ -804,10 +805,11 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	// --------------- 会話パート用 --------------------
 	private static final int TALK_LAYER_TAG = 999;
 	private void initTalk(int scenarioNo, int seqNo) {
+		TalkLogic talkLogic = new TalkLogic();
 		// 会話内容取得
-		List<PlayerTalkDto> talks = getTalkDtoList(scenarioNo, seqNo);
+		List<PlayerTalkDto> talks = talkLogic.getTalkDtoList(this, scenarioNo, seqNo);
 		// 顔リスト作成
-		SparseArray<TiledSprite> actorFaces = getTalkFaceSparse(talks);
+		SparseArray<TiledSprite> actorFaces = talkLogic.getTalkFaceSparse(this, talks);
 		// 会話レイヤー作成
 		TalkLayer talkLayer = new TalkLayer(this);
 		talkLayer.initTalk(actorFaces, talks);
@@ -1012,7 +1014,7 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 			float baseY = 0;
 			for (MItemEntity itemEntity : mapBattleRewardDto.getItemList()) {
 				// アイコン
-				TiledSprite itemIconTiled = getIconSetTiledSprite();
+				TiledSprite itemIconTiled = SRPGSpriteUtil.getIconSetTiledSprite(this);
 				itemIconTiled.setCurrentTileIndex(itemEntity.getItemImageId());
 				itemIconTiled.setPosition(baseX, baseY);
 				itemIconRectangle.attachChild(itemIconTiled);

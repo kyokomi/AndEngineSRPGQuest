@@ -1,4 +1,4 @@
-package com.kyokomi.core.logic;
+package com.kyokomi.srpgquest.logic;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -16,8 +16,8 @@ import com.kyokomi.core.dto.PlayerTalkDto;
 import com.kyokomi.core.dto.PlayerTalkDto.TalkDirection;
 import com.kyokomi.core.entity.MActorEntity;
 import com.kyokomi.core.scene.KeyListenScene;
-import com.kyokomi.core.sprite.ActorSprite;
-import com.kyokomi.srpgquest.scene.SrpgBaseScene;
+import com.kyokomi.srpgquest.sprite.ActorSprite;
+import com.kyokomi.srpgquest.utils.SRPGSpriteUtil;
 
 public class TalkLogic {
 
@@ -64,9 +64,8 @@ public class TalkLogic {
 		return talks;
 	}
 	
-	public SparseArray<TiledSprite> getTalkFaceSparse(SrpgBaseScene pBaseScene, List<PlayerTalkDto> talks) {
-		pBaseScene.getBaseActivity().openDB();// DB OPEN
-		
+	public SparseArray<TiledSprite> getTalkFaceSparse(KeyListenScene pBaseScene, List<PlayerTalkDto> talks) {
+		pBaseScene.getBaseActivity().openDB();
 		MActorDao mActorDao = new MActorDao();
 		// 顔画像作成
 		SparseArray<TiledSprite> actorFaces = new SparseArray<TiledSprite>();
@@ -79,12 +78,12 @@ public class TalkLogic {
 				continue;
 			}
 			String faceName = ActorSprite.getFaceFileName(mActorEntity.getImageResId());
-			TiledSprite faceSprite = pBaseScene.getResourceFaceSprite(
+			TiledSprite faceSprite = SRPGSpriteUtil.getResourceFaceSprite(pBaseScene,
 					mActorEntity.getActorId(), faceName);
 			actorFaces.put(mActorEntity.getActorId(), faceSprite);
 		}
-		pBaseScene.getBaseActivity().closeDB(); // DB CLOSE
+		pBaseScene.getBaseActivity().closeDB();
 		return actorFaces;
 	}
-
+	
 }

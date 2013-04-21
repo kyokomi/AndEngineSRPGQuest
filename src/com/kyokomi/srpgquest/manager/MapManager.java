@@ -6,7 +6,6 @@ import java.util.List;
 import com.kyokomi.core.dto.ActorPlayerDto;
 import com.kyokomi.srpgquest.constant.MapDataType;
 import com.kyokomi.srpgquest.constant.MoveDirectionType;
-import com.kyokomi.srpgquest.map.MapItemManager;
 import com.kyokomi.srpgquest.map.common.MapPoint;
 import com.kyokomi.srpgquest.map.item.ActorPlayerMapItem;
 import com.kyokomi.srpgquest.map.item.MapItem;
