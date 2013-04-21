@@ -20,11 +20,15 @@ import org.andengine.entity.sprite.ButtonSprite;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.sprite.TiledSprite;
 import org.andengine.entity.text.Text;
+import org.andengine.entity.text.TextOptions;
 import org.andengine.input.touch.TouchEvent;
+import org.andengine.opengl.font.Font;
+import org.andengine.util.HorizontalAlign;
 import org.andengine.util.color.Color;
 import org.andengine.util.modifier.IModifier;
 import org.andengine.util.modifier.ease.EaseBackInOut;
 
+import android.graphics.Typeface;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 
@@ -33,7 +37,7 @@ import com.kyokomi.core.dto.ActorPlayerDto;
 import com.kyokomi.core.dto.MapBattleRewardDto;
 import com.kyokomi.core.dto.PlayerTalkDto;
 import com.kyokomi.core.dto.SaveDataDto;
-import com.kyokomi.core.entity.MScenarioEntity;
+import com.kyokomi.core.entity.MItemEntity;
 import com.kyokomi.core.logic.MapBattleRewardLogic;
 import com.kyokomi.core.logic.TalkLogic;
 import com.kyokomi.core.scene.KeyListenScene;
@@ -89,6 +93,24 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	 */
 	@Override
 	public void prepareSoundAndMusic() {
+		
+	}
+
+	@Override
+	public void initSoundAndMusic() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onResume() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onPause() {
+		// TODO Auto-generated method stub
 		
 	}
 
@@ -151,9 +173,15 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	/**
 	 * 次シナリオへ
 	 */
-	@Override
 	public void nextScenario() {
 		for (int i = 0; i < getChildCount(); i++) {
+			if (getChildByIndex(i).getTag() == FPS_TAG) {
+				continue;
+			}
+			// タッチの検知も無効にする
+			if (getChildByIndex(i) instanceof ButtonSprite) {
+				unregisterTouchArea((ButtonSprite) getChildByIndex(i));
+			}
 			detachEntity(getChildByIndex(i));
 		}
 		// セーブAnd次シナリオへ進行
@@ -167,14 +195,18 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	 */
 	@Override
 	public boolean onSceneTouchEvent(Scene pScene, TouchEvent pSceneTouchEvent) {
-		// TODO: 共通タッチイベント
-//		touchSprite(pSceneTouchEvent.getX(), pSceneTouchEvent.getY());
+		// 共通タッチイベント
+		touchSprite(pSceneTouchEvent.getX(), pSceneTouchEvent.getY());
 		switch (mGamePartType) {
 		case NOVEL_PART:
 			touchEventNovelPart(pScene, pSceneTouchEvent);
 			break;
 		case SRPG_PART:
 			touchEventSRPGPart(pScene, pSceneTouchEvent);
+			break;
+		case RESULT_PART:
+			touchEventResultPart(pScene, pSceneTouchEvent);
+			break;
 		default:
 			break;
 		}
@@ -299,8 +331,8 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 			@Override
 			public void onClick(ButtonSprite pButtonSprite, float pTouchAreaLocalX,
 					float pTouchAreaLocalY) {
-//				touchSprite(mMapBattleSelectMenuLayer.getMenuRectangle().getX() + pTouchAreaLocalX, 
-//						mMapBattleSelectMenuLayer.getMenuRectangle().getY() + pTouchAreaLocalY);
+				touchSprite(mMapBattleSelectMenuLayer.getMenuRectangle().getX() + pTouchAreaLocalX, 
+						mMapBattleSelectMenuLayer.getMenuRectangle().getY() + pTouchAreaLocalY);
 				
 				mGameManager.touchMenuBtnEvent(pButtonSprite.getTag());
 			}
@@ -923,45 +955,116 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	 * リザルト画面パートの初期化処理
 	 */
 	private void initResult(SaveDataDto saveDataDto) {
-		// 次のシナリオへ
-		nextScenario();
+		
+		// フォントの作成
+		Font defaultFont = createFont(Typeface.SANS_SERIF, 16, Color.WHITE);
+		Font largeFont = createFont(Typeface.SANS_SERIF, 36, Color.WHITE);
+		
+		MapBattleRewardLogic mapBattleRewardLogic = new MapBattleRewardLogic();
+		MapBattleRewardDto mapBattleRewardDto = mapBattleRewardLogic.createMapBattleRewardDto(
+				this, saveDataDto.getSceneId());
+
+		// 背景
+		Sprite backImage = getResourceSprite("bk/back_mori2.jpg");
+		backImage.setSize(getWindowWidth(), getWindowHeight());
+		attachChild(backImage);
+
+		// 共通ウィンドウを作成
+		CommonWindowRectangle comonWindowRectangle = new CommonWindowRectangle(
+				getWindowWidth() / 4, 5,
+				getWindowWidth() / 2, getWindowHeight() / 2 + getWindowHeight() / 4,
+				this);
+		attachChild(comonWindowRectangle);
+		
+		// ---------------------------------------------------------------
+		// 獲得物表示
+		// ---------------------------------------------------------------
+		Text titleText = createWithAttachText(largeFont, "- Result -");
+		placeToCenterX(titleText, 20);
+		
+		float titleBaseX = (getWindowWidth() / 2) - (getWindowWidth() / 6);
+		Text expTitleText = createWithAttachText(defaultFont, "獲得経験値:");
+		expTitleText.setPosition(titleBaseX, titleText.getY() + titleText.getHeight() + 20);
+		
+		Text expText = createWithAttachText(defaultFont, mapBattleRewardDto.getTotalExp() + " Exp");
+		expText.setPosition(getWindowWidth() / 2, titleText.getY() + titleText.getHeight() + 20);
+
+		Text goldTitleText = createWithAttachText(defaultFont, "獲得ゴールド:");
+		goldTitleText.setPosition(titleBaseX, expText.getY() + expText.getHeight() + 20);
+		
+		Text goldText = createWithAttachText(defaultFont, mapBattleRewardDto.getTotalGold() + " Gold");
+		goldText.setPosition(getWindowWidth() / 2, expText.getY() + expText.getHeight() + 20);
+		
+		Text itemTitleText = createWithAttachText(defaultFont, "獲得アイテム:");
+		itemTitleText.setPosition(titleBaseX, goldText.getY() + goldText.getHeight() + 20);
+		if (mapBattleRewardDto.getItemList().isEmpty()) {
+			Text notGetItemText = createWithAttachText(defaultFont, "なし");
+			placeToCenterX(notGetItemText, itemTitleText.getY() + itemTitleText.getHeight() + 20);
+		} else {
+			Rectangle itemIconRectangle = new Rectangle(0, 
+					itemTitleText.getY() + itemTitleText.getHeight() + 20, 
+					getWindowWidth() / 4, getWindowHeight() / 4, 
+					getBaseActivity().getVertexBufferObjectManager());
+			itemIconRectangle.setColor(Color.TRANSPARENT);
+			attachChild(itemIconRectangle);
+			
+			float baseX = 0;
+			float baseY = 0;
+			for (MItemEntity itemEntity : mapBattleRewardDto.getItemList()) {
+				// アイコン
+				TiledSprite itemIconTiled = getIconSetTiledSprite();
+				itemIconTiled.setCurrentTileIndex(itemEntity.getItemImageId());
+				itemIconTiled.setPosition(baseX, baseY);
+				itemIconRectangle.attachChild(itemIconTiled);
+				baseX += itemIconTiled.getWidth() + 5;
+				
+				// テキスト
+				Text itemText = createText(defaultFont, itemEntity.getItemName());
+				itemText.setPosition(baseX, baseY);
+				itemIconRectangle.attachChild(itemText);
+				baseX += itemText.getWidth() + 5;
+				
+				baseY += itemIconTiled.getHeight() + 5;
+				baseX = 0;
+			}
+			placeToCenterX(itemIconRectangle, itemIconRectangle.getY());
+		}
+		
+		// 次へボタン生成
+		ButtonSprite nextSceneButtonSprite = getResourceButtonSprite("btn/next_btn.png", "btn/next_btn_p.png");
+		placeToCenterX(nextSceneButtonSprite, getWindowHeight() - nextSceneButtonSprite.getHeight() - 40);
+		registerTouchArea(nextSceneButtonSprite);
+		nextSceneButtonSprite.setOnClickListener(new ButtonSprite.OnClickListener() {
+			@Override
+			public void onClick(ButtonSprite pButtonSprite, float pTouchAreaLocalX,
+					float pTouchAreaLocalY) {
+				// 次のシナリオへ
+				nextScenario();
+			}
+		});
+		attachChild(nextSceneButtonSprite);
 	}
 
-	/**
-	 * @deprecated
-	 */
-	@Override
-	public MScenarioEntity getScenarioEntity() {
-		return null;
-	}
-
-	@Override
-	public void initSoundAndMusic() {
-		// TODO Auto-generated method stub
+	private void touchEventResultPart(Scene pScene, TouchEvent pSceneTouchEvent) {
 		
 	}
-
-	@Override
-	public void onResume() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onPause() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void destory() {
-		// TODO Auto-generated method stub
-		
-	}
-
+	
 	// ----------------------------------------------------------
 	// 汎用
 	// ----------------------------------------------------------
+	
+	private Text createWithAttachText(Font font, String textStr) {
+		Text text = createText(font, textStr);
+		attachChild(text);
+		return text;
+	}
+	private Text createText(Font font, String textStr) {
+		Text text = new Text(16, 16, font, textStr, 
+				new TextOptions(HorizontalAlign.CENTER), 
+				getBaseActivity().getVertexBufferObjectManager());
+		return text;
+	}
+	
 	private float getDispStartX() {
 		return 0;
 	}

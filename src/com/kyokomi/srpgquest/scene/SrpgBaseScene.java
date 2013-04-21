@@ -7,7 +7,6 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.andengine.audio.sound.Sound;
 import org.andengine.entity.IEntity;
 import org.andengine.entity.modifier.AlphaModifier;
 import org.andengine.entity.modifier.IEntityModifier;
@@ -17,24 +16,19 @@ import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.sprite.TiledSprite;
 import org.andengine.util.modifier.IModifier;
 
-import android.util.Log;
 import android.util.SparseArray;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.dao.MActorDao;
-import com.kyokomi.core.dao.MScenarioDao;
 import com.kyokomi.core.dto.PlayerTalkDto;
 import com.kyokomi.core.dto.PlayerTalkDto.TalkDirection;
 import com.kyokomi.core.entity.MActorEntity;
-import com.kyokomi.core.entity.MScenarioEntity;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.core.sprite.ActorSprite;
 
 public abstract class SrpgBaseScene extends KeyListenScene {
 	
 	private Sprite mTouchSprite;
-	
-	public abstract MScenarioEntity getScenarioEntity();
 	
 	public void touchSprite(float x, float y) {
 		if (mTouchSprite == null) {
@@ -66,9 +60,6 @@ public abstract class SrpgBaseScene extends KeyListenScene {
 			));
 	}
 	
-	// ----- DB ------
-	private MScenarioDao mScenarioDao;
-	
 //	// ----- SE, BGM -----
 //	private Sound mBtnPressedSound;
 //	public Sound getBtnPressedSound() {
@@ -91,7 +82,6 @@ public abstract class SrpgBaseScene extends KeyListenScene {
 	
 	public SrpgBaseScene(MultiSceneActivity baseActivity) {
 		super(baseActivity);
-		initDB();
 	}
 	
 	public TiledSprite getResourceFaceSprite(int playerId, int imageResId) {
@@ -172,98 +162,4 @@ public abstract class SrpgBaseScene extends KeyListenScene {
 		getBaseActivity().closeDB();
 		return actorFaces;
 	}
-	// ------------------ DB ----------------------
-	
-	/**
-	 * @deprecated
-	 */
-	private void initDB() {
-		 mScenarioDao = new MScenarioDao();
-	}
-	
-	// ------------------ シナリオ ----------------------
-	
-	/**
-	 * 現在のセーブをロードしシナリオを読み込む
-	 * @deprecated
-	 */
-	public void loadScenario() {
-		getBaseActivity().openDB();
-		// シナリオを検索
-		MScenarioEntity scenarioEntity = mScenarioDao.selectById(
-				getBaseActivity().getDB(),
-				getBaseActivity().getGameController().getScenarioId());
-		// シナリオ開始
-		startScenario(scenarioEntity);
-		getBaseActivity().closeDB();
-	}
-	/**
-	 * 次シナリオ読み込み
-	 * @deprecated
-	 */
-	public void nextScenario() {
-		nextScenario(getScenarioEntity());
-	}
-	/**
-	 * @deprecated
-	 * @param scenarioEntity
-	 */
-	public void nextScenario(MScenarioEntity scenarioEntity) {
-		getBaseActivity().openDB();
-		ditactionScene(mScenarioDao.selectNextSeq(getBaseActivity().getDB(), 
-				scenarioEntity.getScenarioNo(), 
-				scenarioEntity.getSeqNo()));
-		getBaseActivity().closeDB();
-	}
-	
-	/**
-	 * シナリオ読み込み
-	 * @deprecated
-	 * @param scenarioEntity
-	 */
-	public void startScenario(MScenarioEntity scenarioEntity) {
-		getBaseActivity().openDB();
-		ditactionScene(mScenarioDao.selectByScenarioNoAndSeqNo(getBaseActivity().getDB(), 
-				scenarioEntity.getScenarioNo(), 
-				scenarioEntity.getSeqNo()));
-		getBaseActivity().closeDB();
-	}
-	
-	/**
-	 * シーン振り分け
-	 * @deprecated 
-	 */
-	private void ditactionScene(MScenarioEntity mScenarioEntity) {
-		if (mScenarioEntity == null) {
-			getBaseActivity().backToInitial();
-			return;
-		}
-		
-		// セーブ
-		getBaseActivity().getGameController().save(getBaseActivity(), mScenarioEntity);
-		
-		Log.d("SRPGBaseScene", "ditactionScene " + mScenarioEntity.getSceneType());
-		switch (mScenarioEntity.getSceneType()) {
-		case SCENE_TYPE_MAP:
-//			showScene(new MapBattleScene(getBaseActivity(), mScenarioEntity));
-			break;
-		case SCENE_TYPE_NOVEL:
-			showScene(new NovelScene(getBaseActivity(), mScenarioEntity));
-			break;
-		case SCENE_TYPE_RESULT:
-			showScene(new ResultScene(getBaseActivity(), mScenarioEntity));
-			break;	
-		default:
-			getBaseActivity().backToInitial();
-			break;
-		}
-		// 開放
-		destory();
-		reset();
-	}
-	
-	/**
-	 * @deprecated 
-	 */
-	public abstract void destory();
 }

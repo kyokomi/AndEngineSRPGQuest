@@ -18,7 +18,6 @@ import com.kyokomi.core.constants.PlayerSpriteType;
 import com.kyokomi.core.dto.ActorPlayerDto;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.srpgquest.map.common.MapPoint;
-import com.kyokomi.srpgquest.scene.AbstractGameScene;
 import com.kyokomi.srpgquest.scene.SrpgBaseScene;
 
 public class ActorSprite extends Rectangle {

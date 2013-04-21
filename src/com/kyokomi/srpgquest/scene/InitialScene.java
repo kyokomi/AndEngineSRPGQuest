@@ -1,7 +1,5 @@
 package com.kyokomi.srpgquest.scene;
 
-import java.io.IOException;
-
 import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.Scene;
@@ -15,14 +13,11 @@ import org.andengine.util.color.Color;
 import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.dto.ActorPlayerDto;
 import com.kyokomi.core.dto.SaveDataDto;
-import com.kyokomi.core.entity.MScenarioEntity;
 import com.kyokomi.core.sprite.ActorSprite;
 import com.kyokomi.core.sprite.CommonWindowRectangle;
 import com.kyokomi.core.sprite.PlayerStatusRectangle;
 import com.kyokomi.core.sprite.PlayerStatusRectangle.PlayerStatusRectangleType;
 import com.kyokomi.core.logic.ActorPlayerLogic;
-import com.kyokomi.core.manager.MediaManager.MusicType;
-import com.kyokomi.core.manager.MediaManager.SoundType;
 
 import android.graphics.Typeface;
 import android.view.KeyEvent;
@@ -215,20 +210,7 @@ public class InitialScene extends SrpgBaseScene
 		return false;
 	}
 
-	@Override
-	public MScenarioEntity getScenarioEntity() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void destory() {
-		// TODO Auto-generated method stub
-		
-	}
-	
 	// 汎用
-	
 	private Rectangle createTextRectangle(String titleStr, Font titleFont, String detatilStr, Font detailFont) {
 		Text titleText = new Text(0, 0, titleFont, titleStr, 
 				getBaseActivity().getVertexBufferObjectManager());

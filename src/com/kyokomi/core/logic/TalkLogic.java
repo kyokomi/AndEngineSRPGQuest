@@ -17,7 +17,6 @@ import com.kyokomi.core.dto.PlayerTalkDto.TalkDirection;
 import com.kyokomi.core.entity.MActorEntity;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.core.sprite.ActorSprite;
-import com.kyokomi.srpgquest.scene.AbstractGameScene;
 import com.kyokomi.srpgquest.scene.SrpgBaseScene;
 
 public class TalkLogic {

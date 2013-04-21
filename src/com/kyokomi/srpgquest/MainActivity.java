@@ -14,6 +14,7 @@ import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.core.utils.ResourceUtil;
 import com.kyokomi.srpgquest.R;
 import com.kyokomi.srpgquest.scene.InitialScene;
+import com.kyokomi.srpgquest.scene.MainScene;
 import com.kyokomi.srpgquest.scene.SrpgBaseScene;
 
 import android.os.Bundle;
@@ -169,7 +170,7 @@ public class MainActivity extends MultiSceneActivity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		menu.add(Menu.NONE, 0, Menu.NONE, "Clear");
-		menu.add(Menu.NONE, 1, Menu.NONE, "Reset");
+		//menu.add(Menu.NONE, 1, Menu.NONE, "Reset");
 //		menu.add("");
 		return super.onCreateOptionsMenu(menu);
 	}
@@ -180,13 +181,8 @@ public class MainActivity extends MultiSceneActivity {
 			// デバッグクリア
 			getMediaManager().stopPlayingMusic();
 			// 次のシナリオへ
-			if (getEngine().getScene() instanceof SrpgBaseScene) {
-//				((SrpgBaseScene) getEngine().getScene()).destory();
-//				if (getEngine().getScene() instanceof MapBattleScene) {
-//					((MapBattleScene) getEngine().getScene()).clearMapBattle();
-//				} else {
-//					((SrpgBaseScene) getEngine().getScene()).nextScenario();
-//				}
+			if (getEngine().getScene() instanceof MainScene) {
+				((MainScene) getEngine().getScene()).nextScenario();
 			}
 			
 		// ExpとGoldをリセット(DB保存はしません)

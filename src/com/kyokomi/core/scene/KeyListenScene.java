@@ -200,6 +200,8 @@ public abstract class KeyListenScene extends Scene {
 					// タッチの検知も無効にする
 					if (entity.getChildByIndex(i) instanceof ButtonSprite) {
 						unregisterTouchArea((ButtonSprite) entity.getChildByIndex(i));
+						entity.getChildByIndex(i).detachChildren();
+						entity.getChildByIndex(i).detachSelf();
 					}
 				}
 				entity.detachChildren();
@@ -241,6 +243,8 @@ public abstract class KeyListenScene extends Scene {
 	
 	private FPSCounter mFpsCounter;
 	private Text mFpsText;
+	
+	protected static final int FPS_TAG = 999999999;
 	/**
 	 * FPSの画面表示.
 	 */
@@ -248,6 +252,7 @@ public abstract class KeyListenScene extends Scene {
 		mFpsText= new Text(x, y, font, "FPS:0.000000000000000000000000", 
 				getBaseActivity().getVertexBufferObjectManager());
 		mFpsText.setZIndex(999);
+		mFpsText.setTag(FPS_TAG);
 		attachChild(mFpsText);
 
 		mFpsCounter = new AverageFPSCounter(1) {

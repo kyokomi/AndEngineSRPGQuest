@@ -13,8 +13,6 @@ import org.andengine.util.color.Color;
 import com.kyokomi.core.dto.ActorPlayerDto;
 import com.kyokomi.core.dto.ActorPlayerEquipDto;
 import com.kyokomi.core.dto.ActorPlayerSkillDto;
-import com.kyokomi.core.scene.KeyListenScene;
-import com.kyokomi.srpgquest.scene.AbstractGameScene;
 import com.kyokomi.srpgquest.scene.SrpgBaseScene;
 
 /**

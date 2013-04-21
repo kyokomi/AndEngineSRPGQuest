@@ -3,43 +3,31 @@ package com.kyokomi.srpgquest.scene;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.andengine.entity.IEntity;
-import org.andengine.entity.modifier.IEntityModifier;
 import org.andengine.entity.primitive.Line;
 import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.Scene;
-import org.andengine.entity.sprite.ButtonSprite;
-import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.sprite.TiledSprite;
 import org.andengine.entity.text.Text;
 import org.andengine.entity.text.TextOptions;
 import org.andengine.input.touch.TouchEvent;
 import org.andengine.opengl.font.Font;
-import org.andengine.ui.dialog.StringInputDialogBuilder;
 import org.andengine.util.HorizontalAlign;
-import org.andengine.util.call.Callback;
 import org.andengine.util.color.Color;
-import org.andengine.util.modifier.IModifier;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.dto.ActorPlayerDto;
 import com.kyokomi.core.dto.PlayerTalkDto;
 import com.kyokomi.core.dto.PlayerTalkDto.TalkDirection;
-import com.kyokomi.core.entity.MScenarioEntity;
 import com.kyokomi.core.sprite.MenuRectangle;
 import com.kyokomi.core.sprite.PlayerSprite;
 import com.kyokomi.core.sprite.PlayerStatusRectangle;
 import com.kyokomi.core.sprite.TalkLayer;
 import com.kyokomi.core.sprite.TextButton;
 import com.kyokomi.core.sprite.MenuRectangle.MenuDirection;
-import com.kyokomi.srpgquest.R;
 
-import android.app.Dialog;
-import android.content.DialogInterface;
 import android.graphics.Typeface;
 import android.util.SparseArray;
 import android.view.KeyEvent;
-import android.widget.Toast;
 
 @SuppressWarnings("deprecation")
 public class SandboxScene extends SrpgBaseScene 
@@ -228,7 +216,7 @@ public class SandboxScene extends SrpgBaseScene
 	// -----------------------------------------------------
 	// お試し系
 	
-	private TextButton textButtonSprite;
+//	private TextButton textButtonSprite;
 	
 //	private void sampleMenuScene() {
 //		
@@ -307,52 +295,52 @@ public class SandboxScene extends SrpgBaseScene
 		mFont = createFont(Typeface.DEFAULT, 16, Color.WHITE);
 	}
 	
-	/**
-	 * 文字列入力ダイアログ生成サンプル.
-	 */
-	private void sampleStringInputDialogBuilder() {
-		
-		// UIスレッド上でないと動きません
-		getBaseActivity().runOnUiThread(new Runnable() {
-		     @Override
-		     public void run() {
-		    	 // Dialogを生成 
-		 		 StringInputDialogBuilder builder = new StringInputDialogBuilder(getBaseActivity(), 
-						R.string.user_regist_title,  // タイトル文言のリソースID
-						R.string.user_regist_detail, // 本文のリソースID
-						R.string.user_regist_error,  // エラー時のToastで表示される文言のリソースID
-						R.drawable.ic_launcher,      // タイトル横のアイコン画像のリソースID
-						
-						/* 
-						 * OKボタンを押した時のコールバック.
-						 * 引数pCallbackValueに入力した文字列が入ってくる 
-						 */
-						new Callback<String>() {
-							@Override
-							public void onCallback(String pCallbackValue) {
-								Toast.makeText(getBaseActivity(), 
-										"「" + pCallbackValue + "」で登録しました。", 
-										Toast.LENGTH_SHORT).show();
-							}
-						},
-						
-						/*
-						 * Cancelボタンを押した時のコールバック. 
-						 */
-						new DialogInterface.OnCancelListener() {
-							@Override
-							public void onCancel(DialogInterface dialog) {
-								Toast.makeText(getBaseActivity(), "登録をやめました。", 
-										Toast.LENGTH_SHORT).show();
-							}
-						});
-		 		 // createで生成
-		 		 final Dialog dialog = builder.create();
-		 		
-		 		 dialog.show();
-		     }
-		});
-	}
+//	/**
+//	 * 文字列入力ダイアログ生成サンプル.
+//	 */
+//	private void sampleStringInputDialogBuilder() {
+//		
+//		// UIスレッド上でないと動きません
+//		getBaseActivity().runOnUiThread(new Runnable() {
+//		     @Override
+//		     public void run() {
+//		    	 // Dialogを生成 
+//		 		 StringInputDialogBuilder builder = new StringInputDialogBuilder(getBaseActivity(), 
+//						R.string.user_regist_title,  // タイトル文言のリソースID
+//						R.string.user_regist_detail, // 本文のリソースID
+//						R.string.user_regist_error,  // エラー時のToastで表示される文言のリソースID
+//						R.drawable.ic_launcher,      // タイトル横のアイコン画像のリソースID
+//						
+//						/* 
+//						 * OKボタンを押した時のコールバック.
+//						 * 引数pCallbackValueに入力した文字列が入ってくる 
+//						 */
+//						new Callback<String>() {
+//							@Override
+//							public void onCallback(String pCallbackValue) {
+//								Toast.makeText(getBaseActivity(), 
+//										"「" + pCallbackValue + "」で登録しました。", 
+//										Toast.LENGTH_SHORT).show();
+//							}
+//						},
+//						
+//						/*
+//						 * Cancelボタンを押した時のコールバック. 
+//						 */
+//						new DialogInterface.OnCancelListener() {
+//							@Override
+//							public void onCancel(DialogInterface dialog) {
+//								Toast.makeText(getBaseActivity(), "登録をやめました。", 
+//										Toast.LENGTH_SHORT).show();
+//							}
+//						});
+//		 		 // createで生成
+//		 		 final Dialog dialog = builder.create();
+//		 		
+//		 		 dialog.show();
+//		     }
+//		});
+//	}
 	
 	
 	// ---- グリッド表示 ----
@@ -379,130 +367,124 @@ public class SandboxScene extends SrpgBaseScene
 	
 	// ---- test用ボタン ----
 	
-	private SparseArray<Sprite> btnSpriteMap;
+//	private SparseArray<Sprite> btnSpriteMap;
 	
-	private void testBtnCreate() {
-		btnSpriteMap = new SparseArray<Sprite>();
-		ButtonSprite btn1 = getResourceButtonSprite("p_ms1_0.gif", "p_ms1_1.gif");
-		addMenu(btn1, 1, 0);
-		ButtonSprite btn2 = getResourceButtonSprite("p_ms2_0.gif", "p_ms2_1.gif");
-		addMenu(btn2, 2, getLeftWidthToX(btn1));
-		ButtonSprite btn3 = getResourceButtonSprite("p_ms3_0.gif", "p_ms3_1.gif");
-		addMenu(btn3, 3, getLeftWidthToX(btn2));
-		ButtonSprite btn4 = getResourceButtonSprite("p_ms4_0.gif", "p_ms4_1.gif");
-		addMenu(btn4, 4, getLeftWidthToX(btn3));
-		ButtonSprite btn5 = getResourceButtonSprite("p_ms5_0.gif", "p_ms5_1.gif");
-		addMenu(btn5, 5, getLeftWidthToX(btn4));
-		ButtonSprite btn6 = getResourceButtonSprite("p_ms6_0.gif", "p_ms6_1.gif");
-		addMenu(btn6, 6, getLeftWidthToX(btn5));
-		ButtonSprite btn7 = getResourceButtonSprite("p_ms7_0.gif", "p_ms7_1.gif");
-		addMenu(btn7, 7, getLeftWidthToX(btn6));
-		ButtonSprite btn8 = getResourceButtonSprite("p_ms8_0.gif", "p_ms8_1.gif");
-		addMenu(btn8, 8, getLeftWidthToX(btn7));
-		ButtonSprite btn9 = getResourceButtonSprite("p_ms9_0.gif", "p_ms9_1.gif");
-		addMenu(btn9, 9, getLeftWidthToX(btn8));
-		ButtonSprite btn10 = getResourceButtonSprite("p_ms1_0.gif", "p_ms1_1.gif");
-		addMenu(btn10, 10, getLeftWidthToX(btn9));
-	}
-	private float getLeftWidthToX(Sprite sprite) {
-		return (0 + 2 + sprite.getX() + (sprite.getWidth()));
-	}
-	private void addMenu(ButtonSprite menuSprite, int tag, float x) {
-		menuSprite.setTag(tag);
-		menuSprite.setPosition(x, 0);
-		attachChild(menuSprite);
-		btnSpriteMap.put(tag, menuSprite);
-		registerTouchArea(menuSprite);
-		
-		menuSprite.setOnClickListener(new ButtonSprite.OnClickListener() {
-			
-			@Override
-			public void onClick(ButtonSprite pButtonSprite, float pTouchAreaLocalX,
-					float pTouchAreaLocalY) {
-				if (btnSpriteMap.indexOfKey(pButtonSprite.getTag()) >= 0) {
-					final Sprite sprite = btnSpriteMap.get(pButtonSprite.getTag());
-					
-					switch (sprite.getTag()) {
-					case 1:
-						player.setPlayerToAttackPosition();
-						break;
-					case 2:
-						player.setPlayerToJumpPositon();
-						break;
-					case 3:
-						player.setPlayerToSlidePositon();
-						break;
-					case 4:
-						player.attack2();
-						break;
-					case 5:
+//	private void testBtnCreate() {
+//		btnSpriteMap = new SparseArray<Sprite>();
+//		ButtonSprite btn1 = getResourceButtonSprite("p_ms1_0.gif", "p_ms1_1.gif");
+//		addMenu(btn1, 1, 0);
+//		ButtonSprite btn2 = getResourceButtonSprite("p_ms2_0.gif", "p_ms2_1.gif");
+//		addMenu(btn2, 2, getLeftWidthToX(btn1));
+//		ButtonSprite btn3 = getResourceButtonSprite("p_ms3_0.gif", "p_ms3_1.gif");
+//		addMenu(btn3, 3, getLeftWidthToX(btn2));
+//		ButtonSprite btn4 = getResourceButtonSprite("p_ms4_0.gif", "p_ms4_1.gif");
+//		addMenu(btn4, 4, getLeftWidthToX(btn3));
+//		ButtonSprite btn5 = getResourceButtonSprite("p_ms5_0.gif", "p_ms5_1.gif");
+//		addMenu(btn5, 5, getLeftWidthToX(btn4));
+//		ButtonSprite btn6 = getResourceButtonSprite("p_ms6_0.gif", "p_ms6_1.gif");
+//		addMenu(btn6, 6, getLeftWidthToX(btn5));
+//		ButtonSprite btn7 = getResourceButtonSprite("p_ms7_0.gif", "p_ms7_1.gif");
+//		addMenu(btn7, 7, getLeftWidthToX(btn6));
+//		ButtonSprite btn8 = getResourceButtonSprite("p_ms8_0.gif", "p_ms8_1.gif");
+//		addMenu(btn8, 8, getLeftWidthToX(btn7));
+//		ButtonSprite btn9 = getResourceButtonSprite("p_ms9_0.gif", "p_ms9_1.gif");
+//		addMenu(btn9, 9, getLeftWidthToX(btn8));
+//		ButtonSprite btn10 = getResourceButtonSprite("p_ms1_0.gif", "p_ms1_1.gif");
+//		addMenu(btn10, 10, getLeftWidthToX(btn9));
+//	}
+//	private float getLeftWidthToX(Sprite sprite) {
+//		return (0 + 2 + sprite.getX() + (sprite.getWidth()));
+//	}
+//	private void addMenu(ButtonSprite menuSprite, int tag, float x) {
+//		menuSprite.setTag(tag);
+//		menuSprite.setPosition(x, 0);
+//		attachChild(menuSprite);
+//		btnSpriteMap.put(tag, menuSprite);
+//		registerTouchArea(menuSprite);
+//		
+//		menuSprite.setOnClickListener(new ButtonSprite.OnClickListener() {
+//			
+//			@Override
+//			public void onClick(ButtonSprite pButtonSprite, float pTouchAreaLocalX,
+//					float pTouchAreaLocalY) {
+//				if (btnSpriteMap.indexOfKey(pButtonSprite.getTag()) >= 0) {
+//					final Sprite sprite = btnSpriteMap.get(pButtonSprite.getTag());
+//					
+//					switch (sprite.getTag()) {
+//					case 1:
 //						player.setPlayerToAttackPosition();
-						talkLayer.resetTalk();
-						talkLayer.nextTalk();
-						break;
-					case 6:
-						enemy.attack2();
-						break;
-					case 7:
-						player.showCutIn(2.0f, getWindowWidth(), new IEntityModifier.IEntityModifierListener() {
-							@Override
-							public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
-							}
-							@Override
-							public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
-								player.attack2();
-							}
-						});
-						break;
-					case 8:
-						enemy.showCutIn(2.0f, getWindowWidth(), new IEntityModifier.IEntityModifierListener() {
-							@Override
-							public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
-							}
-							@Override
-							public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
-								enemy.attack2();
-							}
-						});
-						break;
-					case 9:
-						sampleStringInputDialogBuilder();
-						break;
-					case 10:
-						if (textButtonSprite != null) { 
-							if (textButtonSprite.isEnabled()) {
-								textButtonSprite.setEnabled(false);
-							} else {
-								textButtonSprite.setEnabled(true);
-							}
-						}
-						if (mMenuRectangle != null) {
-							if (mMenuRectangle.isVisible()) {
-								mMenuRectangle.setEnabled(false);
-								mMenuRectangle.setVisible(false);
-							} else {
-								mMenuRectangle.setEnabled(true);
-								mMenuRectangle.setVisible(true);
-							}
-						}
-						break;
-					default:
-						break;
-					}
-				}
-			}
-		});
-	}
+//						break;
+//					case 2:
+//						player.setPlayerToJumpPositon();
+//						break;
+//					case 3:
+//						player.setPlayerToSlidePositon();
+//						break;
+//					case 4:
+//						player.attack2();
+//						break;
+//					case 5:
+////						player.setPlayerToAttackPosition();
+//						talkLayer.resetTalk();
+//						talkLayer.nextTalk();
+//						break;
+//					case 6:
+//						enemy.attack2();
+//						break;
+//					case 7:
+//						player.showCutIn(2.0f, getWindowWidth(), new IEntityModifier.IEntityModifierListener() {
+//							@Override
+//							public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
+//							}
+//							@Override
+//							public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+//								player.attack2();
+//							}
+//						});
+//						break;
+//					case 8:
+//						enemy.showCutIn(2.0f, getWindowWidth(), new IEntityModifier.IEntityModifierListener() {
+//							@Override
+//							public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
+//							}
+//							@Override
+//							public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+//								enemy.attack2();
+//							}
+//						});
+//						break;
+//					case 9:
+//						sampleStringInputDialogBuilder();
+//						break;
+//					case 10:
+//						if (textButtonSprite != null) { 
+//							if (textButtonSprite.isEnabled()) {
+//								textButtonSprite.setEnabled(false);
+//							} else {
+//								textButtonSprite.setEnabled(true);
+//							}
+//						}
+//						if (mMenuRectangle != null) {
+//							if (mMenuRectangle.isVisible()) {
+//								mMenuRectangle.setEnabled(false);
+//								mMenuRectangle.setVisible(false);
+//							} else {
+//								mMenuRectangle.setEnabled(true);
+//								mMenuRectangle.setVisible(true);
+//							}
+//						}
+//						break;
+//					default:
+//						break;
+//					}
+//				}
+//			}
+//		});
+//	}
 
-	@Override
-	public MScenarioEntity getScenarioEntity() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void destory() {
-		// TODO Auto-generated method stub
-		
-	}
+//	@Override
+//	public MScenarioEntity getScenarioEntity() {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
 }
