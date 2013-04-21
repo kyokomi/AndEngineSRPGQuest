@@ -12,7 +12,6 @@ import com.kyokomi.srpgquest.map.item.MapItem;
 /**
  * マップ上に配置するオブジェクトを管理します。
  * @author kyokomi
- * TODO: シングルトンでいい
  */
 public class MapItemManager {
 	private static final String TAG = "MapItemManager";

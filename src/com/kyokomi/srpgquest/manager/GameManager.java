@@ -1,19 +1,18 @@
 package com.kyokomi.srpgquest.manager;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.andengine.engine.handler.timer.ITimerCallback;
 import org.andengine.engine.handler.timer.TimerHandler;
 
 import com.kyokomi.core.dto.ActorPlayerDto;
-import com.kyokomi.core.logic.ActorPlayerLogic;
 import com.kyokomi.srpgquest.constant.GameStateType;
-import com.kyokomi.srpgquest.constant.MapBattleCutInLayerType;
 import com.kyokomi.srpgquest.constant.MapDataType;
-import com.kyokomi.srpgquest.constant.MoveDirectionType;
 import com.kyokomi.srpgquest.constant.SelectMenuType;
 import com.kyokomi.srpgquest.dto.MapBattleInfoDto;
 import com.kyokomi.srpgquest.dto.MapBattleInfoDto.MapSymbol;
+import com.kyokomi.srpgquest.layer.CutInLayer.ICutInCallback;
 import com.kyokomi.srpgquest.logic.BattleLogic;
 import com.kyokomi.srpgquest.map.common.MapPoint;
 import com.kyokomi.srpgquest.map.item.ActorPlayerMapItem;
@@ -51,9 +50,6 @@ public class GameManager {
 	/** 選択したプレイヤーテンポラリ. */
 	private ActorPlayerMapItem mSelectActorPlayer;
 	
-	// --- logic ----
-	private ActorPlayerLogic mActorPlayerLogic;
-	
 	/** 敵のターンタイマー. */
 	private TimerHandler mEnemyTurnUpdateHandler;
 	
@@ -65,12 +61,12 @@ public class GameManager {
 	 * コンストラクタ.
 	 * @param mainActivity
 	 */
-	public GameManager(MainScene baseScene) {
-		this.mBaseScene = baseScene;
+	public GameManager(MainScene pBaseScene, SRPGGameManagerListener pSRPGGameManagerListener) {
+		this.mBaseScene = pBaseScene;
+		this.mSRPGGameManagerListener = pSRPGGameManagerListener;
 
 		// 初期化
 		mBattleLogic = new BattleLogic();
-		mActorPlayerLogic = new ActorPlayerLogic();
 		mPlayerList = new SparseArray<ActorPlayerDto>();
 		mEnemyList = new SparseArray<ActorPlayerDto>();
 		
@@ -116,7 +112,7 @@ public class GameManager {
 		this.mMapBattleInfoDto = pMapBattleInfoDto;
 		
 		// 初期データ設定(mapX * mapYのグリッドを作成)
-		mMapManager = new MapManager(this, 
+		mMapManager = new MapManager(GRID_SIZE, 
 				mMapBattleInfoDto.getMapSizeX(), 
 				mMapBattleInfoDto.getMapSizeY(), 
 				1.0f);
@@ -139,7 +135,7 @@ public class GameManager {
 				break;
 			}
 		}
-		mBaseScene.sortChildren();
+		mSRPGGameManagerListener.refresh();;
 	}
 	
 	/**
@@ -147,65 +143,6 @@ public class GameManager {
 	 */
 	public void gameStart() {
 		changeGameState(GameStateType.START);
-	}
-	// -----------------------------------------------------
-	// 座標計算とか
-	// -----------------------------------------------------
-	private MapPoint calcGridPosition(int mapPointX, int mapPointY) {
-		float x = GRID_SIZE * mapPointX;
-		float y = GRID_SIZE * mapPointY;
-		return new MapPoint(x, y, mapPointX, mapPointY, GRID_SIZE, MoveDirectionType.MOVE_DOWN);
-	}
-	private MapPoint calcGridDecodePosition(float x, float y) {
-		int mapPointX = (int)(x / GRID_SIZE);
-		int mapPointY = (int)(y / GRID_SIZE);
-		return calcGridPosition(mapPointX, mapPointY);
-	}
-	/**
-	 * タッチした画面のx,y座標からマップ上のプレイヤーIDを取得.
-	 * 何もいない場合などは0を返却
-	 * @param x
-	 * @param y
-	 * @return playerSeqNo
-	 */
-	public int getTouchPositionToActorSeqNo(float x, float y) {
-		MapPoint mapPoint = calcGridDecodePosition(x, y);
-		return mMapManager.getMapPointToActorSeqNo(mapPoint);
-	}
-	/**
-	 * タッチした画面のx,y座標からマップ座標情報を取得.
-	 * @param x
-	 * @param y
-	 * @return マップ座標情報
-	 */
-	public MapPoint getTouchPositionToMapPoint(float x, float y) {
-		return calcGridDecodePosition(x, y);
-	}
-	/**
-	 * タッチした画面のx,y座標からマップ座標情報を取得.
-	 * @param x
-	 * @param y
-	 * @return マップ座標情報
-	 */
-	public MapPoint getTouchMapPointToMapPoint(int mapPointX, int mapPointY) {
-		return calcGridPosition(mapPointX, mapPointY);
-	}
-	
-	/**
-	 * マップアイテムからマップ座標情報を取得.
-	 * @param mapItem
-	 * @return マップ座標情報
-	 */
-	public MapPoint getMapItemToMapPoint(MapItem mapItem) {
-		return calcGridPosition(mapItem.getMapPointX(), mapItem.getMapPointY());
-	}
-
-	/**
-	 * 選択中のアクター取得.
-	 * @return
-	 */
-	public ActorPlayerMapItem getSelectActorPlayer() {
-		return mSelectActorPlayer;
 	}
 	
 	/**
@@ -219,7 +156,7 @@ public class GameManager {
 	 * @return
 	 */
 	public MapDataType onTouchMapItemEvent(float x, float y) {
-		final MapPoint mapPoint = calcGridDecodePosition(x, y);
+		final MapPoint mapPoint = mMapManager.calcGridDecodePosition(x, y);
 		final MapItem mapItem = mMapManager.getMapPointToMapItem(mapPoint);
 		MapDataType touchMapDataType;
 		if (mapItem == null) {
@@ -305,7 +242,7 @@ public class GameManager {
 				showSelectMenu();
 			}
 			// カーソル消去
-			mBaseScene.hideCursorSprite();
+			mSRPGGameManagerListener.hideCursor();
 			break;
 		
 		/* 移動選択中 */
@@ -329,7 +266,7 @@ public class GameManager {
 						@Override
 						public void doAction() {
 							// カーソルを消す
-							mBaseScene.hideCursorSprite();
+							mSRPGGameManagerListener.hideCursor();
 							
 							// 移動結果をマップ情報に反映
 							// プレイヤーのステータスを移動済みにする
@@ -363,6 +300,22 @@ public class GameManager {
 		return touchMapDataType;
 	}
 	
+	private final SRPGGameManagerListener mSRPGGameManagerListener;
+	public interface SRPGGameManagerListener {
+		ActorPlayerDto createPlayer(int seqNo, int playerId, MapPoint mapPoint, float size);
+		ActorPlayerDto createEnemy(int seqNo, int enemyId, MapPoint mapPoint, float size);
+		void createMoveCursors(List<MapPoint> cursorMapPointList);
+		void createAttackCursors(List<MapPoint> cursorMapPointList);
+		void createObstacle(int obstacleId, MapPoint mapPoint, float size);
+		void touchedCusor(MapPoint mapPoint);
+		void hideCursor();
+		void showPlayerWinCutIn(final ICutInCallback cutInCallback);
+		void showGameOverCutIn(final ICutInCallback cutInCallback);
+		void showPlayerTurnCutIn(final List<Integer> playerSeqNoList, final ICutInCallback cutInCallback);
+		void showEnemyTurnCutIn(final List<Integer> enemySeqNoList, final ICutInCallback cutInCallback);
+		void refresh();
+	}
+	
 	//---------------------------------------------------------
 	// プレイヤー追加とか
 	//---------------------------------------------------------
@@ -371,33 +324,38 @@ public class GameManager {
 			// すでに追加済み
 			return;
 		}
- 		ActorPlayerDto player = mActorPlayerLogic.createActorPlayerDto(mBaseScene, mapSymbol.getId());
+		MapPoint mapPoint = mMapManager.calcGridPosition(mapSymbol.getMapPointX(), mapSymbol.getMapPointY());
+// 		ActorPlayerDto player = mActorPlayerLogic.createActorPlayerDto(mBaseScene, mapSymbol.getId());
+		ActorPlayerDto player = mSRPGGameManagerListener.createPlayer(mapSymbol.getSeqNo(), mapSymbol.getId(), mapPoint, GRID_SIZE);
 		mPlayerList.put(mapSymbol.getSeqNo(), player);
-		mMapManager.addPlayer(mapSymbol.getSeqNo(), 
-				mapSymbol.getMapPointX(), mapSymbol.getMapPointY(), player);
+		mMapManager.addPlayer(mapSymbol.getSeqNo(), mapSymbol.getMapPointX(), mapSymbol.getMapPointY(), player);
 		// Scene側でSpriteを生成
-		mBaseScene.createPlayerSprite(mapSymbol.getSeqNo(), player,
-				calcGridPosition(mapSymbol.getMapPointX(), mapSymbol.getMapPointY()), GRID_SIZE);
+//		mBaseScene.createPlayerSprite(mapSymbol.getSeqNo(), player,
+//				mMapManager.calcGridPosition(mapSymbol.getMapPointX(), mapSymbol.getMapPointY()), GRID_SIZE);
 	}
 	private void addEnemy(MapSymbol mapSymbol) {
 		if (mEnemyList.indexOfKey(mapSymbol.getSeqNo()) >= 0) {
 			// すでに追加済み
 			return;
 		}
-		ActorPlayerDto enemy = mActorPlayerLogic.createActorPlayerDto(mBaseScene, mapSymbol.getId());
+		MapPoint mapPoint = mMapManager.calcGridPosition(mapSymbol.getMapPointX(), mapSymbol.getMapPointY());
+		ActorPlayerDto enemy = mSRPGGameManagerListener.createEnemy(mapSymbol.getSeqNo(), mapSymbol.getId(), mapPoint, GRID_SIZE);
+//		ActorPlayerDto enemy = mActorPlayerLogic.createActorPlayerDto(mBaseScene, mapSymbol.getId());
 		mEnemyList.put(mapSymbol.getSeqNo(), enemy);
 		mMapManager.addEnemy(mapSymbol.getSeqNo(), 
 				mapSymbol.getMapPointX(), mapSymbol.getMapPointY(), enemy);
-		// Scene側でSpriteを生成
-		mBaseScene.createEnemySprite(mapSymbol.getSeqNo(), enemy, 
-				calcGridPosition(mapSymbol.getMapPointX(), mapSymbol.getMapPointY()), GRID_SIZE);
+//		// Scene側でSpriteを生成
+//		mBaseScene.createEnemySprite(mapSymbol.getSeqNo(), enemy, 
+//				mMapManager.calcGridPosition(mapSymbol.getMapPointX(), mapSymbol.getMapPointY()), GRID_SIZE);
 	}
 	
 	private void addObstacle(MapSymbol mapSymbol) {
 		mMapManager.addObstacle(mapSymbol.getMapPointX(), mapSymbol.getMapPointY());
-		mBaseScene.createObstacleSprite(
-				calcGridPosition(mapSymbol.getMapPointX(), mapSymbol.getMapPointY()), 
-				mapSymbol.getId());
+		mSRPGGameManagerListener.createObstacle(mapSymbol.getId(), 
+				mMapManager.calcGridPosition(mapSymbol.getMapPointX(), mapSymbol.getMapPointY()), GRID_SIZE);
+//		mBaseScene.createObstacleSprite(
+//				mMapManager.calcGridPosition(mapSymbol.getMapPointX(), mapSymbol.getMapPointY()), 
+//				mapSymbol.getId());
 	}
 	//---------------------------------------------------------
 	// カーソル表示関連
@@ -407,21 +365,23 @@ public class GameManager {
 	 * @param mapItem
 	 */
 	public boolean showMoveDistCursor(MapItem mapItem) {
-		MapPoint mapPoint = calcGridPosition(mapItem.getMapPointX(), mapItem.getMapPointY());
+		MapPoint mapPoint = mMapManager.calcGridPosition(mapItem.getMapPointX(), mapItem.getMapPointY());
 		return showMoveDistCursor(mapPoint.getX(), mapPoint.getY());
 	}
 	public boolean showMoveDistCursor(float x, float y) {
-		MapPoint mapPoint = calcGridDecodePosition(x, y);
+		MapPoint mapPoint = mMapManager.calcGridDecodePosition(x, y);
 		List<MapItem> mapItems = mMapManager.actorPlayerFindDist(mapPoint);
 		if (mapItems == null || mapItems.isEmpty()) {
 			Log.d(TAG, "showMoveDistCursor create error");
 			return false;
 		}
+		List<MapPoint> cursorMapPointList = new ArrayList<MapPoint>();
 		for (MapItem mapItem : mapItems) {
-			MapPoint mapItemPoint = calcGridPosition(mapItem.getMapPointX(), mapItem.getMapPointY());
-			mBaseScene.createMoveCursorSprite(mapItemPoint);
+			MapPoint mapItemPoint = mMapManager.calcGridPosition(mapItem.getMapPointX(), mapItem.getMapPointY());
+			cursorMapPointList.add(mapItemPoint);
+//			mBaseScene.createMoveCursorSprite(mapItemPoint);
 		}
-		mBaseScene.sortChildren();
+		mSRPGGameManagerListener.createMoveCursors(cursorMapPointList);
 		return true;
 	}
 	
@@ -430,17 +390,20 @@ public class GameManager {
 	 * @param mapItem
 	 */
 	private void showAttackDistCursor(MapItem mapItem) {
-		MapPoint mapPoint = calcGridPosition(mapItem.getMapPointX(), mapItem.getMapPointY());
+		MapPoint mapPoint = mMapManager.calcGridPosition(mapItem.getMapPointX(), mapItem.getMapPointY());
 		showAttackDistCursor(mapPoint.getX(), mapPoint.getY());
 	}
 	public void showAttackDistCursor(float x, float y) {
-		MapPoint mapPoint = calcGridDecodePosition(x, y);
+		MapPoint mapPoint = mMapManager.calcGridDecodePosition(x, y);
 		List<MapItem> mapItems = mMapManager.actorPlayerFindAttackDist(mapPoint);
+		
+		List<MapPoint> cursorMapPointList = new ArrayList<MapPoint>();
 		for (MapItem mapItem : mapItems) {
-			MapPoint mapItemPoint = calcGridPosition(mapItem.getMapPointX(), mapItem.getMapPointY());
-			mBaseScene.createAttackCursorSprite(mapItemPoint);
+			MapPoint mapItemPoint = mMapManager.calcGridPosition(mapItem.getMapPointX(), mapItem.getMapPointY());
+			cursorMapPointList.add(mapItemPoint);
+//			mBaseScene.createAttackCursorSprite(mapItemPoint);
 		}
-		mBaseScene.sortChildren();
+		mSRPGGameManagerListener.createAttackCursors(cursorMapPointList);
 	}
 	
 	// ----------------------------------------------------------
@@ -474,7 +437,7 @@ public class GameManager {
 				mBaseScene.stopWalkingPlayerAnimation(mSelectActorPlayer.getSeqNo());
 				
 				changeGameState(GameStateType.PLAYER_TURN);
-				mBaseScene.hideCursorSprite();
+				mSRPGGameManagerListener.hideCursor();
 				break;
 			case MENU_CANCEL: // キャンセル
 //				mBaseScene.getMediaManager().play(SoundType.BTN_PRESSED_SE);
@@ -505,7 +468,7 @@ public class GameManager {
 		
 		changeGameState(GameStateType.PLAYER_SELECT);
 		mBaseScene.showSelectMenu(mSelectActorPlayer.isAttackDone(), mSelectActorPlayer.isMoveDone(), 
-				getMapItemToMapPoint(mSelectActorPlayer));
+				mMapManager.getMapItemToMapPoint(mSelectActorPlayer));
 		
 		// プレイヤーのステータスも非表示
 		showPlayerStatusWindow(mSelectActorPlayer);
@@ -542,8 +505,8 @@ public class GameManager {
 			if (!isBeingPlayer()) {
 				// 敵勝利
 				changeEnemyWin();
-				// 敵のターンのタイマーを開始
-				mBaseScene.registerUpdateHandler(mEnemyTurnUpdateHandler);
+				// タイマーを停止
+				mBaseScene.unregisterUpdateHandler(mEnemyTurnUpdateHandler);
 				
 			} else {
 				// ターン終了判定
@@ -586,16 +549,23 @@ public class GameManager {
 	
 	private void changePlayerTurn() {
 		// プレイヤーターン開始
-		mBaseScene.showCutIn(MapBattleCutInLayerType.PLAYER_TURN_CUTIN, 
-				new MainScene.IAnimationCallback() {
+//		mBaseScene.showCutIn(MapBattleCutInLayerType.PLAYER_TURN_CUTIN,
+		List<Integer> seqNoList = new ArrayList<Integer>();
+		int count = mPlayerList.size();
+		for (int i = 0; i < count; i++) {
+			seqNoList.add(mPlayerList.keyAt(i));
+		}
+		mSRPGGameManagerListener.showPlayerTurnCutIn(seqNoList, new ICutInCallback() {
 			@Override
 			public void doAction() {
 				// 全プレイヤーを行動可能にしてアニメーションを再開
 				mMapManager.refreshAllActorWait(MapDataType.PLAYER);
-				int count = mPlayerList.size();
-				for (int i = 0; i < count; i++) {
-					mBaseScene.startWalkingPlayerAnimation(mPlayerList.keyAt(i));
-				}
+//				List<Integer> seqNoList = new ArrayList<Integer>();
+//				int count = mPlayerList.size();
+//				for (int i = 0; i < count; i++) {
+//					seqNoList.add(mPlayerList.keyAt(i));
+////					mBaseScene.startWalkingPlayerAnimation(mPlayerList.keyAt(i));
+//				}
 				// ターン終了=> プレイヤーターン
 				mGameState = GameStateType.PLAYER_TURN;
 			}
@@ -604,16 +574,22 @@ public class GameManager {
 	}
 	private void changeEnemyTurn() {
 		// 敵のターンアニメーション
-		mBaseScene.showCutIn(MapBattleCutInLayerType.ENEMY_TURN_CUTIN,
-				new MainScene.IAnimationCallback() {
+//		mBaseScene.showCutIn(MapBattleCutInLayerType.ENEMY_TURN_CUTIN,
+//				new MainScene.IAnimationCallback() {
+		List<Integer> seqNoList = new ArrayList<Integer>();
+		int count = mEnemyList.size();
+		for (int i = 0; i < count; i++) {
+			seqNoList.add(mEnemyList.keyAt(i));
+		}
+		mSRPGGameManagerListener.showEnemyTurnCutIn(seqNoList, new ICutInCallback() {
 			@Override
 			public void doAction() {
 				// 全エネミーを行動可能にする
 				mMapManager.refreshAllActorWait(MapDataType.ENEMY);
-				int count = mEnemyList.size();
-				for (int i = 0; i < count; i++) {
-					mBaseScene.startWalkingEnemyAnimation(mEnemyList.keyAt(i));
-				}
+//				int count = mEnemyList.size();
+//				for (int i = 0; i < count; i++) {
+//					mBaseScene.startWalkingEnemyAnimation(mEnemyList.keyAt(i));
+//				}
 				// 敵のターンのタイマーを開始
 				mBaseScene.registerUpdateHandler(mEnemyTurnUpdateHandler);
 			}
@@ -626,11 +602,11 @@ public class GameManager {
 	private void changePlayerWin() {
 		Log.d(TAG, "changeState Player Win");
 		// 勝利のカットインを入れてコールバックで次のシナリオへ
-		mBaseScene.showCutIn(MapBattleCutInLayerType.PLAYER_WIN_CUTIN, 
-				new MainScene.IAnimationCallback() {
+//		mBaseScene.showCutIn(MapBattleCutInLayerType.PLAYER_WIN_CUTIN,
+		mSRPGGameManagerListener.showPlayerWinCutIn(new ICutInCallback() {
 			@Override
 			public void doAction() {
-				mBaseScene.clearMapBattle();
+				
 			}
 		});
 		// カットイン中に操作させないためにコールバックに入れない
@@ -639,12 +615,11 @@ public class GameManager {
 	private void changeEnemyWin() {
 		Log.d(TAG, "changeState GameOver");
 		// 敗北のカットインを入れてコールバックでタイトル画面に戻す
-		mBaseScene.showCutIn(MapBattleCutInLayerType.GAME_OVER_CUTIN,
-				new MainScene.IAnimationCallback() {
+//		mBaseScene.showCutIn(MapBattleCutInLayerType.GAME_OVER_CUTIN,
+		mSRPGGameManagerListener.showGameOverCutIn(new ICutInCallback() {
 			@Override
 			public void doAction() {
-				// タイトル画面に戻る
-				mBaseScene.gameOverMapBattle();
+				
 			}
 		});
 		// カットイン中に操作させないためにコールバックに入れない
@@ -676,7 +651,7 @@ public class GameManager {
 		// 攻撃対象へ攻撃するための移動先を探索
 		final MapPoint enemyMovePoint = mMapManager.findEnemyMoveMapPoint(attackTarget, enemyMapItem);
 		// 最初の位置と違う場合、移動する
-		if (enemyMovePoint != null && !enemyMovePoint.isMuchMapPoint(getMapItemToMapPoint(enemyMapItem))) {
+		if (enemyMovePoint != null && !enemyMovePoint.isMuchMapPoint(mMapManager.getMapItemToMapPoint(enemyMapItem))) {
 			
 			changeGameState(GameStateType.ENEMY_MOVE);
 			
@@ -685,7 +660,7 @@ public class GameManager {
 					enemyMapItem, enemyMovePoint);
 			if (moveMapPointList != null) {
 				// 移動先のカーソルの色を変える
-				mBaseScene.touchedCusorRectangle(enemyMovePoint);
+				mSRPGGameManagerListener.touchedCusor(enemyMovePoint);
 				
 				// 移動リストを引数にScene側の移動アニメーションを呼び出す
 				mBaseScene.moveEnemyAnimation(enemyMapItem.getSeqNo(), moveMapPointList, 
@@ -694,7 +669,7 @@ public class GameManager {
 					public void doAction() {
 						
 						// カーソルを消す
-						mBaseScene.hideCursorSprite();
+						mSRPGGameManagerListener.hideCursor();
 						
 						// 移動結果をマップ情報に反映
 						// プレイヤーのステータスを移動済みにする
@@ -738,7 +713,7 @@ public class GameManager {
 				
 			} else {
 				// カーソルを消す
-				mBaseScene.hideCursorSprite();
+				mSRPGGameManagerListener.hideCursor();
 				// 待機
 				enemyMapItem.setWaitDone(true);
 				changeGameState(GameStateType.ENEMY_TURN);
@@ -746,7 +721,7 @@ public class GameManager {
 			}
 		} else {
 			// カーソルを消す
-			mBaseScene.hideCursorSprite();
+			mSRPGGameManagerListener.hideCursor();
 			// 待機
 			enemyMapItem.setWaitDone(true);
 			changeGameState(GameStateType.ENEMY_TURN);
@@ -803,7 +778,7 @@ public class GameManager {
 		// TODO: [将来対応]キャラが攻撃モーションと敵の方向を向く,敵キャラがダメージモーション
 		
 		// ダメージを表示
-		mBaseScene.showDamageText(damage, getMapItemToMapPoint(toPlayerMapItem));
+		mBaseScene.showDamageText(damage, mMapManager.getMapItemToMapPoint(toPlayerMapItem));
 		// ステータスウィンドウへの反映と死亡時はマップ上から消す
 		if (toPlayerMapItem.getMapDataType() == MapDataType.ENEMY) {
 			mBaseScene.refreshEnemyStatusWindow(toPlayerMapItem.getSeqNo());

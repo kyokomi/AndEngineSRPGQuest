@@ -38,6 +38,7 @@ import com.kyokomi.core.dto.MapBattleRewardDto;
 import com.kyokomi.core.dto.PlayerTalkDto;
 import com.kyokomi.core.dto.SaveDataDto;
 import com.kyokomi.core.entity.MItemEntity;
+import com.kyokomi.core.logic.ActorPlayerLogic;
 import com.kyokomi.core.logic.MapBattleRewardLogic;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.core.sprite.CommonWindowRectangle;
@@ -47,11 +48,13 @@ import com.kyokomi.srpgquest.logic.TalkLogic;
 import com.kyokomi.srpgquest.constant.LayerZIndexType;
 import com.kyokomi.srpgquest.dto.MapBattleInfoDto;
 import com.kyokomi.srpgquest.layer.CutInLayer;
+import com.kyokomi.srpgquest.layer.CutInLayer.ICutInCallback;
 import com.kyokomi.srpgquest.layer.MapBattleClearConditionTouchLayer;
 import com.kyokomi.srpgquest.layer.MapBattleSelectMenuLayer;
 import com.kyokomi.srpgquest.layer.ScenarioStartCutInTouchLayer;
 import com.kyokomi.srpgquest.constant.MapBattleCutInLayerType;
 import com.kyokomi.srpgquest.manager.GameManager;
+import com.kyokomi.srpgquest.manager.GameManager.SRPGGameManagerListener;
 import com.kyokomi.srpgquest.map.common.MapPoint;
 import com.kyokomi.srpgquest.sprite.ActorSprite;
 import com.kyokomi.srpgquest.sprite.CursorRectangle;
@@ -296,6 +299,107 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	// ------------------------------------------------------------------
 	/** ゲーム管理クラス */
 	private GameManager mGameManager;
+	private SRPGGameManagerListener mSrpgGameManagerListener = new SRPGGameManagerListener() {
+		@Override
+		public ActorPlayerDto createPlayer(int seqNo, int playerId, MapPoint mapPoint, float size) {
+			ActorPlayerDto actorPlayerDto = mActorPlayerLogic.createActorPlayerDto(MainScene.this, playerId);
+			createPlayerSprite(seqNo, actorPlayerDto, mapPoint, size);
+			return actorPlayerDto;
+		}
+		
+		@Override
+		public ActorPlayerDto createEnemy(int seqNo, int enemyId, MapPoint mapPoint, float size) {
+			ActorPlayerDto actorPlayerDto = mActorPlayerLogic.createActorPlayerDto(MainScene.this, enemyId);
+			createEnemySprite(seqNo, actorPlayerDto, mapPoint, size);
+			return actorPlayerDto;
+		}
+
+		@Override
+		public void createObstacle(int obstractId, MapPoint mapPoint, float size) {
+			createObstacleSprite(obstractId, mapPoint, size);
+		}
+
+		@Override
+		public void refresh() {
+			sortChildren();
+		}
+
+		@Override
+		public void createMoveCursors(List<MapPoint> cursorMapPointList) {
+			for (MapPoint mapPoint : cursorMapPointList) {
+				createMoveCursorSprite(mapPoint);
+			}
+		}
+
+		@Override
+		public void createAttackCursors(List<MapPoint> cursorMapPointList) {
+			for (MapPoint mapPoint : cursorMapPointList) {
+				createAttackCursorSprite(mapPoint);
+			}
+		}
+
+		@Override
+		public void touchedCusor(MapPoint mapPoint) {
+			touchedCusorRectangle(mapPoint);
+			
+		}
+
+		@Override
+		public void hideCursor() {
+			hideCursorSprite();
+		}
+
+		@Override
+		public void showPlayerWinCutIn(final ICutInCallback cutInCallback) {
+			showCutIn(MapBattleCutInLayerType.PLAYER_WIN_CUTIN, new ICutInCallback() {
+				@Override
+				public void doAction() {
+					clearMapBattle();
+					cutInCallback.doAction();					
+				}
+			});
+		}
+
+		@Override
+		public void showGameOverCutIn(final ICutInCallback cutInCallback) {
+			showCutIn(MapBattleCutInLayerType.GAME_OVER_CUTIN, new ICutInCallback() {
+				@Override
+				public void doAction() {
+					gameOverMapBattle();
+					cutInCallback.doAction();					
+				}
+			});
+		}
+
+		@Override
+		public void showPlayerTurnCutIn(final List<Integer> playerSeqNoList, final ICutInCallback cutInCallback) {
+			showCutIn(MapBattleCutInLayerType.PLAYER_TURN_CUTIN, new ICutInCallback() {
+				@Override
+				public void doAction() {
+					for (Integer seqNo : playerSeqNoList) {
+						startWalkingPlayerAnimation(seqNo);
+					}
+					cutInCallback.doAction();					
+				}
+			});
+		}
+		@Override
+		public void showEnemyTurnCutIn(final List<Integer> enemySeqNoList, final ICutInCallback cutInCallback) {
+			showCutIn(MapBattleCutInLayerType.PLAYER_TURN_CUTIN, new ICutInCallback() {
+				@Override
+				public void doAction() {
+					for (Integer seqNo : enemySeqNoList) {
+						startWalkingEnemyAnimation(seqNo);
+					}
+					cutInCallback.doAction();					
+				}
+			});
+		}
+	};
+	
+	/** アクターロジック */
+	private ActorPlayerLogic mActorPlayerLogic;
+	
 	/** 敵のターンタイマー. */
 	private TimerHandler mEnemyTurnUpdateHandler;
 	
@@ -304,10 +408,13 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	}
 	
 	MapBattleSelectMenuLayer mMapBattleSelectMenuLayer;
+	
 	/**
 	 * SRPGマップバトルパートの初期化処理
 	 */
 	private void initMap(SaveDataDto saveDataDto) {
+		// 初期化
+		mActorPlayerLogic = new ActorPlayerLogic();
 		
 		// 背景
 		initBackground();
@@ -344,7 +451,7 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		mMapBattleInfoDto.createMapJsonData(saveDataDto.getSceneId(), 
 				JsonUtil.toJson(getBaseActivity(), "map/"+ saveDataDto.getSceneId()));
 		// ゲーム開始
-		mGameManager = new GameManager(this);
+		mGameManager = new GameManager(this, mSrpgGameManagerListener);
 		mGameManager.mapInit(mMapBattleInfoDto); // 10 x 10 スケール1倍のグリッドマップ
 		
 		// プレイヤー情報ができてから呼び出さないといけないので注意
@@ -411,7 +518,7 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	 * @param imageId
 	 * @param mapPoint
 	 */
-	public void createPlayerSprite(int playerSeqNo, ActorPlayerDto playerActor, MapPoint mapPoint, float size) {
+	private void createPlayerSprite(int playerSeqNo, ActorPlayerDto playerActor, MapPoint mapPoint, float size) {
 		ActorSprite player = new ActorSprite(playerActor, this, 0, 0, size, size, 1.0f);
 		
 		player.setPlayerToDefaultPosition();
@@ -426,6 +533,7 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		playerStatusRect.setColor(Color.BLUE);
 		playerStatusRect.setAlpha(0.5f);
 	}
+	
 	/**
 	 * 敵キャラ描画.
 	 * @param enemySeqNo
@@ -433,7 +541,7 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	 * @param mapPoint
 	 * @param size
 	 */
-	public void createEnemySprite(int enemySeqNo, ActorPlayerDto enemyActor, MapPoint mapPoint, float size) {
+	private void createEnemySprite(int enemySeqNo, ActorPlayerDto enemyActor, MapPoint mapPoint, float size) {
 		ActorSprite enemy = new ActorSprite(enemyActor, this, 0, 0, size, size, 1.0f);
 		
 		enemy.setPlayerToDefaultPosition();
@@ -453,10 +561,10 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	 * 障害物描画.
 	 * @param mapPoint
 	 */
-	public void createObstacleSprite(MapPoint mapPoint, int currentTileIndex) {
+	private void createObstacleSprite(int currentTileIndex, MapPoint mapPoint, float size) {
 		Sprite obstacle = getResourceSprite("icon_ob.png");
 		obstacle.setPosition(mapPoint.getX(), mapPoint.getY());
-		obstacle.setSize(mapPoint.getGridSize(), mapPoint.getGridSize());
+		obstacle.setSize(size, size);
 		obstacle.setZIndex(LayerZIndexType.ACTOR_LAYER.getValue());
 		obstacle.setTag(OBSTACLE_TAG_START + obstacleIndex); obstacleIndex++;
 		attachChild(obstacle);
@@ -792,15 +900,9 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	 * @param pMapBattleCutInLayerType
 	 * @param pAnimationCallback
 	 */
-	public void showCutIn(MapBattleCutInLayerType pMapBattleCutInLayerType, final IAnimationCallback pAnimationCallback) {
+	public void showCutIn(MapBattleCutInLayerType pMapBattleCutInLayerType, final ICutInCallback pCutInCallback) {
 		// カットイン表示
-		getCutInLayer(pMapBattleCutInLayerType).showCutInSprite(2.0f, new CutInLayer.ICutInCallback() {
-			@Override public void doAction() { 
-				if (pAnimationCallback != null) { 
-					pAnimationCallback.doAction(); 
-				}
-			}
-		});
+		getCutInLayer(pMapBattleCutInLayerType).showCutInSprite(2.0f, pCutInCallback);
 	}
 	// --------------- 会話パート用 --------------------
 	private static final int TALK_LAYER_TAG = 999;

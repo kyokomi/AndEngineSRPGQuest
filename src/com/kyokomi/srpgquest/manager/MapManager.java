@@ -28,11 +28,10 @@ public class MapManager {
 	private final int RIGHT;
 	private final int BOTTOM;
 	
-	private final GameManager mGameManager;
 	private final MapItemManager mMapItemManager;
 	private final int mapX;
 	private final int mapY;
-//	private final float mapScale;
+	private final float mGridSize;
 	
 	/** マップ移動情報. */
 	private List<MapPoint> movePointList;
@@ -59,14 +58,13 @@ public class MapManager {
 	 * @param mapY
 	 * @param mapScale
 	 */
-	public MapManager(GameManager pGameManager, int pMapX, int pMapY, float pMapScale) {
+	public MapManager(float pGridSize, int pMapX, int pMapY, float pMapScale) {
 		this.mapX = pMapX;
 		this.mapY = pMapY;
+		this.mGridSize = pGridSize;
 		this.RIGHT = mapX;
 		this.BOTTOM = mapY;
 		
-//		this.mapScale = pMapScale;
-		this.mGameManager = pGameManager;
 		this.mMapItemManager = new MapItemManager(mapX, mapY);		
 	}
 
@@ -126,57 +124,6 @@ public class MapManager {
 		mMapItemManager.setObject(mapPointX, mapPointY, playerMapItem);
 	}
 	
-//	TODO: バトルはあとで
-//	/**
-//	 * バトル実行.
-//	 * @param from
-//	 * @param to
-//	 */
-//	private void battle(final CharacterSpriteView from, final CharacterSpriteView to) {
-//		
-//		// 攻撃処理アニメーション作成
-//		ObjectAnimator anim;
-//		
-//		// ゲーム管理側でバトル計算
-//		boolean isBattle = mGameManager.battleStart(from, to);
-//		if (isBattle) {
-//			// 消える
-//			anim = ObjectAnimator.ofFloat(to, "alpha", 0.0f, 1.0f, 0.0f, 0.0f);
-//			
-//			anim.addListener(new AnimatorListener() {
-//				@Override public void onAnimationStart(Animator animation) {}
-//				@Override public void onAnimationRepeat(Animator animation) {}
-//				@Override public void onAnimationEnd(Animator animation) {
-//					int x = to.getMapPointX();
-//					int y = to.getMapPointY();
-//					mGameManager.removeMapItem(to);
-//					mapViews[x][y] = null;
-//					mapDatas[x][y] = new MapData();
-//					enemyList.remove(to);
-//					
-//					mGameManager.battleEnd(from.getMapDataType());
-//				}
-//				@Override public void onAnimationCancel(Animator animation) {}
-//			});
-//			
-//		} else {
-//			anim = ObjectAnimator.ofFloat(to, "alpha", 0.0f, 1.0f, 0.0f, 1.0f);
-//			anim.addListener(new AnimatorListener() {
-//				@Override public void onAnimationStart(Animator animation) {}
-//				@Override public void onAnimationRepeat(Animator animation) {}
-//				@Override public void onAnimationEnd(Animator animation) {
-//					mGameManager.battleEnd(from.getMapDataType());
-//				}
-//				@Override public void onAnimationCancel(Animator animation) {}
-//			});
-//		}
-//		anim.setDuration(400);
-//		anim.start();
-//		
-//		// 攻撃済みにする
-//		from.setAttackDone(true);
-//	}
-//	
 	/**
 	 * 移動カーソル追加.
 	 * @param mapPointX
@@ -300,9 +247,6 @@ public class MapManager {
 		movePointList.add(moveFromMapPoint);
 		
 		debugShowMoveList(); // DEBUG
-
-		// カーソル情報をクリア
-//		mMapItemManager.clearCursorMapItemLayer();
 
 		return movePointList;
 	}
@@ -599,7 +543,10 @@ public class MapManager {
 			moveY = enemyMapItem.getMapPointY();
 		}
 		
-		return mGameManager.getTouchMapPointToMapPoint(moveX, moveY);
+		float x = mGridSize * moveX;
+		float y = mGridSize * moveY;
+		MapPoint mapPoint = new MapPoint(x, y, moveX, moveY, mGridSize, MoveDirectionType.MOVE_DOWN);
+		return mapPoint;
 	}
 	
 	// ----------------------------------------------------------
@@ -639,8 +586,29 @@ public class MapManager {
 	}
 	
 	private MapPoint getMoveMapPoint(int mapPointX, int mapPointY, MoveDirectionType moveDirectionType) {
-		MapPoint mapPoint = mGameManager.getTouchMapPointToMapPoint(mapPointX, mapPointY);
+		MapPoint mapPoint = calcGridPosition(mapPointX, mapPointY);
 		mapPoint.setDirection(moveDirectionType);
 		return mapPoint;
+	}
+	
+	public MapPoint calcGridPosition(int mapPointX, int mapPointY) {
+		float x = mGridSize * mapPointX;
+		float y = mGridSize * mapPointY;
+		return new MapPoint(x, y, mapPointX, mapPointY, mGridSize, MoveDirectionType.MOVE_DOWN);
+	}
+	
+	public MapPoint calcGridDecodePosition(float x, float y) {
+		int mapPointX = (int)(x / mGridSize);
+		int mapPointY = (int)(y / mGridSize);
+		return calcGridPosition(mapPointX, mapPointY);
+	}
+	
+	/**
+	 * マップアイテムからマップ座標情報を取得.
+	 * @param mapItem
+	 * @return マップ座標情報
+	 */
+	public MapPoint getMapItemToMapPoint(MapItem mapItem) {
+		return calcGridPosition(mapItem.getMapPointX(), mapItem.getMapPointY());
 	}
 }
