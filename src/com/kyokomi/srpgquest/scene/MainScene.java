@@ -297,8 +297,16 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	// ------------------------------------------------------------------
 	// SRPGマップバトル関連
 	// ------------------------------------------------------------------
+	
+	// --------------- ステータスウィンドウ --------------
+	private static final int PLAYER_STATUS_WINDOW_TAG = 2000;
+	private static final int ENEMY_STATUS_WINDOW_TAG = 2001;
+	
 	/** ゲーム管理クラス */
 	private GameManager mGameManager;
+	/** 敵のターンタイマー. */
+	private TimerHandler mEnemyTurnUpdateHandler;
+	
 	private SRPGGameManagerListener mSrpgGameManagerListener = new SRPGGameManagerListener() {
 		@Override
 		public ActorPlayerDto createPlayer(int seqNo, int playerId, MapPoint mapPoint, float size) {
@@ -377,7 +385,8 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 				@Override
 				public void doAction() {
 					for (Integer seqNo : playerSeqNoList) {
-						startWalkingPlayerAnimation(seqNo);
+						ActorSprite ActorSprite = getActorSprite(seqNo);
+						ActorSprite.setPlayerToDefaultPosition();
 					}
 					cutInCallback.doAction();					
 				}
@@ -389,23 +398,233 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 				@Override
 				public void doAction() {
 					for (Integer seqNo : enemySeqNoList) {
-						startWalkingEnemyAnimation(seqNo);
+						ActorSprite enemySprite = getActorSprite(seqNo);
+						enemySprite.setPlayerToDefaultPosition();
 					}
 					cutInCallback.doAction();					
 				}
 			});
 		}
+
+		@Override
+		public void setEnemyTurnUpdateHandler(TimerHandler timerHandler) {
+			mEnemyTurnUpdateHandler = timerHandler;
+		}
+
+		@Override
+		public TimerHandler getEnemyTurnUpdateHandler() {
+			return mEnemyTurnUpdateHandler;
+		}
+
+		@Override
+		public void stopEnemyTurnTimer() {
+			unregisterUpdateHandler(mEnemyTurnUpdateHandler);
+		}
+
+		@Override
+		public void startEnemyTurnTimer() {
+			registerUpdateHandler(mEnemyTurnUpdateHandler);
+		}
+
+		@Override
+		public void removeEnemy(int enemyId) {
+			detachEnemy(enemyId);
+		}
+
+		@Override
+		public void removePlayer(int playerId) {
+			detachPlayer(playerId);
+		}
+
+		@Override
+		public void stopWalkingPlayerAnimation(int playerSeqNo) {
+			ActorSprite ActorSprite = getActorSprite(playerSeqNo);
+			ActorSprite.setPlayerToDefaultPositionStop();
+		}
+
+		@Override
+		public void stopWalkingEnemyAnimation(int enemySeqNo) {
+			ActorSprite enemySprite = getActorSprite(enemySeqNo);
+			enemySprite.setPlayerToDefaultPositionStop();
+		}
+
+		/**
+		 * プレイヤー歩行アニメーション
+		 */
+		@Override
+		public void movePlayerAnimation(int playerSeqNo, List<MapPoint> moveMapPointList,
+				final IAnimationCallback animationCallback) {
+			ActorSprite ActorSprite = getActorSprite(playerSeqNo);
+			ActorSprite.move(1.0f, moveMapPointList, new IEntityModifier.IEntityModifierListener() {
+				@Override
+				public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
+				}
+				@Override
+				public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+					// コールバック
+					animationCallback.doAction();
+				}
+			});
+		}
+
+		/**
+		 * 敵歩行アニメーション
+		 */
+		@Override
+		public void moveEnemyAnimation(int enemySeqNo, List<MapPoint> moveMapPointList,
+				final IAnimationCallback animationCallback) {
+			ActorSprite enemySprite = getActorSprite(enemySeqNo);
+			enemySprite.move(1.0f, moveMapPointList, new IEntityModifier.IEntityModifierListener() {
+				@Override
+				public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
+				}
+				@Override
+				public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+					// コールバック
+					animationCallback.doAction();
+				}
+			});
+		}
+
+		@Override
+		public void showDamageText(int damage, MapPoint mapPoint) {
+//			getMediaManager().play(SoundType.ATTACK_SE);
+			final Text damageText = (Text) getChildByTag(DAMAGE_TEXT_TAG);
+			
+			damageText.setScale(0.5f);
+			damageText.setX(mapPoint.getX());
+			damageText.setY(mapPoint.getY());
+			damageText.setText(String.valueOf(damage));
+			damageText.setColor(Color.WHITE);
+			
+			damageText.registerEntityModifier(new SequenceEntityModifier(
+				new ParallelEntityModifier(
+					new ScaleModifier(0.5f, 0.5f, 2.0f, EaseBackInOut.getInstance()),
+					new SequenceEntityModifier(
+							new MoveModifier(0.25f, damageText.getX(), damageText.getX(), 
+									damageText.getY(), damageText.getY() - 15, 
+									EaseBackInOut.getInstance()),
+							new MoveModifier(0.25f, damageText.getX(), damageText.getX(), 
+									damageText.getY() - 15, damageText.getY(), 
+									EaseBackInOut.getInstance()))
+					),
+				new DelayModifier(0.2f, new IEntityModifier.IEntityModifierListener() {
+					@Override
+					public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
+					}
+					@Override
+					public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+						damageText.setColor(Color.TRANSPARENT);
+					}
+			})));
+		}
+
+		/**
+		 * プレイヤーステータス更新.
+		 */
+		@Override
+		public void refreshPlayerStatusWindow(int playerSeqNo) {
+			ActorSprite player = getActorSprite(playerSeqNo);
+			player.getPlayerStatusRectangle().refresh();
+		}
+
+		/**
+		 * 敵ステータス更新.
+		 */
+		@Override
+		public void refreshEnemyStatusWindow(int enemySeqNo) {
+			ActorSprite enemy = getActorSprite(enemySeqNo);
+			enemy.getPlayerStatusRectangle().refresh();
+		}
+
+		/**
+		 * プレイヤーステータスウィンドウ表示
+		 */
+		@Override
+		public void showPlayerStatusWindow(int playerSeqNo) {
+			float x = getWindowWidth() / 2;
+			PlayerStatusRectangle mPlayerStatusRect = (PlayerStatusRectangle) getChildByTag(PLAYER_STATUS_WINDOW_TAG);
+			if (mPlayerStatusRect != null) {
+				detachChild(mPlayerStatusRect);
+			}
+			// エネミーが表示されていたら下に表示
+			PlayerStatusRectangle mEnemyStatusRect = (PlayerStatusRectangle) getChildByTag(ENEMY_STATUS_WINDOW_TAG);
+			float y = 0;
+			if (mEnemyStatusRect != null && mEnemyStatusRect.isVisible()) {
+				y = mEnemyStatusRect.getY() + mEnemyStatusRect.getHeight();
+			}
+			mPlayerStatusRect = getActorSprite(playerSeqNo).getPlayerStatusRectangle();
+			if (mPlayerStatusRect != null) {
+				mPlayerStatusRect.setTag(PLAYER_STATUS_WINDOW_TAG);
+				mPlayerStatusRect.show(PlayerStatusRectangleType.MINI_STATUS);
+				mPlayerStatusRect.setX(x);
+				mPlayerStatusRect.setY(y);
+				attachChild(mPlayerStatusRect);	
+			}
+			sortChildren();
+		}
+
+		/**
+		 * 敵ステータスウィンドウ表示
+		 */
+		@Override
+		public void showEnemyStatusWindow(int enemySeqNo) {
+			PlayerStatusRectangle mEnemyStatusRect = (PlayerStatusRectangle) getChildByTag(ENEMY_STATUS_WINDOW_TAG);
+			if (mEnemyStatusRect != null) {
+				detachChild(mEnemyStatusRect);
+			}
+			// プレイヤーが表示されていたら下に表示
+			PlayerStatusRectangle mPlayerStatusRect = (PlayerStatusRectangle) getChildByTag(PLAYER_STATUS_WINDOW_TAG);
+			float y = 0;
+			if (mPlayerStatusRect != null && mPlayerStatusRect.isVisible()) {
+				y = mPlayerStatusRect.getY() + mPlayerStatusRect.getHeight();
+			}
+			mEnemyStatusRect = getActorSprite(enemySeqNo).getPlayerStatusRectangle();
+			if (mEnemyStatusRect != null) {
+				mEnemyStatusRect.setTag(ENEMY_STATUS_WINDOW_TAG);
+				mEnemyStatusRect.show(PlayerStatusRectangleType.MINI_STATUS);
+				mEnemyStatusRect.setY(y);
+				attachChild(mEnemyStatusRect);
+			}
+			sortChildren();
+		}
+
+		/**
+		 * プレイヤーステータス非表示
+		 */
+		@Override
+		public void hidePlayerStatusWindow() {
+			PlayerStatusRectangle mPlayerStatusRect = (PlayerStatusRectangle) getChildByTag(PLAYER_STATUS_WINDOW_TAG);
+			if (mPlayerStatusRect != null) {
+				mPlayerStatusRect.hide();
+			}
+		}
+
+		/**
+		 * 敵ステータス非表示
+		 */
+		@Override
+		public void hideEnemyStatusWindow() {
+			PlayerStatusRectangle mEnemyStatusRect = (PlayerStatusRectangle) getChildByTag(ENEMY_STATUS_WINDOW_TAG);
+			if (mEnemyStatusRect != null) {
+				mEnemyStatusRect.hide();
+			}
+		}
+
+		@Override
+		public void showSelectMenu(boolean isAttackDone, boolean isMovedDone, MapPoint mapPoint) {
+			mMapBattleSelectMenuLayer.showSelectMenu(MainScene.this, 
+					mapPoint.getX(), mapPoint.getY(), isAttackDone, isMovedDone);
+		}
+
+		@Override
+		public void hideSelectMenu() {
+			mMapBattleSelectMenuLayer.hideSelectMenu();
+		}
 	};
 	
 	/** アクターロジック */
 	private ActorPlayerLogic mActorPlayerLogic;
-	
-	/** 敵のターンタイマー. */
-	private TimerHandler mEnemyTurnUpdateHandler;
-	
-	public TimerHandler getEnemyTurnUpdateHandler() {
-		return mEnemyTurnUpdateHandler;
-	}
 	
 	MapBattleSelectMenuLayer mMapBattleSelectMenuLayer;
 	
@@ -451,7 +670,7 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		mMapBattleInfoDto.createMapJsonData(saveDataDto.getSceneId(), 
 				JsonUtil.toJson(getBaseActivity(), "map/"+ saveDataDto.getSceneId()));
 		// ゲーム開始
-		mGameManager = new GameManager(this, mSrpgGameManagerListener);
+		mGameManager = new GameManager(mSrpgGameManagerListener);
 		mGameManager.mapInit(mMapBattleInfoDto); // 10 x 10 スケール1倍のグリッドマップ
 		
 		// プレイヤー情報ができてから呼び出さないといけないので注意
@@ -598,26 +817,10 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	}
 	
 	/**
-	 * プレイヤーステータス更新.
-	 * @param playerSeqNo
-	 */
-	public void refreshPlayerStatusWindow(int playerSeqNo) {
-		ActorSprite player = getActorSprite(playerSeqNo);
-		player.getPlayerStatusRectangle().refresh();
-	}
-	/**
-	 * 敵ステータス更新.
-	 * @param enemySeqNo
-	 */
-	public void refreshEnemyStatusWindow(int enemySeqNo) {
-		ActorSprite enemy = getActorSprite(enemySeqNo);
-		enemy.getPlayerStatusRectangle().refresh();
-	}
-	/**
 	 * プレイヤーキャラ消去.
 	 * @param playerSeqNo
 	 */
-	public void removePlayer(final int playerSeqNo) {
+	private void detachPlayer(final int playerSeqNo) {
 		// 別スレッドで削除
 		getBaseActivity().runOnUpdateThread(new Runnable() {
 			@Override
@@ -632,7 +835,7 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	 * 敵キャラ消去.
 	 * @param enemyId
 	 */
-	public void removeEnemy(final int enemyId) {
+	private void detachEnemy(final int enemyId) {
 		// 別スレッドで削除
 		getBaseActivity().runOnUpdateThread(new Runnable() {
 			@Override
@@ -661,7 +864,7 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	 * 移動カーソル描画.
 	 * @param mapPoint
 	 */
-	public void createMoveCursorSprite(MapPoint mapPoint) {
+	private void createMoveCursorSprite(MapPoint mapPoint) {
 		CursorRectangle cursorRectangle = createCursorSprite(mapPoint, Color.GREEN);
 		cursorRectangle.setZIndex(LayerZIndexType.MOVECURSOR_LAYER.getValue());
 	}
@@ -669,14 +872,14 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	 * 攻撃カーソル描画.
 	 * @param mapPoint
 	 */
-	public void createAttackCursorSprite(MapPoint mapPoint) {
+	private void createAttackCursorSprite(MapPoint mapPoint) {
 		CursorRectangle cursorRectangle = createCursorSprite(mapPoint, Color.YELLOW);
 		cursorRectangle.setZIndex(LayerZIndexType.ATTACKCURSOR_LAYER.getValue());
 	}
 	/**
 	 * カーソル選択.
 	 */
-	public void touchedCusorRectangle(final MapPoint mapPoint) {
+	private void touchedCusorRectangle(final MapPoint mapPoint) {
 		getBaseActivity().runOnUpdateThread(new Runnable() {
 			@Override
 			public void run() {
@@ -722,7 +925,7 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	/**
 	 * カーソル消去.
 	 */
-	public void hideCursorSprite() {
+	private void hideCursorSprite() {
 		// 別スレッドで削除
 		getBaseActivity().runOnUpdateThread(new Runnable() {
 			@Override
@@ -745,127 +948,6 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	 */
 	public interface IAnimationCallback {
 		public void doAction();
-	}
-	
-	/**
-	 * プレイヤー移動アニメーション.
-	 * @param playerSeqNo
-	 * @param moveMapPointList
-	 */
-	public void movePlayerAnimation(int playerSeqNo, List<MapPoint> moveMapPointList, 
-			final IAnimationCallback animationCallback) {
-		ActorSprite ActorSprite = getActorSprite(playerSeqNo);
-		ActorSprite.move(1.0f, moveMapPointList, new IEntityModifier.IEntityModifierListener() {
-			@Override
-			public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
-			}
-			@Override
-			public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
-				// コールバック
-				animationCallback.doAction();
-			}
-		});
-	}
-	/**
-	 * 敵移動アニメーション.
-	 * @param enemySeqNo
-	 * @param moveMapPointList
-	 */
-	public void moveEnemyAnimation(int enemySeqNo, List<MapPoint> moveMapPointList, 
-			final IAnimationCallback animationCallback) {
-		ActorSprite enemySprite = getActorSprite(enemySeqNo);
-		enemySprite.move(1.0f, moveMapPointList, new IEntityModifier.IEntityModifierListener() {
-			@Override
-			public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
-			}
-			@Override
-			public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
-				// コールバック
-				animationCallback.doAction();
-			}
-		});
-	}
-	/**
-	 * プレイヤー歩行スタート.
-	 * @param playerSeqNo
-	 */
-	public void startWalkingPlayerAnimation(int playerSeqNo) {
-		ActorSprite ActorSprite = getActorSprite(playerSeqNo);
-		ActorSprite.setPlayerToDefaultPosition();
-	}
-	/**
-	 * プレイヤー歩行停止.
-	 * @param playerSeqNo
-	 */
-	public void stopWalkingPlayerAnimation(int playerSeqNo) {
-		ActorSprite ActorSprite = getActorSprite(playerSeqNo);
-		ActorSprite.setPlayerToDefaultPositionStop();
-	}
-
-	/**
-	 * エネミー歩行スタート.
-	 * @param enemySeqNo
-	 */
-	public void startWalkingEnemyAnimation(int enemySeqNo) {
-		ActorSprite enemySprite = getActorSprite(enemySeqNo);
-		enemySprite.setPlayerToDefaultPosition();
-	}
-	/**
-	 * エネミー歩行停止.
-	 * @param enemySeqNo
-	 */
-	public void stopWalkingEnemyAnimation(int enemySeqNo) {
-		ActorSprite enemySprite = getActorSprite(enemySeqNo);
-		enemySprite.setPlayerToDefaultPositionStop();
-	}
-	
-	/**
-	 * 指定のMapPointの位置にダメージ値をテキストで拡大アニメーション表示する.
-	 * 表示が終わったら消えます。
-	 * @param damage ダメージ値
-	 * @param mapPoint 表示位置
-	 */
-	public void showDamageText(final int damage, final MapPoint mapPoint) {
-		
-//		getMediaManager().play(SoundType.ATTACK_SE);
-		final Text damageText = (Text) getChildByTag(DAMAGE_TEXT_TAG);
-		
-		damageText.setScale(0.5f);
-		damageText.setX(mapPoint.getX());
-		damageText.setY(mapPoint.getY());
-		damageText.setText(String.valueOf(damage));
-		damageText.setColor(Color.WHITE);
-		
-		damageText.registerEntityModifier(new SequenceEntityModifier(
-				new ParallelEntityModifier(
-					new ScaleModifier(0.5f, 0.5f, 2.0f, EaseBackInOut.getInstance()),
-					new SequenceEntityModifier(
-							new MoveModifier(0.25f, damageText.getX(), damageText.getX(), 
-									damageText.getY(), damageText.getY() - 15, 
-									EaseBackInOut.getInstance()),
-							new MoveModifier(0.25f, damageText.getX(), damageText.getX(), 
-									damageText.getY() - 15, damageText.getY(), 
-									EaseBackInOut.getInstance()))
-					),
-				new DelayModifier(0.2f, new IEntityModifier.IEntityModifierListener() {
-					@Override
-					public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
-					}
-					@Override
-					public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
-						damageText.setColor(Color.TRANSPARENT);
-					}
-				})));
-	}
-	
-	// ---------------- メニュー -------------------
-	public void showSelectMenu(boolean isAttackDone, boolean isMovedDone, MapPoint mapPoint) {
-		mMapBattleSelectMenuLayer.showSelectMenu(this, 
-				mapPoint.getX(), mapPoint.getY(), 
-				isAttackDone, isMovedDone);
-	}
-	public void hideSelectMenu() {
-		mMapBattleSelectMenuLayer.hideSelectMenu();
 	}
 	
 	// ---------------- カットイン関連 ----------------------
@@ -896,11 +978,10 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	
 	/**
 	 * カットイン表示
-	 * TODO: GameManegerから呼ばれます
 	 * @param pMapBattleCutInLayerType
 	 * @param pAnimationCallback
 	 */
-	public void showCutIn(MapBattleCutInLayerType pMapBattleCutInLayerType, final ICutInCallback pCutInCallback) {
+	private void showCutIn(MapBattleCutInLayerType pMapBattleCutInLayerType, final ICutInCallback pCutInCallback) {
 		// カットイン表示
 		getCutInLayer(pMapBattleCutInLayerType).showCutInSprite(2.0f, pCutInCallback);
 	}
@@ -923,62 +1004,6 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		talkLayer.nextTalk();
 	}
 	
-	// --------------- ステータスウィンドウ --------------
-	private static final int PLAYER_STATUS_WINDOW_TAG = 2000;
-	private static final int ENEMY_STATUS_WINDOW_TAG = 2001;
-	public void showPlayerStatusWindow(int playerSeqNo, float x) {
-		PlayerStatusRectangle mPlayerStatusRect = (PlayerStatusRectangle) getChildByTag(PLAYER_STATUS_WINDOW_TAG);
-		if (mPlayerStatusRect != null) {
-			detachChild(mPlayerStatusRect);
-		}
-		// エネミーが表示されていたら下に表示
-		PlayerStatusRectangle mEnemyStatusRect = (PlayerStatusRectangle) getChildByTag(ENEMY_STATUS_WINDOW_TAG);
-		float y = 0;
-		if (mEnemyStatusRect != null && mEnemyStatusRect.isVisible()) {
-			y = mEnemyStatusRect.getY() + mEnemyStatusRect.getHeight();
-		}
-		mPlayerStatusRect = getActorSprite(playerSeqNo).getPlayerStatusRectangle();
-		if (mPlayerStatusRect != null) {
-			mPlayerStatusRect.setTag(PLAYER_STATUS_WINDOW_TAG);
-			mPlayerStatusRect.show(PlayerStatusRectangleType.MINI_STATUS);
-			mPlayerStatusRect.setX(x);
-			mPlayerStatusRect.setY(y);
-			attachChild(mPlayerStatusRect);	
-		}
-		sortChildren();
-	}
-	public void showEnemyStatusWindow(int enemySeqNo) {
-		PlayerStatusRectangle mEnemyStatusRect = (PlayerStatusRectangle) getChildByTag(ENEMY_STATUS_WINDOW_TAG);
-		if (mEnemyStatusRect != null) {
-			detachChild(mEnemyStatusRect);
-		}
-		// プレイヤーが表示されていたら下に表示
-		PlayerStatusRectangle mPlayerStatusRect = (PlayerStatusRectangle) getChildByTag(PLAYER_STATUS_WINDOW_TAG);
-		float y = 0;
-		if (mPlayerStatusRect != null && mPlayerStatusRect.isVisible()) {
-			y = mPlayerStatusRect.getY() + mPlayerStatusRect.getHeight();
-		}
-		mEnemyStatusRect = getActorSprite(enemySeqNo).getPlayerStatusRectangle();
-		if (mEnemyStatusRect != null) {
-			mEnemyStatusRect.setTag(ENEMY_STATUS_WINDOW_TAG);
-			mEnemyStatusRect.show(PlayerStatusRectangleType.MINI_STATUS);
-			mEnemyStatusRect.setY(y);
-			attachChild(mEnemyStatusRect);
-		}
-		sortChildren();
-	}
-	public void hidePlayerStatusWindow() {
-		PlayerStatusRectangle mPlayerStatusRect = (PlayerStatusRectangle) getChildByTag(PLAYER_STATUS_WINDOW_TAG);
-		if (mPlayerStatusRect != null) {
-			mPlayerStatusRect.hide();
-		}
-	}
-	public void hideEnemyStatusWindow() {
-		PlayerStatusRectangle mEnemyStatusRect = (PlayerStatusRectangle) getChildByTag(ENEMY_STATUS_WINDOW_TAG);
-		if (mEnemyStatusRect != null) {
-			mEnemyStatusRect.hide();
-		}
-	}
 	// ------ タッチイベント ------
 	private void touchEventSRPGPart(Scene pScene, TouchEvent pSceneTouchEvent) {
 		float x = pSceneTouchEvent.getX();
@@ -1026,7 +1051,7 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		}
 	}
 	
-	public void clearMapBattle() {
+	private void clearMapBattle() {
 		int mapBattleId = getBaseActivity().getGameController().createSaveDataDto(this).getSceneId();
 		
 		// 報酬振込み(アイテムだけ)
@@ -1040,7 +1065,7 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		// 次のシナリオへ
 		endSRPGPart();
 	}
-	public void gameOverMapBattle() {
+	private void gameOverMapBattle() {
 //		getMediaManager().stopPlayingMusic();
 		// TODO: タイトルへ？
 		showScene(new InitialScene(getBaseActivity()));
