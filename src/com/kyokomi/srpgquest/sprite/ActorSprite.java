@@ -10,7 +10,6 @@ import org.andengine.entity.modifier.MoveModifier;
 import org.andengine.entity.modifier.SequenceEntityModifier;
 import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.sprite.AnimatedSprite;
-import org.andengine.opengl.font.Font;
 import org.andengine.util.color.Color;
 import org.andengine.util.modifier.IModifier;
 
@@ -18,8 +17,13 @@ import com.kyokomi.core.constants.PlayerSpriteType;
 import com.kyokomi.core.dto.ActorPlayerDto;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.srpgquest.map.common.MapPoint;
-import com.kyokomi.srpgquest.scene.SrpgBaseScene;
 
+/**
+ * アクター
+ * TODO: メンバ変数でspriteもつのをやめる
+ * @author kyokomi
+ *
+ */
 public class ActorSprite extends Rectangle {
 	/**
 	 * アクター情報.
@@ -35,24 +39,24 @@ public class ActorSprite extends Rectangle {
 		return mActorPlayer.getPlayerId();
 	}
 
-	/**
-	 * プレイヤーステータスウィンドウ.
-	 * TODO: ActorSpriteと別にした方がいい
-	 */
-	private PlayerStatusRectangle mPlayerStatusRectangle;
-	public PlayerStatusRectangle createPlayerStatusWindow(SrpgBaseScene pBaseScene, Font pFont, float pX, float pY, float pWidth, float pHeight) {
-		mPlayerStatusRectangle = new PlayerStatusRectangle(pBaseScene, 
-				pFont, getActorPlayer(), getFaceFileName(getActorPlayer().getImageResId()), 
-				pX, pY, pWidth, pHeight);
-		mPlayerStatusRectangle.setTag(getActorPlayer().getPlayerId() + 90000);
-		return mPlayerStatusRectangle;
-	}
-	public PlayerStatusRectangle getPlayerStatusRectangle() {
-		return mPlayerStatusRectangle;
-	}
-	public void setPlayerStatusRectangle(PlayerStatusRectangle playerStatusRectangle) {
-		this.mPlayerStatusRectangle = playerStatusRectangle;
-	}
+//	/**
+//	 * プレイヤーステータスウィンドウ.
+//	 * TODO: ActorSpriteと別にした方がいい
+//	 */
+//	private PlayerStatusRectangle mPlayerStatusRectangle;
+//	public PlayerStatusRectangle createPlayerStatusWindow(SrpgBaseScene pBaseScene, Font pFont, float pX, float pY, float pWidth, float pHeight) {
+//		mPlayerStatusRectangle = new PlayerStatusRectangle(pBaseScene, 
+//				pFont, getActorPlayer(), getFaceFileName(getActorPlayer().getImageResId()), 
+//				pX, pY, pWidth, pHeight);
+//		mPlayerStatusRectangle.setTag(getActorPlayer().getPlayerId() + 90000);
+//		return mPlayerStatusRectangle;
+//	}
+//	public PlayerStatusRectangle getPlayerStatusRectangle() {
+//		return mPlayerStatusRectangle;
+//	}
+//	public void setPlayerStatusRectangle(PlayerStatusRectangle playerStatusRectangle) {
+//		this.mPlayerStatusRectangle = playerStatusRectangle;
+//	}
 
 	/** プレイヤーキャラクター. */
 	private AnimatedSprite player;

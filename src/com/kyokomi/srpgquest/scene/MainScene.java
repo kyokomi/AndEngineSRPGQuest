@@ -49,6 +49,7 @@ import com.kyokomi.srpgquest.constant.LayerZIndexType;
 import com.kyokomi.srpgquest.dto.MapBattleInfoDto;
 import com.kyokomi.srpgquest.layer.CutInLayer;
 import com.kyokomi.srpgquest.layer.CutInLayer.ICutInCallback;
+import com.kyokomi.srpgquest.layer.ExpDistributionLayer;
 import com.kyokomi.srpgquest.layer.MapBattleClearConditionTouchLayer;
 import com.kyokomi.srpgquest.layer.MapBattleSelectMenuLayer;
 import com.kyokomi.srpgquest.layer.ScenarioStartCutInTouchLayer;
@@ -298,10 +299,6 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	// SRPGマップバトル関連
 	// ------------------------------------------------------------------
 	
-	// --------------- ステータスウィンドウ --------------
-	private static final int PLAYER_STATUS_WINDOW_TAG = 2000;
-	private static final int ENEMY_STATUS_WINDOW_TAG = 2001;
-	
 	/** ゲーム管理クラス */
 	private GameManager mGameManager;
 	/** 敵のターンタイマー. */
@@ -524,8 +521,8 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		 */
 		@Override
 		public void refreshPlayerStatusWindow(int playerSeqNo) {
-			ActorSprite player = getActorSprite(playerSeqNo);
-			player.getPlayerStatusRectangle().refresh();
+//			ActorSprite player = getActorSprite(playerSeqNo);
+			getPlayerStatusRectangle(playerSeqNo).refresh();
 		}
 
 		/**
@@ -533,8 +530,8 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		 */
 		@Override
 		public void refreshEnemyStatusWindow(int enemySeqNo) {
-			ActorSprite enemy = getActorSprite(enemySeqNo);
-			enemy.getPlayerStatusRectangle().refresh();
+//			ActorSprite enemy = getActorSprite(enemySeqNo);
+			getPlayerStatusRectangle(enemySeqNo).refresh();
 		}
 
 		/**
@@ -542,24 +539,25 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		 */
 		@Override
 		public void showPlayerStatusWindow(int playerSeqNo) {
-			float x = getWindowWidth() / 2;
-			PlayerStatusRectangle mPlayerStatusRect = (PlayerStatusRectangle) getChildByTag(PLAYER_STATUS_WINDOW_TAG);
-			if (mPlayerStatusRect != null) {
-				detachChild(mPlayerStatusRect);
-			}
+//			float x = getWindowWidth() / 2;
+//			PlayerStatusRectangle mPlayerStatusRect = (PlayerStatusRectangle) getChildByTag(PLAYER_STATUS_WINDOW_TAG);
+//			if (mPlayerStatusRect != null) {
+//				detachChild(mPlayerStatusRect);
+//				mPlayerStatusRect.setVisible(false);
+//			}
 			// エネミーが表示されていたら下に表示
-			PlayerStatusRectangle mEnemyStatusRect = (PlayerStatusRectangle) getChildByTag(ENEMY_STATUS_WINDOW_TAG);
+//			PlayerStatusRectangle mEnemyStatusRect = (PlayerStatusRectangle) getChildByTag(ENEMY_STATUS_WINDOW_TAG);
 			float y = 0;
-			if (mEnemyStatusRect != null && mEnemyStatusRect.isVisible()) {
-				y = mEnemyStatusRect.getY() + mEnemyStatusRect.getHeight();
-			}
-			mPlayerStatusRect = getActorSprite(playerSeqNo).getPlayerStatusRectangle();
-			if (mPlayerStatusRect != null) {
-				mPlayerStatusRect.setTag(PLAYER_STATUS_WINDOW_TAG);
-				mPlayerStatusRect.show(PlayerStatusRectangleType.MINI_STATUS);
-				mPlayerStatusRect.setX(x);
-				mPlayerStatusRect.setY(y);
-				attachChild(mPlayerStatusRect);	
+//			if (mEnemyStatusRect != null && mEnemyStatusRect.isVisible()) {
+//				y = mEnemyStatusRect.getY() + mEnemyStatusRect.getHeight();
+//			}
+			PlayerStatusRectangle playerStatusRect = getPlayerStatusRectangle(playerSeqNo);
+			if (playerStatusRect != null) {
+//				mPlayerStatusRect.setTag(PLAYER_STATUS_WINDOW_TAG);
+				playerStatusRect.show(PlayerStatusRectangleType.MINI_STATUS);
+				playerStatusRect.setY(y);
+//				attachChild(mPlayerStatusRect);	
+				playerStatusRect.setVisible(true);
 			}
 			sortChildren();
 		}
@@ -569,22 +567,24 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		 */
 		@Override
 		public void showEnemyStatusWindow(int enemySeqNo) {
-			PlayerStatusRectangle mEnemyStatusRect = (PlayerStatusRectangle) getChildByTag(ENEMY_STATUS_WINDOW_TAG);
-			if (mEnemyStatusRect != null) {
-				detachChild(mEnemyStatusRect);
-			}
+//			PlayerStatusRectangle mEnemyStatusRect = (PlayerStatusRectangle) getChildByTag(ENEMY_STATUS_WINDOW_TAG);
+//			if (mEnemyStatusRect != null) {
+//				detachChild(mEnemyStatusRect);
+//				mEnemyStatusRect.setVisible(false);
+//			}
 			// プレイヤーが表示されていたら下に表示
-			PlayerStatusRectangle mPlayerStatusRect = (PlayerStatusRectangle) getChildByTag(PLAYER_STATUS_WINDOW_TAG);
+//			PlayerStatusRectangle mPlayerStatusRect = (PlayerStatusRectangle) getChildByTag(PLAYER_STATUS_WINDOW_TAG);
 			float y = 0;
-			if (mPlayerStatusRect != null && mPlayerStatusRect.isVisible()) {
-				y = mPlayerStatusRect.getY() + mPlayerStatusRect.getHeight();
-			}
-			mEnemyStatusRect = getActorSprite(enemySeqNo).getPlayerStatusRectangle();
-			if (mEnemyStatusRect != null) {
-				mEnemyStatusRect.setTag(ENEMY_STATUS_WINDOW_TAG);
-				mEnemyStatusRect.show(PlayerStatusRectangleType.MINI_STATUS);
-				mEnemyStatusRect.setY(y);
-				attachChild(mEnemyStatusRect);
+//			if (mPlayerStatusRect != null && mPlayerStatusRect.isVisible()) {
+//				y = mPlayerStatusRect.getY() + mPlayerStatusRect.getHeight();
+//			}
+			PlayerStatusRectangle enemyStatusRect = getPlayerStatusRectangle(getActorSprite(enemySeqNo).getPlayerId());
+			if (enemyStatusRect != null) {
+//				mEnemyStatusRect.setTag(ENEMY_STATUS_WINDOW_TAG);
+				enemyStatusRect.show(PlayerStatusRectangleType.MINI_STATUS);
+				enemyStatusRect.setY(y);
+				enemyStatusRect.setVisible(true);
+//				attachChild(mEnemyStatusRect);
 			}
 			sortChildren();
 		}
@@ -594,10 +594,11 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		 */
 		@Override
 		public void hidePlayerStatusWindow() {
-			PlayerStatusRectangle mPlayerStatusRect = (PlayerStatusRectangle) getChildByTag(PLAYER_STATUS_WINDOW_TAG);
-			if (mPlayerStatusRect != null) {
-				mPlayerStatusRect.hide();
-			}
+			hideAllPlayerStatus();
+//			PlayerStatusRectangle mPlayerStatusRect = (PlayerStatusRectangle) getChildByTag(PLAYER_STATUS_WINDOW_TAG);
+//			if (mPlayerStatusRect != null) {
+//				mPlayerStatusRect.hide();
+//			}
 		}
 
 		/**
@@ -605,10 +606,11 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		 */
 		@Override
 		public void hideEnemyStatusWindow() {
-			PlayerStatusRectangle mEnemyStatusRect = (PlayerStatusRectangle) getChildByTag(ENEMY_STATUS_WINDOW_TAG);
-			if (mEnemyStatusRect != null) {
-				mEnemyStatusRect.hide();
-			}
+			hideAllPlayerStatus();
+//			PlayerStatusRectangle mEnemyStatusRect = (PlayerStatusRectangle) getChildByTag(ENEMY_STATUS_WINDOW_TAG);
+//			if (mEnemyStatusRect != null) {
+//				mEnemyStatusRect.hide();
+//			}
 		}
 
 		@Override
@@ -751,6 +753,9 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		playerStatusRect.setZIndex(LayerZIndexType.POPUP_LAYER.getValue());
 		playerStatusRect.setColor(Color.BLUE);
 		playerStatusRect.setAlpha(0.5f);
+		playerStatusRect.setTag(80000 + playerSeqNo);// TODO: TAG
+		attachChild(playerStatusRect);
+		playerStatusRect.setVisible(false);
 	}
 	
 	/**
@@ -774,6 +779,9 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		enemyStatusRect.setZIndex(LayerZIndexType.POPUP_LAYER.getValue());
 		enemyStatusRect.setColor(Color.RED);
 		enemyStatusRect.setAlpha(0.5f);
+		enemyStatusRect.setTag(80000 + enemySeqNo);// TODO: TAG
+		attachChild(enemyStatusRect);
+		enemyStatusRect.setVisible(false);
 	}
 	
 	/**
@@ -799,21 +807,47 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		if (actorSprite == null) {
 			return null;
 		}
-		PlayerStatusRectangle mPlayerStatusRectangle = actorSprite.getPlayerStatusRectangle();
-		if (mPlayerStatusRectangle == null) {
-			mPlayerStatusRectangle = actorSprite.createPlayerStatusWindow(
-					this, getFont(), 
+		PlayerStatusRectangle playerStatusRectangle = getPlayerStatusRectangle(actorSprite.getPlayerId());
+		if (playerStatusRectangle == null) {
+			playerStatusRectangle = new PlayerStatusRectangle(this, 
+					getFont(), actorSprite.getActorPlayer(), 
+					ActorSprite.getFaceFileName(actorSprite.getActorPlayer().getImageResId()), 
 					getWindowWidth() / 2, y, 
 					getWindowWidth() / 2, getWindowHeight() / 2);
-			mPlayerStatusRectangle.setZIndex(LayerZIndexType.POPUP_LAYER.getValue());
+//			mPlayerStatusRectangle.setTag(getActorPlayer().getPlayerId() + 90000);
+//			mPlayerStatusRectangle = actorSprite.createPlayerStatusWindow(
+//					this, getFont(), 
+//					getWindowWidth() / 2, y, 
+//					getWindowWidth() / 2, getWindowHeight() / 2);
+			playerStatusRectangle.setZIndex(LayerZIndexType.POPUP_LAYER.getValue());
 			CommonWindowRectangle commonWindowRectangle = new CommonWindowRectangle(
 					0, 0, 
-					mPlayerStatusRectangle.getWidth(), 
-					mPlayerStatusRectangle.getHeight() / 2,
+					playerStatusRectangle.getWidth(), 
+					playerStatusRectangle.getHeight() / 2,
 					Color.TRANSPARENT, 0.0f, this);
-			mPlayerStatusRectangle.attachChild(commonWindowRectangle);
+			playerStatusRectangle.attachChild(commonWindowRectangle);
 		}
-		return mPlayerStatusRectangle;
+		return playerStatusRectangle;
+	}
+	
+	private PlayerStatusRectangle getPlayerStatusRectangle(int playerSeqNo) {
+		int count = getChildCount();
+		for (int i = 0; i < count; i++) {
+			if (getChildByIndex(i) instanceof PlayerStatusRectangle) {
+				if ((playerSeqNo + 80000) == getChildByIndex(i).getTag()) {
+					return (PlayerStatusRectangle) getChildByIndex(i);
+				}
+			}
+		}
+		return null;
+	}
+	private void hideAllPlayerStatus() {
+		int count = getChildCount();
+		for (int i = 0; i < count; i++) {
+			if (getChildByIndex(i) instanceof PlayerStatusRectangle) {
+				((PlayerStatusRectangle)getChildByIndex(i)).hide();
+			}
+		}
 	}
 	
 	/**
@@ -1167,8 +1201,11 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 			@Override
 			public void onClick(ButtonSprite pButtonSprite, float pTouchAreaLocalX,
 					float pTouchAreaLocalY) {
+				ExpDistributionLayer expDistributionLayer = new ExpDistributionLayer(0, 0, 
+						getWindowWidth(), getWindowHeight(), MainScene.this);
+				attachChild(expDistributionLayer);
 				// 次のシナリオへ
-				nextScenario();
+//				nextScenario();
 			}
 		});
 		attachChild(nextSceneButtonSprite);

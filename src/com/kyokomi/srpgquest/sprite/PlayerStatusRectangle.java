@@ -18,6 +18,7 @@ import com.kyokomi.srpgquest.utils.SRPGSpriteUtil;
 
 /**
  * プレイヤーステータスウィンドウ.
+ * TODO: メンバ変数でspriteもつのをやめる
  * @author kyokomi
  *
  */
@@ -27,6 +28,9 @@ public class PlayerStatusRectangle extends Rectangle {
 	private final static float BASE_Y = 14;
 	
 	private final ActorPlayerDto mActorPlayerDto;
+	public ActorPlayerDto getActorPlayerDto() {
+		return mActorPlayerDto;
+	}
 	
 	// 顔、名前
 	private TiledSprite mFaceTiledSprite;
@@ -241,7 +245,7 @@ public class PlayerStatusRectangle extends Rectangle {
 	public enum PlayerStatusRectangleType {
 		MINI_STATUS,
 		ALL_STATUS,
-		LVUP_STATUS
+//		LVUP_STATUS
 	}
 	public void show(PlayerStatusRectangleType rectangleType) {
 		switch (rectangleType) {
@@ -252,18 +256,18 @@ public class PlayerStatusRectangle extends Rectangle {
 			setWidth(this.baseWidth);
 			setHeight(this.baseHeight);
 			break;
-		case LVUP_STATUS:
-			allTextVisible(false);
-			skillVisible(false);
-			equipVisible(false);
-			// 名前とレベルだけ表示
-			mNameText.setVisible(true);
-			mLevelExpText.setVisible(true);
-			
-			// 顔グラのサイズにする
-			setHeight(mFaceTiledSprite.getHeight());
-			setWidth(this.baseWidth / 2);
-			break;
+//		case LVUP_STATUS:
+//			allTextVisible(false);
+//			skillVisible(false);
+//			equipVisible(false);
+//			// 名前とレベルだけ表示
+//			mNameText.setVisible(true);
+//			mLevelExpText.setVisible(true);
+//			
+//			// 顔グラのサイズにする
+//			setHeight(mFaceTiledSprite.getHeight());
+//			setWidth(this.baseWidth / 2);
+//			break;
 		default:
 			break;
 		}

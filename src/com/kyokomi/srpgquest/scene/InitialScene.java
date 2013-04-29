@@ -15,6 +15,7 @@ import com.kyokomi.core.dto.ActorPlayerDto;
 import com.kyokomi.core.dto.SaveDataDto;
 import com.kyokomi.core.sprite.CommonWindowRectangle;
 import com.kyokomi.core.logic.ActorPlayerLogic;
+import com.kyokomi.srpgquest.logic.TextLogic;
 import com.kyokomi.srpgquest.sprite.ActorSprite;
 import com.kyokomi.srpgquest.sprite.PlayerStatusRectangle;
 import com.kyokomi.srpgquest.sprite.PlayerStatusRectangle.PlayerStatusRectangleType;
@@ -109,15 +110,19 @@ public class InitialScene extends SrpgBaseScene
 		// 所持ゴールド、所持経験値
 		Font paramTitleFont = createFont(Typeface.DEFAULT, getDefualtFontSize(), Color.YELLOW);
 		
-		Rectangle goldTextRectangle = createTextRectangle(
+		TextLogic textLogic = new TextLogic();
+		
+		Rectangle goldTextRectangle = textLogic.createTextRectangle(
 				"所持ゴールド :", paramTitleFont, 
-				saveDataDto.getGold() + " Gold", getFont());
+				saveDataDto.getGold() + " Gold", getFont(), 
+				getBaseActivity().getVertexBufferObjectManager());
 		goldTextRectangle.setPosition(scenarioTitle.getX(), 
 				scenarioTitle.getY() + scenarioTitle.getHeight() + 4);
 		scenarioInfoRectangle.attachChild(goldTextRectangle);
-		Rectangle expTextRectangle = createTextRectangle(
+		Rectangle expTextRectangle = textLogic.createTextRectangle(
 				"所持経験値 :", paramTitleFont, 
-				saveDataDto.getExp() + " Exp", getFont());
+				saveDataDto.getExp() + " Exp", getFont(), 
+				getBaseActivity().getVertexBufferObjectManager());
 		expTextRectangle.setPosition(goldTextRectangle.getX(), 
 				goldTextRectangle.getY() + goldTextRectangle.getHeight() + 4);
 		scenarioInfoRectangle.attachChild(expTextRectangle);
@@ -194,12 +199,10 @@ public class InitialScene extends SrpgBaseScene
 		switch (pButtonSprite.getTag()) {
 		case SAVE_LOAD: // シナリオデータ読み込み
 			showScene(new MainScene(getBaseActivity()));
-//			loadScenario();
 			break;
 		case NEW_GAME: // NewGame
 			getBaseActivity().getGameController().start(getBaseActivity());
 			showScene(new MainScene(getBaseActivity()));
-//			loadScenario();
 			break;
 		}	
 	}
@@ -208,26 +211,5 @@ public class InitialScene extends SrpgBaseScene
 	public boolean onSceneTouchEvent(Scene pScene, TouchEvent pSceneTouchEvent) {
 		touchSprite(pSceneTouchEvent.getX(), pSceneTouchEvent.getY());
 		return false;
-	}
-
-	// 汎用
-	private Rectangle createTextRectangle(String titleStr, Font titleFont, String detatilStr, Font detailFont) {
-		Text titleText = new Text(0, 0, titleFont, titleStr, 
-				getBaseActivity().getVertexBufferObjectManager());
-		Text detatilText = new Text(0, 0, detailFont, detatilStr, 
-				getBaseActivity().getVertexBufferObjectManager());
-		titleText.setPosition(0, 0);
-		detatilText.setPosition(titleText.getX() + titleText.getWidth(), titleText.getY());
-		
-		float textWidth = titleText.getWidth() + detatilText.getWidth();
-		float textHeight = titleText.getHeight();
-		Rectangle resultRectangle = new Rectangle(0, 0, textWidth, textHeight, 
-				getBaseActivity().getVertexBufferObjectManager());
-		
-		resultRectangle.setColor(Color.TRANSPARENT);
-		resultRectangle.setAlpha(0.0f);
-		resultRectangle.attachChild(titleText);
-		resultRectangle.attachChild(detatilText);
-		return resultRectangle;
 	}
 }
