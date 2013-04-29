@@ -166,6 +166,7 @@ public class GameManager {
 						
 			// プレイヤーキャラ選択が可能なので行動可能であればウィンドウ表示
 			if (touchMapDataType == MapDataType.PLAYER) {
+				// TODO: SE
 //				mBaseScene.getMediaManager().play(SoundType.BTN_PRESSED_SE);
 				
 				ActorPlayerMapItem actorPlayerMapItem = (ActorPlayerMapItem) mapItem;
@@ -184,6 +185,7 @@ public class GameManager {
 					mSRPGGameManagerListener.showPlayerStatusWindow(actorPlayerMapItem.getSeqNo());
 				}
 			} else if (touchMapDataType == MapDataType.ENEMY) {
+				// TODO: SE
 //				mBaseScene.getMediaManager().play(SoundType.BTN_PRESSED_SE);
 				
 				ActorPlayerMapItem actorEnemyMapItem = (ActorPlayerMapItem) mapItem;
@@ -206,6 +208,7 @@ public class GameManager {
 		case PLAYER_ATTACK:
 			// 攻撃を選択したときは敵しかタップイベントに反応しない
 			if (touchMapDataType == MapDataType.ATTACK_DIST) {
+				// TODO: SE
 //				mBaseScene.getMediaManager().play(SoundType.BTN_PRESSED_SE);
 				
 				// 敵が存在するカーソルかチェック
@@ -240,6 +243,7 @@ public class GameManager {
 		case PLAYER_MOVE:
 			// 移動を選択したときは移動可能カーソルにしか反応しない
 			if (touchMapDataType == MapDataType.MOVE_DIST) {
+				// TODO: SE
 //				mBaseScene.getMediaManager().play(SoundType.BTN_PRESSED_SE);
 				
 				if (mSelectActorPlayer != null) {
@@ -428,11 +432,13 @@ public class GameManager {
 		if (mSelectActorPlayer != null) {
 			switch (SelectMenuType.findTag(pressedBtnTag)) {
 			case MENU_ATTACK: // 攻撃
+				// TODO: SE
 //				mBaseScene.getMediaManager().play(SoundType.BTN_PRESSED_SE);
 				changeGameState(GameStateType.PLAYER_ATTACK);
 				showAttackDistCursor(mSelectActorPlayer);
 				break;
 			case MENU_MOVE: // 移動
+				// TODO: SE
 //				mBaseScene.getMediaManager().play(SoundType.BTN_PRESSED_SE);
 				changeGameState(GameStateType.PLAYER_MOVE);
 				if (!showMoveDistCursor(mSelectActorPlayer)) {
@@ -440,6 +446,7 @@ public class GameManager {
 				}
 				break;
 			case MENU_WAIT: // 待機
+				// TODO: SE
 //				mBaseScene.getMediaManager().play(SoundType.BTN_PRESSED_SE);
 				// 待機状態にする
 				mSelectActorPlayer.setWaitDone(true);
@@ -450,6 +457,7 @@ public class GameManager {
 				mSRPGGameManagerListener.hideCursor();
 				break;
 			case MENU_CANCEL: // キャンセル
+				// TODO: SE
 //				mBaseScene.getMediaManager().play(SoundType.BTN_PRESSED_SE);
 				break;
 			default:
@@ -511,7 +519,6 @@ public class GameManager {
 				// 敵勝利
 				changeEnemyWin();
 				// タイマーを停止
-//				mBaseScene.unregisterUpdateHandler(mEnemyTurnUpdateHandler);
 				mSRPGGameManagerListener.stopEnemyTurnTimer();
 				
 			} else {
@@ -520,7 +527,6 @@ public class GameManager {
 					// プレイヤーターン開始
 					changePlayerTurn();
 					// タイマー停止
-//					mBaseScene.unregisterUpdateHandler(mEnemyTurnUpdateHandler);
 					mSRPGGameManagerListener.stopEnemyTurnTimer();
 					Log.d(TAG, "EnemyTurn END");
 				} else {
@@ -585,7 +591,6 @@ public class GameManager {
 				// 全エネミーを行動可能にする
 				mMapManager.refreshAllActorWait(MapDataType.ENEMY);
 				// 敵のターンのタイマーを開始
-//				mBaseScene.registerUpdateHandler(mEnemyTurnUpdateHandler);
 				mSRPGGameManagerListener.startEnemyTurnTimer();
 			}
 		});
