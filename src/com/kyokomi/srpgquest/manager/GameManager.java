@@ -244,6 +244,8 @@ public class GameManager {
 				
 				if (mSelectActorPlayer != null) {
 					
+					changeGameState(GameStateType.ANIMATION);
+					
 					// 移動List作成
 					List<MapPoint> moveMapPointList = mMapManager.actorPlayerCreateMovePointList(
 							mSelectActorPlayer, mapPoint);
@@ -269,11 +271,11 @@ public class GameManager {
 							if (!mSelectActorPlayer.isWaitDone()) {
 								// ポップアップ表示
 								showSelectMenu();
+								changeGameState(GameStateType.PLAYER_SELECT);
 							} else {
 								// アニメーション停止
 								mSRPGGameManagerListener.stopWalkingPlayerAnimation(
 										mSelectActorPlayer.getSeqNo());
-								
 								changeGameState(GameStateType.PLAYER_TURN);
 							}	
 						}
@@ -474,7 +476,6 @@ public class GameManager {
 		Log.d(TAG, "mSelectActorPlayer[" + mSelectActorPlayer.getSeqNo() + "] isAttackDone=[" + mSelectActorPlayer.isAttackDone() + "]" + 
 				"isMoveDone=[" + mSelectActorPlayer.isMoveDone() + "]");
 		
-		changeGameState(GameStateType.PLAYER_SELECT);
 		mSRPGGameManagerListener.showSelectMenu(
 				mSelectActorPlayer.isAttackDone(), 
 				mSelectActorPlayer.isMoveDone(), 

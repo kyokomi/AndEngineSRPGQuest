@@ -626,7 +626,7 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	/** アクターロジック */
 	private ActorPlayerLogic mActorPlayerLogic;
 	
-	MapBattleSelectMenuLayer mMapBattleSelectMenuLayer;
+	private MapBattleSelectMenuLayer mMapBattleSelectMenuLayer;
 	
 	/**
 	 * SRPGマップバトルパートの初期化処理
@@ -658,8 +658,8 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 			@Override
 			public void onClick(ButtonSprite pButtonSprite, float pTouchAreaLocalX,
 					float pTouchAreaLocalY) {
-				touchSprite(mMapBattleSelectMenuLayer.getMenuRectangle().getX() + pTouchAreaLocalX, 
-						mMapBattleSelectMenuLayer.getMenuRectangle().getY() + pTouchAreaLocalY);
+				touchSprite(mMapBattleSelectMenuLayer.getX() + pTouchAreaLocalX, 
+						mMapBattleSelectMenuLayer.getY() + pTouchAreaLocalY);
 				
 				mGameManager.touchMenuBtnEvent(pButtonSprite.getTag());
 			}
