@@ -15,6 +15,7 @@ import com.kyokomi.core.utils.ResourceUtil;
 import com.kyokomi.srpgquest.R;
 import com.kyokomi.srpgquest.scene.InitialScene;
 import com.kyokomi.srpgquest.scene.MainScene;
+import com.kyokomi.srpgquest.scene.SandBoxScene;
 import com.kyokomi.srpgquest.scene.SrpgBaseScene;
 
 import android.os.Bundle;
@@ -170,7 +171,7 @@ public class MainActivity extends MultiSceneActivity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		menu.add(Menu.NONE, 0, Menu.NONE, "Clear");
-		//menu.add(Menu.NONE, 1, Menu.NONE, "Reset");
+		menu.add(Menu.NONE, 2, Menu.NONE, "SandBox");
 //		menu.add("");
 		return super.onCreateOptionsMenu(menu);
 	}
@@ -192,6 +193,15 @@ public class MainActivity extends MultiSceneActivity {
 						(KeyListenScene) getEngine().getScene());
 				getGameController().addExp(saveDataDto.getExp() * -1);
 				getGameController().addGold(saveDataDto.getGold() * -1);
+			}
+		} else if (item.getItemId() == 2) {
+			// サンドボックス起動
+			if (getEngine().getScene() instanceof KeyListenScene) {
+				ResourceUtil.getInstance(this).resetAllTexture();
+				SandBoxScene scene = new SandBoxScene(this);
+				getEngine().setScene(scene);
+				// 履歴は残さない
+				appendScene(scene);
 			}
 		}
 		return super.onMenuItemSelected(featureId, item);
