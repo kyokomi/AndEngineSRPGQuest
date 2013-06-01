@@ -16,6 +16,7 @@ import org.andengine.entity.primitive.Line;
 import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.Scene;
+import org.andengine.entity.shape.IAreaShape;
 import org.andengine.entity.sprite.ButtonSprite;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.sprite.TiledSprite;
@@ -28,7 +29,10 @@ import org.andengine.util.color.Color;
 import org.andengine.util.modifier.IModifier;
 import org.andengine.util.modifier.ease.EaseBackInOut;
 
+import android.graphics.Point;
+import android.graphics.PointF;
 import android.graphics.Typeface;
+import android.util.Log;
 import android.util.SparseArray;
 import android.view.KeyEvent;
 
@@ -43,7 +47,9 @@ import com.kyokomi.core.logic.MapBattleRewardLogic;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.core.sprite.CommonWindowRectangle;
 import com.kyokomi.core.sprite.TalkLayer;
+import com.kyokomi.core.utils.CollidesUtil;
 import com.kyokomi.core.utils.JsonUtil;
+import com.kyokomi.core.utils.CollidesUtil.TouchEventFlick;
 import com.kyokomi.srpgquest.logic.TalkLogic;
 import com.kyokomi.srpgquest.constant.LayerZIndexType;
 import com.kyokomi.srpgquest.dto.MapBattleInfoDto;
@@ -58,12 +64,13 @@ import com.kyokomi.srpgquest.manager.GameManager;
 import com.kyokomi.srpgquest.manager.GameManager.SRPGGameManagerListener;
 import com.kyokomi.srpgquest.map.common.MapPoint;
 import com.kyokomi.srpgquest.sprite.ActorSprite;
-import com.kyokomi.srpgquest.sprite.CursorRectangle;
 import com.kyokomi.srpgquest.sprite.PlayerStatusRectangle;
 import com.kyokomi.srpgquest.sprite.PlayerStatusRectangle.PlayerStatusRectangleType;
+import com.kyokomi.srpgquest.utils.MapGridUtil;
 import com.kyokomi.srpgquest.utils.SRPGSpriteUtil;
 
 public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
+	
 	/**
 	 * ゲームパート
 	 * @author kyokomi
@@ -298,6 +305,7 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	// ------------------------------------------------------------------
 	// SRPGマップバトル関連
 	// ------------------------------------------------------------------
+	private static final int SPRITE_SIZE = 64;
 	
 	/** ゲーム管理クラス */
 	private GameManager mGameManager;
@@ -306,22 +314,22 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	
 	private SRPGGameManagerListener mSrpgGameManagerListener = new SRPGGameManagerListener() {
 		@Override
-		public ActorPlayerDto createPlayer(int seqNo, int playerId, MapPoint mapPoint, float size) {
+		public ActorPlayerDto createPlayer(int seqNo, int playerId, MapPoint mapPoint) {
 			ActorPlayerDto actorPlayerDto = mActorPlayerLogic.createActorPlayerDto(MainScene.this, playerId);
-			createPlayerSprite(seqNo, actorPlayerDto, mapPoint, size);
+			createPlayerSprite(seqNo, actorPlayerDto, mapPoint, SPRITE_SIZE);
 			return actorPlayerDto;
 		}
 		
 		@Override
-		public ActorPlayerDto createEnemy(int seqNo, int enemyId, MapPoint mapPoint, float size) {
+		public ActorPlayerDto createEnemy(int seqNo, int enemyId, MapPoint mapPoint) {
 			ActorPlayerDto actorPlayerDto = mActorPlayerLogic.createActorPlayerDto(MainScene.this, enemyId);
-			createEnemySprite(seqNo, actorPlayerDto, mapPoint, size);
+			createEnemySprite(seqNo, actorPlayerDto, mapPoint, SPRITE_SIZE);
 			return actorPlayerDto;
 		}
 
 		@Override
-		public void createObstacle(int obstractId, MapPoint mapPoint, float size) {
-			createObstacleSprite(obstractId, mapPoint, size);
+		public void createObstacle(int obstractId, MapPoint mapPoint) {
+			createObstacleSprite(obstractId, mapPoint, SPRITE_SIZE);
 		}
 
 		@Override
@@ -382,8 +390,8 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 				@Override
 				public void doAction() {
 					for (Integer seqNo : playerSeqNoList) {
-						ActorSprite ActorSprite = getActorSprite(seqNo);
-						ActorSprite.setPlayerToDefaultPosition();
+						ActorSprite actorSprite = getActorSprite(seqNo);
+						actorSprite.setPlayerToDefaultPosition();
 					}
 					cutInCallback.doAction();					
 				}
@@ -452,6 +460,13 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		public void movePlayerAnimation(int playerSeqNo, List<MapPoint> moveMapPointList,
 				final IAnimationCallback animationCallback) {
 			ActorSprite ActorSprite = getActorSprite(playerSeqNo);
+			// クォータービュー対応
+			for (MapPoint mapPoint : moveMapPointList) {
+				mapPoint.setX(
+						mapPoint.getX() + (MapGridUtil.GRID_X / 2) - (ActorSprite.getWidth() / 2) - (ActorSprite.getWidth() / 8)); 
+				mapPoint.setY(
+						mapPoint.getY() + (MapGridUtil.GRID_Y / 2) - ActorSprite.getHeight() + (ActorSprite.getHeight() / 8));
+			}
 			ActorSprite.move(1.0f, moveMapPointList, new IEntityModifier.IEntityModifierListener() {
 				@Override
 				public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
@@ -471,6 +486,14 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		public void moveEnemyAnimation(int enemySeqNo, List<MapPoint> moveMapPointList,
 				final IAnimationCallback animationCallback) {
 			ActorSprite enemySprite = getActorSprite(enemySeqNo);
+			// クォータービュー対応
+			for (MapPoint mapPoint : moveMapPointList) {
+				mapPoint.setX(
+						mapPoint.getX() + (MapGridUtil.GRID_X / 2) - (enemySprite.getWidth() / 2) - (enemySprite.getWidth() / 8)); 
+				mapPoint.setY(
+						mapPoint.getY() + (MapGridUtil.GRID_Y / 2) - enemySprite.getHeight() + (enemySprite.getHeight() / 8));
+			}
+			
 			enemySprite.move(1.0f, moveMapPointList, new IEntityModifier.IEntityModifierListener() {
 				@Override
 				public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
@@ -484,13 +507,15 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		}
 
 		@Override
-		public void showDamageText(int damage, MapPoint mapPoint) {
+		public void showDamageText(int damage, final PointF dispPoint) {
 //			getMediaManager().play(SoundType.ATTACK_SE);
-			final Text damageText = (Text) getChildByTag(DAMAGE_TEXT_TAG);
+			Rectangle baseMap = getBaseMap();
+			final Text damageText = (Text) baseMap.getChildByTag(DAMAGE_TEXT_TAG);
 			
 			damageText.setScale(0.5f);
-			damageText.setX(mapPoint.getX());
-			damageText.setY(mapPoint.getY());
+			// 頭の上くらいに表示
+			damageText.setX(dispPoint.x + MapGridUtil.GRID_X / 2);
+			damageText.setY(dispPoint.y - MapGridUtil.GRID_Y / 2);
 			damageText.setText(String.valueOf(damage));
 			damageText.setColor(Color.WHITE);
 			
@@ -521,7 +546,6 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		 */
 		@Override
 		public void refreshPlayerStatusWindow(int playerSeqNo) {
-//			ActorSprite player = getActorSprite(playerSeqNo);
 			getPlayerStatusRectangle(playerSeqNo).refresh();
 		}
 
@@ -530,7 +554,6 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		 */
 		@Override
 		public void refreshEnemyStatusWindow(int enemySeqNo) {
-//			ActorSprite enemy = getActorSprite(enemySeqNo);
 			getPlayerStatusRectangle(enemySeqNo).refresh();
 		}
 
@@ -539,24 +562,12 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		 */
 		@Override
 		public void showPlayerStatusWindow(int playerSeqNo) {
-//			float x = getWindowWidth() / 2;
-//			PlayerStatusRectangle mPlayerStatusRect = (PlayerStatusRectangle) getChildByTag(PLAYER_STATUS_WINDOW_TAG);
-//			if (mPlayerStatusRect != null) {
-//				detachChild(mPlayerStatusRect);
-//				mPlayerStatusRect.setVisible(false);
-//			}
 			// エネミーが表示されていたら下に表示
-//			PlayerStatusRectangle mEnemyStatusRect = (PlayerStatusRectangle) getChildByTag(ENEMY_STATUS_WINDOW_TAG);
 			float y = 0;
-//			if (mEnemyStatusRect != null && mEnemyStatusRect.isVisible()) {
-//				y = mEnemyStatusRect.getY() + mEnemyStatusRect.getHeight();
-//			}
 			PlayerStatusRectangle playerStatusRect = getPlayerStatusRectangle(playerSeqNo);
 			if (playerStatusRect != null) {
-//				mPlayerStatusRect.setTag(PLAYER_STATUS_WINDOW_TAG);
 				playerStatusRect.show(PlayerStatusRectangleType.MINI_STATUS);
 				playerStatusRect.setY(y);
-//				attachChild(mPlayerStatusRect);	
 				playerStatusRect.setVisible(true);
 			}
 			sortChildren();
@@ -567,24 +578,13 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		 */
 		@Override
 		public void showEnemyStatusWindow(int enemySeqNo) {
-//			PlayerStatusRectangle mEnemyStatusRect = (PlayerStatusRectangle) getChildByTag(ENEMY_STATUS_WINDOW_TAG);
-//			if (mEnemyStatusRect != null) {
-//				detachChild(mEnemyStatusRect);
-//				mEnemyStatusRect.setVisible(false);
-//			}
 			// プレイヤーが表示されていたら下に表示
-//			PlayerStatusRectangle mPlayerStatusRect = (PlayerStatusRectangle) getChildByTag(PLAYER_STATUS_WINDOW_TAG);
 			float y = 0;
-//			if (mPlayerStatusRect != null && mPlayerStatusRect.isVisible()) {
-//				y = mPlayerStatusRect.getY() + mPlayerStatusRect.getHeight();
-//			}
 			PlayerStatusRectangle enemyStatusRect = getPlayerStatusRectangle(getActorSprite(enemySeqNo).getPlayerId());
 			if (enemyStatusRect != null) {
-//				mEnemyStatusRect.setTag(ENEMY_STATUS_WINDOW_TAG);
 				enemyStatusRect.show(PlayerStatusRectangleType.MINI_STATUS);
 				enemyStatusRect.setY(y);
 				enemyStatusRect.setVisible(true);
-//				attachChild(mEnemyStatusRect);
 			}
 			sortChildren();
 		}
@@ -595,10 +595,6 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		@Override
 		public void hidePlayerStatusWindow() {
 			hideAllPlayerStatus();
-//			PlayerStatusRectangle mPlayerStatusRect = (PlayerStatusRectangle) getChildByTag(PLAYER_STATUS_WINDOW_TAG);
-//			if (mPlayerStatusRect != null) {
-//				mPlayerStatusRect.hide();
-//			}
 		}
 
 		/**
@@ -607,16 +603,16 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		@Override
 		public void hideEnemyStatusWindow() {
 			hideAllPlayerStatus();
-//			PlayerStatusRectangle mEnemyStatusRect = (PlayerStatusRectangle) getChildByTag(ENEMY_STATUS_WINDOW_TAG);
-//			if (mEnemyStatusRect != null) {
-//				mEnemyStatusRect.hide();
-//			}
 		}
 
+		/**
+		 * 行動メニュー表示
+		 */
 		@Override
 		public void showSelectMenu(boolean isAttackDone, boolean isMovedDone, MapPoint mapPoint) {
+			// マップ座標を採用したのでキャラの座標はイマイチなので画面中央に表示
 			mMapBattleSelectMenuLayer.showSelectMenu(MainScene.this, 
-					mapPoint.getX(), mapPoint.getY(), isAttackDone, isMovedDone);
+					getWindowWidth() / 2, getWindowHeight() / 2, isAttackDone, isMovedDone);
 		}
 
 		@Override
@@ -630,19 +626,48 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	
 	private MapBattleSelectMenuLayer mMapBattleSelectMenuLayer;
 	
+	private MapBattleInfoDto mMapBattleInfoDto;
 	/**
 	 * SRPGマップバトルパートの初期化処理
 	 */
 	private void initMap(SaveDataDto saveDataDto) {
 		// 初期化
 		mActorPlayerLogic = new ActorPlayerLogic();
+		touchStartPoint = new float[2];
 		
 		// 背景
 		initBackground();
+		
+		// マップ情報を読み込む
+		mMapBattleInfoDto = new MapBattleInfoDto();
+		mMapBattleInfoDto.createMapJsonData(saveDataDto.getSceneId(), 
+				JsonUtil.toJson(getBaseActivity(), "map/"+ saveDataDto.getSceneId()));
+		
+		// ベースマップ生成
+		Rectangle mapBaseRect = new Rectangle(0, 0, 
+				getWindowWidth(), getWindowHeight(), 
+				getBaseActivity().getVertexBufferObjectManager());
+		mapBaseRect.setTag(9999999); // TODO:どうにかして
+		mapBaseRect.setColor(Color.TRANSPARENT);
+		attachChild(mapBaseRect);
+		
 		// ダメージテキスト初期化
-		initDamageText();
+		initDamageText(mapBaseRect);
+				
 		// グリッド線表示
-		showGrid();
+		showGrid(mapBaseRect);
+
+		// 選択カーソルを用意
+		Sprite cursorSprite = getResourceSprite("grid128.png");
+		cursorSprite.setColor(Color.CYAN);
+		cursorSprite.setVisible(false);
+		cursorSprite.setZIndex(LayerZIndexType.SELECTCURSOR_LAYER.getValue());
+		cursorSprite.setSize(MapGridUtil.GRID_X, MapGridUtil.GRID_Y);
+		cursorSprite.registerEntityModifier(new LoopEntityModifier(new SequenceEntityModifier(
+				new AlphaModifier(0.5f, 0.2f, 0.6f),
+				new AlphaModifier(0.5f, 0.6f, 0.2f)
+				)));
+		mapBaseRect.attachChild(cursorSprite);
 		
 		// タッチレイヤー初期化
 		MapBattleClearConditionTouchLayer mMapBattleTouchLayer = new MapBattleClearConditionTouchLayer(this);
@@ -667,10 +692,6 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 			}
 		});
 
-		// マップ情報を読み込む
-		MapBattleInfoDto mMapBattleInfoDto = new MapBattleInfoDto();
-		mMapBattleInfoDto.createMapJsonData(saveDataDto.getSceneId(), 
-				JsonUtil.toJson(getBaseActivity(), "map/"+ saveDataDto.getSceneId()));
 		// ゲーム開始
 		mGameManager = new GameManager(mSrpgGameManagerListener);
 		mGameManager.mapInit(mMapBattleInfoDto); // 10 x 10 スケール1倍のグリッドマップ
@@ -695,37 +716,70 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	/**
 	 * ダメージテキスト初期化
 	 */
-	private void initDamageText() {
+	private void initDamageText(IEntity entity) {
 		Text damageText = new Text(0, 0, getFont(), "00000", getBaseActivity().getVertexBufferObjectManager());
 		damageText.setColor(Color.TRANSPARENT);
 		damageText.setZIndex(LayerZIndexType.TEXT_LAYER.getValue());
 		damageText.setTag(DAMAGE_TEXT_TAG); //TODO: TAG管理
-		attachChild(damageText);
+		entity.attachChild(damageText);
 	}
+	
+//	/**
+//	 * グリッド表示
+//	 */
+//	private void showGrid() {
+//		int base = 40;
+//		int baseGrid = 0;
+//		
+//		for (int x = -10 ; x < 20; x++) {
+//			final Line line = new Line(base * x, 0, (x * base) + baseGrid, getWindowHeight(), 
+//					getBaseActivity().getVertexBufferObjectManager());
+//			line.setLineWidth(1);
+//			line.setColor(Color.WHITE);
+//			line.setAlpha(0.5f);
+//			attachChild(line);
+//		}
+//		
+//		for (int y = -10 ; y < 20; y++) {
+//			final Line line = new Line(0, (base * y), getWindowWidth(), (y * base) - (baseGrid / 2), 
+//					getBaseActivity().getVertexBufferObjectManager());
+//			line.setLineWidth(1);
+//			line.setColor(Color.WHITE);
+//			line.setAlpha(0.5f);
+//			attachChild(line);
+//		}
+//	}
 	
 	/**
 	 * グリッド表示
 	 */
-	private void showGrid() {
-		int base = 40;
-		int baseGrid = 0;
+	private void showGrid(IEntity entity) {
 		
-		for (int x = -10 ; x < 20; x++) {
-			final Line line = new Line(base * x, 0, (x * base) + baseGrid, getWindowHeight(), 
+		for (int x = 0; x <= mMapBattleInfoDto.getMapSizeX(); x++) {
+			PointF pointStart = MapGridUtil.indexToDisp(new Point(x, 0));
+			PointF pointEnd = MapGridUtil.indexToDisp(new Point(x, mMapBattleInfoDto.getMapSizeY()));
+			pointStart.y = pointStart.y + MapGridUtil.GRID_Y / 2;
+			pointEnd.y = pointEnd.y + MapGridUtil.GRID_Y / 2;
+			final Line line = new Line(pointStart.x, pointStart.y, pointEnd.x, pointEnd.y, 
 					getBaseActivity().getVertexBufferObjectManager());
 			line.setLineWidth(1);
 			line.setColor(Color.WHITE);
 			line.setAlpha(0.5f);
-			attachChild(line);
+			line.setZIndex(1);
+			entity.attachChild(line);
 		}
-		
-		for (int y = -10 ; y < 20; y++) {
-			final Line line = new Line(0, (base * y), getWindowWidth(), (y * base) - (baseGrid / 2), 
+		for (int y = 0; y <= mMapBattleInfoDto.getMapSizeY(); y++) {
+			PointF pointStart = MapGridUtil.indexToDisp(new Point(0, y));
+			PointF pointEnd = MapGridUtil.indexToDisp(new Point(mMapBattleInfoDto.getMapSizeX(), y));
+			pointStart.y = pointStart.y + MapGridUtil.GRID_Y / 2;
+			pointEnd.y = pointEnd.y + MapGridUtil.GRID_Y / 2;
+			final Line line = new Line(pointStart.x, pointStart.y, pointEnd.x, pointEnd.y, 
 					getBaseActivity().getVertexBufferObjectManager());
 			line.setLineWidth(1);
 			line.setColor(Color.WHITE);
 			line.setAlpha(0.5f);
-			attachChild(line);
+			line.setZIndex(1);
+			entity.attachChild(line);
 		}
 	}
 	
@@ -743,11 +797,13 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		ActorSprite player = new ActorSprite(playerActor, this, 0, 0, size, size, 1.0f);
 		
 		player.setPlayerToDefaultPosition();
-		player.setPlayerPosition(mapPoint.getX(), mapPoint.getY());
-		player.setPlayerSize(mapPoint.getGridSize(), mapPoint.getGridSize());
+		player.setPlayerSize(size, size);
+		player.setPlayerPosition(
+				mapPoint.getX() + (MapGridUtil.GRID_X / 2) - (player.getWidth() / 2) - (player.getWidth() / 8), 
+				mapPoint.getY() + (MapGridUtil.GRID_Y / 2) - player.getHeight() + (player.getHeight() / 8));
 		player.setZIndex(LayerZIndexType.ACTOR_LAYER.getValue());
 		player.setTag(playerSeqNo);
-		attachChild(player);
+		getBaseMap().attachChild(player);
 		
 		PlayerStatusRectangle playerStatusRect = initStatusWindow(player, 0);
 		playerStatusRect.setZIndex(LayerZIndexType.POPUP_LAYER.getValue());
@@ -769,11 +825,14 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		ActorSprite enemy = new ActorSprite(enemyActor, this, 0, 0, size, size, 1.0f);
 		
 		enemy.setPlayerToDefaultPosition();
-		enemy.setPlayerPosition(mapPoint.getX(), mapPoint.getY());
-		enemy.setPlayerSize(mapPoint.getGridSize(), mapPoint.getGridSize());
+//		enemy.setPlayerPosition(mapPoint.getX(), mapPoint.getY());
+		enemy.setPlayerSize(size, size);
+		enemy.setPlayerPosition(
+				mapPoint.getX() + (MapGridUtil.GRID_X / 2) - (enemy.getWidth() / 2) - (enemy.getWidth() / 8), 
+				mapPoint.getY() + (MapGridUtil.GRID_Y / 2) - enemy.getHeight() + (enemy.getHeight() / 8));
 		enemy.setZIndex(LayerZIndexType.ACTOR_LAYER.getValue());
 		enemy.setTag(enemySeqNo);
-		attachChild(enemy);
+		getBaseMap().attachChild(enemy);
 		
 		PlayerStatusRectangle enemyStatusRect = initStatusWindow(enemy, 0);
 		enemyStatusRect.setZIndex(LayerZIndexType.POPUP_LAYER.getValue());
@@ -790,11 +849,14 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	 */
 	private void createObstacleSprite(int currentTileIndex, MapPoint mapPoint, float size) {
 		Sprite obstacle = getResourceSprite("icon_ob.png");
-		obstacle.setPosition(mapPoint.getX(), mapPoint.getY());
+//		obstacle.setPosition(mapPoint.getX(), mapPoint.getY());
 		obstacle.setSize(size, size);
+		obstacle.setPosition(
+				mapPoint.getX() + (MapGridUtil.GRID_X / 2) - (obstacle.getWidth() / 2) - (obstacle.getWidth() / 8), 
+				mapPoint.getY() + (MapGridUtil.GRID_Y / 2) - obstacle.getHeight() + (obstacle.getHeight() / 8));
 		obstacle.setZIndex(LayerZIndexType.ACTOR_LAYER.getValue());
 		obstacle.setTag(OBSTACLE_TAG_START + obstacleIndex); obstacleIndex++;
-		attachChild(obstacle);
+		getBaseMap().attachChild(obstacle);
 	}
 	
 	/**
@@ -814,11 +876,6 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 					ActorSprite.getFaceFileName(actorSprite.getActorPlayer().getImageResId()), 
 					getWindowWidth() / 2, y, 
 					getWindowWidth() / 2, getWindowHeight() / 2);
-//			mPlayerStatusRectangle.setTag(getActorPlayer().getPlayerId() + 90000);
-//			mPlayerStatusRectangle = actorSprite.createPlayerStatusWindow(
-//					this, getFont(), 
-//					getWindowWidth() / 2, y, 
-//					getWindowWidth() / 2, getWindowHeight() / 2);
 			playerStatusRectangle.setZIndex(LayerZIndexType.POPUP_LAYER.getValue());
 			CommonWindowRectangle commonWindowRectangle = new CommonWindowRectangle(
 					0, 0, 
@@ -882,15 +939,28 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	}
 	
 	private ActorSprite getActorSprite(int playerSeqNo) {
-		int count = getChildCount();
+		Rectangle baseMap = getBaseMap();
+		int count = baseMap.getChildCount();
 		for (int i = 0; i < count; i++) {
-			if (getChildByIndex(i) instanceof ActorSprite) {
-				if (playerSeqNo == getChildByIndex(i).getTag()) {
-					return (ActorSprite) getChildByIndex(i);
+			if (baseMap.getChildByIndex(i) instanceof ActorSprite) {
+				if (playerSeqNo == baseMap.getChildByIndex(i).getTag()) {
+					return (ActorSprite) baseMap.getChildByIndex(i);
 				}
 			}
 		}
 		return null;
+	}
+	
+	private Rectangle getBaseMap() {
+		Rectangle mapBaseRect = null;
+		int count = getChildCount();
+		for (int i = 0; i < count; i++) {
+			IEntity entity = getChildByIndex(i);
+			if (entity instanceof Rectangle && entity.getTag() == 9999999) {
+				mapBaseRect = (Rectangle) entity;
+			}
+		}
+		return mapBaseRect;
 	}
 	
 	// ------------------------ カーソル --------------------------
@@ -899,7 +969,7 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	 * @param mapPoint
 	 */
 	private void createMoveCursorSprite(MapPoint mapPoint) {
-		CursorRectangle cursorRectangle = createCursorSprite(mapPoint, Color.GREEN);
+		IAreaShape cursorRectangle = createCursorSprite(mapPoint, Color.GREEN);
 		cursorRectangle.setZIndex(LayerZIndexType.MOVECURSOR_LAYER.getValue());
 	}
 	/**
@@ -907,28 +977,28 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	 * @param mapPoint
 	 */
 	private void createAttackCursorSprite(MapPoint mapPoint) {
-		CursorRectangle cursorRectangle = createCursorSprite(mapPoint, Color.YELLOW);
+		IAreaShape cursorRectangle = createCursorSprite(mapPoint, Color.YELLOW);
 		cursorRectangle.setZIndex(LayerZIndexType.ATTACKCURSOR_LAYER.getValue());
 	}
 	/**
 	 * カーソル選択.
 	 */
 	private void touchedCusorRectangle(final MapPoint mapPoint) {
+		final PointF pointF = MapGridUtil.indexToDisp(new Point(mapPoint.getMapPointX(), mapPoint.getMapPointY()));
 		getBaseActivity().runOnUpdateThread(new Runnable() {
 			@Override
 			public void run() {
-				int count = getChildCount();
+				Rectangle baseMap = getBaseMap();
+				int count = baseMap.getChildCount();
 				for (int i = 0; i < count; i++) {
-					if (getChildByIndex(i) instanceof CursorRectangle) {
-						CursorRectangle cursorRectangle = (CursorRectangle) getChildByIndex(i);
-						if (mapPoint.isMuchMapPoint(cursorRectangle.getmMapPointX(), 
-								cursorRectangle.getmMapPointY())) {
-							cursorRectangle.setColor(Color.BLUE);
-							break;
-						}
+					if (baseMap.getChildByIndex(i) instanceof Sprite && 
+							baseMap.getChildByIndex(i).getZIndex() == LayerZIndexType.SELECTCURSOR_LAYER.getValue().intValue()) {
+						Sprite cursor = (Sprite) baseMap.getChildByIndex(i);
+						cursor.setPosition(pointF.x, pointF.y);
+						cursor.setVisible(true);
 					}
 				}
-				sortChildren();
+				baseMap.sortChildren();
 			}
 		});
 	}
@@ -936,22 +1006,18 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	 * カーソル描画.
 	 * @param mapPoint
 	 */
-	private CursorRectangle createCursorSprite(MapPoint mapPoint, Color color) {
-		// 移動または攻撃可能範囲のカーソル
-		CursorRectangle cursor = new CursorRectangle(
-				mapPoint.getMapPointX(), mapPoint.getMapPointY(),
-				mapPoint.getX(), mapPoint.getY(),
-				mapPoint.getGridSize(), 
-				mapPoint.getGridSize(), 
-				getBaseActivity().getVertexBufferObjectManager());
+	private Sprite createCursorSprite(MapPoint mapPoint, Color color) {
+		PointF pointF = MapGridUtil.indexToDisp(new Point(mapPoint.getMapPointX(), mapPoint.getMapPointY()));
+		
+		Sprite cursor = getResourceSprite("grid128.png");
 		cursor.setColor(color);
-		cursor.setAlpha(0.2f);
-		// 点滅表示設定
+		cursor.setSize(MapGridUtil.GRID_X, MapGridUtil.GRID_Y);
+		cursor.setPosition(pointF.x, pointF.y);
 		cursor.registerEntityModifier(new LoopEntityModifier(new SequenceEntityModifier(
 				new AlphaModifier(0.5f, 0.2f, 0.6f),
 				new AlphaModifier(0.5f, 0.6f, 0.2f)
 				)));
-		attachChild(cursor);
+		getBaseMap().attachChild(cursor);
 		
 		return cursor;
 	}
@@ -964,9 +1030,19 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		getBaseActivity().runOnUpdateThread(new Runnable() {
 			@Override
 			public void run() {
-				for (int i = 0; i < getChildCount(); i++) {
-					if (getChildByIndex(i) instanceof CursorRectangle) {
-						detachEntity(getChildByIndex(i));
+				Rectangle baseMap = getBaseMap();
+				for (int i = 0; i < baseMap.getChildCount(); i++) {
+					if (baseMap.getChildByIndex(i) instanceof Sprite) {
+						Sprite sprite = (Sprite) baseMap.getChildByIndex(i);
+						// 攻撃カーソルと移動カーソルはさようなら
+						if (sprite.getZIndex() == LayerZIndexType.MOVECURSOR_LAYER.getValue().intValue() ||
+								sprite.getZIndex() == LayerZIndexType.ATTACKCURSOR_LAYER.getValue().intValue()) {
+							detachEntity(sprite);
+							
+						// 選択カーソルは使いまわす
+						} else if (sprite.getZIndex() == LayerZIndexType.SELECTCURSOR_LAYER.getValue().intValue()) {
+							sprite.setVisible(false);
+						} 
 					}
 				}
 			}
@@ -1039,48 +1115,138 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	}
 	
 	// ------ タッチイベント ------
+	/** ドラッグ判定用 */
+	private float[] touchStartPoint;
+	// 補正幅(たぶん使わない)
+	private static final int OVER_START_DISP_X = 0; // -220
+	private static final int OVER_END_DISP_X   = 0;
+	private static final int OVER_START_DISP_Y = 0;
+	private static final int OVER_END_DISP_Y   = 0; // 100
+	
+	private float getStartDispX() {
+		return 0 + OVER_START_DISP_X - (
+				(
+						(mMapBattleInfoDto.getMapSizeX() - (MapGridUtil.BASE_Y - 1))
+				) * MapGridUtil.GRID_X) 
+				+ (
+				(
+						(mMapBattleInfoDto.getMapSizeX()- mMapBattleInfoDto.getMapSizeY()) / 2
+				) * MapGridUtil.GRID_X)
+				;
+	}
+	private float getStartDispY() {
+		return 0 + OVER_START_DISP_Y + ((MapGridUtil.BASE_Y - mMapBattleInfoDto.getMapSizeY()) * (MapGridUtil.GRID_Y / 2));
+	}
+	private float getEndDispX(IAreaShape entity) {
+		return entity.getWidth() + OVER_END_DISP_X;
+	}
+	private float getEndDispY(IAreaShape entity) {
+//		return entity.getHeight() + OVER_END_DISP_Y + (((mMapBattleInfoDto.getMapSizeY() - (MapGridUtil.BASE_Y - 1)) * (MapGridUtil.GRID_Y / 2)));
+		return entity.getHeight() + OVER_END_DISP_Y + (
+				(
+						(mMapBattleInfoDto.getMapSizeY() - (MapGridUtil.BASE_Y - 1) + 
+						(mMapBattleInfoDto.getMapSizeX() - mMapBattleInfoDto.getMapSizeY())
+				) * (MapGridUtil.GRID_Y / 2)));
+	}
+	
 	private void touchEventSRPGPart(Scene pScene, TouchEvent pSceneTouchEvent) {
 		float x = pSceneTouchEvent.getX();
 		float y = pSceneTouchEvent.getY();
 		
-		if (pSceneTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
+		Rectangle mapBaseRect = getBaseMap();
+		if (mapBaseRect == null) {
+			return;
+		}
+		float mapDispX = pSceneTouchEvent.getX() - mapBaseRect.getX();
+		float mapDispY = pSceneTouchEvent.getY() - mapBaseRect.getY();
+		// タッチ位置をスクロールを考慮したマップ座標に変換
+		Point mapPoint = MapGridUtil.dispToIndex(
+				mapDispX, 
+				mapDispY);
+		Log.d("", " x = " + mapPoint.x + " y = " + mapPoint.y);
+
+		// スクロールチェック
+		TouchEventFlick touchEventFlick = TouchEventFlick.UN_FLICK;
+		float xDistance = 0;
+		float yDistance = 0;
+		if (pSceneTouchEvent.isActionDown()) {
+			// 開始点を登録
+			touchStartPoint[0] = pSceneTouchEvent.getX();
+			touchStartPoint[1] = pSceneTouchEvent.getY();
+		} else if (pSceneTouchEvent.isActionUp() || pSceneTouchEvent.isActionCancel()) {
+			float[] touchEndPoint = new float[2];
+			touchEndPoint[0] = pSceneTouchEvent.getX();
+			touchEndPoint[1] = pSceneTouchEvent.getY();
+			// フリックチェック
+			touchEventFlick = CollidesUtil.checkToushFlick(touchStartPoint, touchEndPoint);
+			if (touchEventFlick != TouchEventFlick.UN_FLICK) {
+				xDistance = touchEndPoint[0] -touchStartPoint[0];
+				yDistance = touchEndPoint[1] -touchStartPoint[1];
+			}
+		}
+		// スクロール時
+		if (touchEventFlick != TouchEventFlick.UN_FLICK) {
+			// マップをスクロール
+			float moveToX = mapBaseRect.getX() + xDistance;
+			float moveToY = mapBaseRect.getY() + yDistance;
+			// 表示可能領域で補正
+			if (getStartDispX() > moveToX) {
+				moveToX = getStartDispX();
+			}
+			if (getEndDispX(mapBaseRect) < (moveToX + mapBaseRect.getWidth())) {
+				moveToX = getEndDispX(mapBaseRect) - mapBaseRect.getWidth();
+			}
+			if (getStartDispY() > moveToY) {
+				moveToY = getStartDispY();
+			}
+			if (getEndDispY(mapBaseRect) < (moveToY + mapBaseRect.getHeight())) {
+				moveToY = getEndDispY(mapBaseRect) - mapBaseRect.getHeight();
+			}
 			
-			// TODO: 一旦会話はGameManager外にする
-			TalkLayer mTalkLayer = (TalkLayer) getChildByTag(TALK_LAYER_TAG);
-			MapBattleClearConditionTouchLayer mMapBattleTouchLayer = 
-					(MapBattleClearConditionTouchLayer) getChildByTag(MapBattleClearConditionTouchLayer.TAG);
+			mapBaseRect.registerEntityModifier(new MoveModifier(0.2f, 
+					mapBaseRect.getX(), moveToX,
+					mapBaseRect.getY(), moveToY));
 			
-			if (mTalkLayer != null && mTalkLayer.contains(x, y)) {
+		// スクロール以外のとき
+		} else {
+			if (pSceneTouchEvent.isActionUp()) {
+				// TODO: 一旦会話はGameManager外にする
+				TalkLayer mTalkLayer = (TalkLayer) getChildByTag(TALK_LAYER_TAG);
+				MapBattleClearConditionTouchLayer mMapBattleTouchLayer = 
+						(MapBattleClearConditionTouchLayer) getChildByTag(MapBattleClearConditionTouchLayer.TAG);
 				
-//				getMediaManager().play(SoundType.BTN_PRESSED_SE);
-				
-				if (mTalkLayer.isNextTalk()) {
-					mTalkLayer.nextTalk();
+				if (mTalkLayer != null && mTalkLayer.contains(x, y)) {
+					
+//					getMediaManager().play(SoundType.BTN_PRESSED_SE);
+					
+					if (mTalkLayer.isNextTalk()) {
+						mTalkLayer.nextTalk();
+						
+					} else {
+						mTalkLayer.hide();
+						// 次の会話がなくなれば、会話レイヤーを開放
+						detachEntity(mTalkLayer);
+						mTalkLayer = null;
+						
+						// 勝利条件表示
+//						getMediaManager().play(MusicType.BATTLE1_BGM);
+						mMapBattleTouchLayer.showTouchLayer(this);
+					}
+					
+				} else if (mMapBattleTouchLayer.isTouchLayer(x, y)) {
+					
+//					getMediaManager().play(SoundType.BTN_PRESSED_SE);
+					
+					// 勝利条件を非表示にする
+					mMapBattleTouchLayer.hideTouchLayer(this);
+					
+					// ゲーム開始
+					mGameManager.gameStart();
 					
 				} else {
-					mTalkLayer.hide();
-					// 次の会話がなくなれば、会話レイヤーを開放
-					detachEntity(mTalkLayer);
-					mTalkLayer = null;
-					
-					// 勝利条件表示
-//					getMediaManager().play(MusicType.BATTLE1_BGM);
-					mMapBattleTouchLayer.showTouchLayer(this);
-				}
-				
-			} else if (mMapBattleTouchLayer.isTouchLayer(x, y)) {
-				
-//				getMediaManager().play(SoundType.BTN_PRESSED_SE);
-				
-				// 勝利条件を非表示にする
-				mMapBattleTouchLayer.hideTouchLayer(this);
-				
-				// ゲーム開始
-				mGameManager.gameStart();
-				
-			} else {
-				// タッチイベント振り分け処理を呼ぶ
-				mGameManager.onTouchMapItemEvent(x, y);
+					// タッチイベント振り分け処理を呼ぶ
+					mGameManager.onTouchMapItemEvent(mapDispX, mapDispY);
+				}				
 			}
 		}
 	}
@@ -1237,5 +1403,10 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	
 	private float getDispStartY() {
 		return 0;
+	}
+	
+	public void sortChildren() {
+		super.sortChildren();
+		getBaseMap().sortChildren();
 	}
 }

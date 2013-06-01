@@ -19,6 +19,7 @@ import org.andengine.util.color.Color;
 import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.utils.CollidesUtil;
 import com.kyokomi.core.utils.CollidesUtil.TouchEventFlick;
+import com.kyokomi.srpgquest.utils.MapGridUtil;
 
 import android.graphics.Point;
 import android.graphics.PointF;
@@ -28,60 +29,13 @@ import android.view.KeyEvent;
 public class SandBoxScene extends SrpgBaseScene 
 	implements ButtonSprite.OnClickListener, IOnSceneTouchListener {
 	
-	private static final int GRID_X = 128;
-	private static final int GRID_Y = 64;
 	private static final int SPRITE_SIZE = 64;
-	private static final int BASE_Y = 7;
-	
-	private static final int GRID_SIZE_X = 8;
-	private static final int GRID_SIZE_Y = 8;
+	private static final int GRID_COUNT_X = 12;
+	private static final int GRID_COUNT_Y = 12;
 	
 	/** ドラッグ判定用 */
 	private float[] touchStartPoint;
 	
-	/**
-	 * 
-		マップ座標[0.0]
-		Y座標がグリッドで6個ずれているため、
-		
-		画面座標x=0
-		画面座標y=12*(32/2)
-		となる。
-		
-		マップ座標xが1増えると画面座標yは、1減る。
-		
-		画面座標x=map_x *(64/2)
-		画面座標y=(12-map_x)*(32/2)
-		
-		マップ座標yが1増えると画面座標xとyが1増える。
-		
-		画面座標x=(map_y + map_x) *(64/2)
-		画面座標y=(12-map_x + map_y)*(32/2)
-	 *
-	 * @param pMapPointF
-	 * @return
-	 */
-	public PointF indexToDisp(Point pMapIndex) {
-		return indexToDisp(pMapIndex.x, pMapIndex.y);
-	}
-	public PointF indexToDisp(int x, int y) {
-		PointF dispPointF = new PointF();
-		dispPointF.set(
-				(y + x) * (GRID_X / 2), 
-				((BASE_Y - 1) - x + y) * (GRID_Y / 2));
-		return dispPointF;
-	}
-	
-	public Point dispToIndex(PointF pDispPointF) {
-		return dispToIndex(pDispPointF.x, pDispPointF.y);
-	}
-	public Point dispToIndex(float x, float y) {
-		int view_y = (int)((y - GRID_Y * BASE_Y / 2) * 2);
-		return new Point(
-				(int)((x - view_y + GRID_X * 10) / GRID_X - 10),
-				(int)((x + view_y + GRID_X * 10) / GRID_X - 10));
-	}
-
 	public SandBoxScene(MultiSceneActivity baseActivity) {
 		super(baseActivity);
 		init();
@@ -92,6 +46,7 @@ public class SandBoxScene extends SrpgBaseScene
 
 	@Override
 	public void init() {
+		// 初期化
 		touchStartPoint = new float[2];
 		
 		// 背景
@@ -114,7 +69,7 @@ public class SandBoxScene extends SrpgBaseScene
 		cursorSprite.setVisible(false);
 		cursorSprite.setTag(99); // TODO: どうにかして
 		cursorSprite.setZIndex(2);
-		cursorSprite.setSize(GRID_X, GRID_Y);
+		cursorSprite.setSize(MapGridUtil.GRID_X, MapGridUtil.GRID_Y);
 		cursorSprite.registerEntityModifier(new LoopEntityModifier(new SequenceEntityModifier(
 				new AlphaModifier(0.5f, 0.2f, 0.6f),
 				new AlphaModifier(0.5f, 0.6f, 0.2f)
@@ -124,14 +79,14 @@ public class SandBoxScene extends SrpgBaseScene
 		// グリッドライン表示
 		showGrid(mapBaseRect);
 		
-		for (int x = 0; x < GRID_SIZE_X; x++) {
-			for (int y = 0; y < GRID_SIZE_Y; y++) {
-				PointF pointF = indexToDisp(new Point(x, y));
+		for (int x = 0; x < GRID_COUNT_X; x++) {
+			for (int y = 0; y < GRID_COUNT_Y; y++) {
+				PointF pointF = MapGridUtil.indexToDisp(new Point(x, y));
 				
 				// グリッド画像
 				Sprite grid = getResourceSprite("grid128.png");
 				grid.setPosition(pointF.x, pointF.y);
-				grid.setSize(GRID_X, GRID_Y);
+				grid.setSize(MapGridUtil.GRID_X, MapGridUtil.GRID_Y);
 				grid.setColor(Color.TRANSPARENT);
 				grid.setZIndex(0);
 				String fileName = "actor/actor110_3_s.png";
@@ -176,14 +131,14 @@ public class SandBoxScene extends SrpgBaseScene
 				sprite.setSize(SPRITE_SIZE, SPRITE_SIZE);
 				sprite.setCurrentTileIndex(x * y % 12);
 				sprite.setPosition(
-						pointF.x + (GRID_X / 2) - (sprite.getWidth() / 2) - (sprite.getWidth() / 8), 
-						pointF.y + (GRID_Y / 2) - sprite.getHeight() + (sprite.getHeight() / 8));
+						pointF.x + (MapGridUtil.GRID_X / 2) - (sprite.getWidth() / 2) - (sprite.getWidth() / 8), 
+						pointF.y + (MapGridUtil.GRID_Y / 2) - sprite.getHeight() + (sprite.getHeight() / 8));
 				sprite.setZIndex(3);
 				sprite.animate(pFrameDurations, pFrames, true);
 				
-				grid.setTag(x * 10 + y + 1000);
-				sprite.setTag(x * 10 + y + 100);
-				mapBaseRect.attachChild(grid);
+//				grid.setTag(x * 1000 + y + 10000);
+				sprite.setTag(x * 1000 + y + 10000);
+//				mapBaseRect.attachChild(grid);
 				mapBaseRect.attachChild(sprite);
 			}
 		}
@@ -230,22 +185,36 @@ public class SandBoxScene extends SrpgBaseScene
 			float pTouchAreaLocalY) {
 	}
 	
-	// TODO: グリッドのはみ出した数から計算できるはず。。。
-	private static final int OVER_START_DISP_X = -220;
+	// 補正幅(たぶん使わない)
+	private static final int OVER_START_DISP_X = 0; // -220
 	private static final int OVER_END_DISP_X   = 0;
 	private static final int OVER_START_DISP_Y = 0;
-	private static final int OVER_END_DISP_Y   = 100;
+	private static final int OVER_END_DISP_Y   = 0; // 100
+	
 	private float getStartDispX() {
-		return 0 + OVER_START_DISP_X;
+		return 0 + OVER_START_DISP_X - (
+				(
+						(GRID_COUNT_X - (MapGridUtil.BASE_Y - 1))
+				) * MapGridUtil.GRID_X) 
+				+ (
+				(
+						(GRID_COUNT_X - GRID_COUNT_Y) / 2
+				) * MapGridUtil.GRID_X)
+				;
 	}
 	private float getStartDispY() {
-		return 0 + OVER_START_DISP_Y;
+		return 0 + OVER_START_DISP_Y + ((MapGridUtil.BASE_Y - GRID_COUNT_Y) * (MapGridUtil.GRID_Y / 2));
 	}
 	private float getEndDispX(IAreaShape entity) {
 		return entity.getWidth() + OVER_END_DISP_X;
 	}
 	private float getEndDispY(IAreaShape entity) {
-		return entity.getHeight() + OVER_END_DISP_Y;
+//		return entity.getHeight() + OVER_END_DISP_Y + (((mMapBattleInfoDto.getMapSizeY() - (MapGridUtil.BASE_Y - 1)) * (MapGridUtil.GRID_Y / 2)));
+		return entity.getHeight() + OVER_END_DISP_Y + (
+				(
+						(GRID_COUNT_Y - (MapGridUtil.BASE_Y - 1) + 
+						(GRID_COUNT_X - GRID_COUNT_Y)
+				) * (MapGridUtil.GRID_Y / 2)));
 	}
 	
 	@Override
@@ -258,7 +227,7 @@ public class SandBoxScene extends SrpgBaseScene
 			return false;
 		}
 		// タッチ位置をスクロールを考慮したマップ座標に変換
-		Point mapPoint = dispToIndex(
+		Point mapPoint = MapGridUtil.dispToIndex(
 				pSceneTouchEvent.getX() - mapBaseRect.getX(), 
 				pSceneTouchEvent.getY() - mapBaseRect.getY());
 		Log.d("", " x = " + mapPoint.x + " y = " + mapPoint.y);
@@ -313,13 +282,13 @@ public class SandBoxScene extends SrpgBaseScene
 				for (int i = 0; i < count; i++) {
 					IEntity entity = mapBaseRect.getChildByIndex(i);
 					if (entity instanceof AnimatedSprite) {
-						if (entity.getTag() == (mapPoint.x * 10 + mapPoint.y + 100)) {
+						if (entity.getTag() == (mapPoint.x * 1000 + mapPoint.y + 10000)) {
 							((AnimatedSprite) entity).stopAnimation();
 							((AnimatedSprite) entity).setColor(new Color(0.4f, 0.4f, 0.4f));
 						}
 					} else if (entity instanceof Sprite) {
 						if (entity.getTag() == 99) {
-							PointF touchPoint = indexToDisp(mapPoint);
+							PointF touchPoint = MapGridUtil.indexToDisp(mapPoint);
 							entity.setPosition(touchPoint.x, touchPoint.y);
 							entity.setVisible(true);
 						}
@@ -377,11 +346,11 @@ public class SandBoxScene extends SrpgBaseScene
 //			attachChild(line);
 //		}
 		
-		for (int x = 0; x <= GRID_SIZE_X; x++) {
-			PointF pointStart = indexToDisp(new Point(x, 0));
-			PointF pointEnd = indexToDisp(new Point(x, GRID_SIZE_X));
-			pointStart.y = pointStart.y + GRID_Y / 2;
-			pointEnd.y = pointEnd.y + GRID_Y / 2;
+		for (int x = 0; x <= GRID_COUNT_X; x++) {
+			PointF pointStart = MapGridUtil.indexToDisp(new Point(x, 0));
+			PointF pointEnd = MapGridUtil.indexToDisp(new Point(x, GRID_COUNT_X));
+			pointStart.y = pointStart.y + MapGridUtil.GRID_Y / 2;
+			pointEnd.y = pointEnd.y + MapGridUtil.GRID_Y / 2;
 			final Line line = new Line(pointStart.x, pointStart.y, pointEnd.x, pointEnd.y, 
 					getBaseActivity().getVertexBufferObjectManager());
 			line.setLineWidth(1);
@@ -390,11 +359,11 @@ public class SandBoxScene extends SrpgBaseScene
 			line.setZIndex(1);
 			entity.attachChild(line);
 		}
-		for (int y = 0; y <= GRID_SIZE_Y; y++) {
-			PointF pointStart = indexToDisp(new Point(0, y));
-			PointF pointEnd = indexToDisp(new Point(GRID_SIZE_Y, y));
-			pointStart.y = pointStart.y + GRID_Y / 2;
-			pointEnd.y = pointEnd.y + GRID_Y / 2;
+		for (int y = 0; y <= GRID_COUNT_Y; y++) {
+			PointF pointStart = MapGridUtil.indexToDisp(new Point(0, y));
+			PointF pointEnd = MapGridUtil.indexToDisp(new Point(GRID_COUNT_Y, y));
+			pointStart.y = pointStart.y + MapGridUtil.GRID_Y / 2;
+			pointEnd.y = pointEnd.y + MapGridUtil.GRID_Y / 2;
 			final Line line = new Line(pointStart.x, pointStart.y, pointEnd.x, pointEnd.y, 
 					getBaseActivity().getVertexBufferObjectManager());
 			line.setLineWidth(1);

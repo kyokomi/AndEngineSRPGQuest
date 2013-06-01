@@ -92,7 +92,7 @@ public class ActorSprite extends Rectangle {
 		return getBaseFileName(imageResId) + "_f.png";
 	}
 	public static String getMoveFileName(int imageResId) {
-		return getBaseFileName(imageResId) + "_0_s.png";
+		return getBaseFileName(imageResId) + "_1_s.png";
 	}
 	private AnimatedSprite getMoveAnimatedSprite(KeyListenScene baseScene, int imageResId) {
 		return baseScene.getResourceAnimatedSprite(getMoveFileName(imageResId), 3, 4);

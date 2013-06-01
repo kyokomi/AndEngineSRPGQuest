@@ -9,7 +9,10 @@ import com.kyokomi.srpgquest.constant.MoveDirectionType;
 import com.kyokomi.srpgquest.map.common.MapPoint;
 import com.kyokomi.srpgquest.map.item.ActorPlayerMapItem;
 import com.kyokomi.srpgquest.map.item.MapItem;
+import com.kyokomi.srpgquest.utils.MapGridUtil;
 
+import android.graphics.Point;
+import android.graphics.PointF;
 import android.util.Log;
 
 /**
@@ -31,7 +34,8 @@ public class MapManager {
 	private final MapItemManager mMapItemManager;
 	private final int mapX;
 	private final int mapY;
-	private final float mGridSize;
+	private final float mGridSizeX;
+	private final float mGridSizeY;
 	
 	/** マップ移動情報. */
 	private List<MapPoint> movePointList;
@@ -61,7 +65,25 @@ public class MapManager {
 	public MapManager(float pGridSize, int pMapX, int pMapY, float pMapScale) {
 		this.mapX = pMapX;
 		this.mapY = pMapY;
-		this.mGridSize = pGridSize;
+		this.mGridSizeX = pGridSize;
+		this.mGridSizeY = pGridSize;
+		this.RIGHT = mapX;
+		this.BOTTOM = mapY;
+		
+		this.mMapItemManager = new MapItemManager(mapX, mapY);		
+	}
+	/**
+	 * コンストラクタ.
+	 * @param activity
+	 * @param mapX
+	 * @param mapY
+	 * @param mapScale
+	 */
+	public MapManager(float pGridSizeX, float pGridSizeY, int pMapX, int pMapY, float pMapScale) {
+		this.mapX = pMapX;
+		this.mapY = pMapY;
+		this.mGridSizeX = pGridSizeX;
+		this.mGridSizeY = pGridSizeY;
 		this.RIGHT = mapX;
 		this.BOTTOM = mapY;
 		
@@ -543,10 +565,7 @@ public class MapManager {
 			moveY = enemyMapItem.getMapPointY();
 		}
 		
-		float x = mGridSize * moveX;
-		float y = mGridSize * moveY;
-		MapPoint mapPoint = new MapPoint(x, y, moveX, moveY, mGridSize, MoveDirectionType.MOVE_DOWN);
-		return mapPoint;
+		return calcGridPosition(moveX, moveY);
 	}
 	
 	// ----------------------------------------------------------
@@ -592,15 +611,13 @@ public class MapManager {
 	}
 	
 	public MapPoint calcGridPosition(int mapPointX, int mapPointY) {
-		float x = mGridSize * mapPointX;
-		float y = mGridSize * mapPointY;
-		return new MapPoint(x, y, mapPointX, mapPointY, mGridSize, MoveDirectionType.MOVE_DOWN);
+		PointF dispPoint = MapGridUtil.indexToDisp(mapPointX, mapPointY);
+		return new MapPoint(dispPoint.x, dispPoint.y, mapPointX, mapPointY, mGridSizeX, mGridSizeY, MoveDirectionType.MOVE_DOWN);
 	}
 	
 	public MapPoint calcGridDecodePosition(float x, float y) {
-		int mapPointX = (int)(x / mGridSize);
-		int mapPointY = (int)(y / mGridSize);
-		return calcGridPosition(mapPointX, mapPointY);
+		Point mapPoint = MapGridUtil.dispToIndex(x, y);
+		return calcGridPosition(mapPoint.x, mapPoint.y);
 	}
 	
 	/**

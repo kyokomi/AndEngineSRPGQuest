@@ -102,7 +102,7 @@ public class CollidesUtil {
 			} else if (angle > 45 && angle < 135) {
 				touchEventFlick = TouchEventFlick.LEFT_TO_RIGHT;
 			// 右から左へのフリック
-			} else if ((angle > 225 && angle < 260) || (angle > -90 && angle < -45)) {
+			} else if ((angle > 225 && angle < 270) || (angle > -90 && angle < -45)) {
 				touchEventFlick = TouchEventFlick.RIGHT_TO_LEFT;
 			}
 		}
