@@ -101,12 +101,27 @@ public class SandBoxScene extends SrpgBaseScene
 		bg.setSize(getWindowWidth(), getWindowHeight());
 		attachChild(bg);
 
+		// ベースマップ生成
 		Rectangle mapBaseRect = new Rectangle(0, 0, 
 				getWindowWidth(), getWindowHeight(), 
 				getBaseActivity().getVertexBufferObjectManager());
 		mapBaseRect.setTag(9999999); // TODO:どうにかして
 		mapBaseRect.setColor(Color.TRANSPARENT);
 		
+		// 選択カーソル生成
+		Sprite cursorSprite = getResourceSprite("grid128.png");
+		cursorSprite.setColor(Color.CYAN);
+		cursorSprite.setVisible(false);
+		cursorSprite.setTag(99); // TODO: どうにかして
+		cursorSprite.setZIndex(2);
+		cursorSprite.setSize(GRID_X, GRID_Y);
+		cursorSprite.registerEntityModifier(new LoopEntityModifier(new SequenceEntityModifier(
+				new AlphaModifier(0.5f, 0.2f, 0.6f),
+				new AlphaModifier(0.5f, 0.6f, 0.2f)
+				)));
+		mapBaseRect.attachChild(cursorSprite);
+		
+		// グリッドライン表示
 		showGrid(mapBaseRect);
 		
 		for (int x = 0; x < GRID_SIZE_X; x++) {
@@ -114,58 +129,47 @@ public class SandBoxScene extends SrpgBaseScene
 				PointF pointF = indexToDisp(new Point(x, y));
 				
 				// グリッド画像
-				Sprite grid = getResourceSprite("grid0.png");
+				Sprite grid = getResourceSprite("grid128.png");
 				grid.setPosition(pointF.x, pointF.y);
 				grid.setSize(GRID_X, GRID_Y);
+				grid.setColor(Color.TRANSPARENT);
 				grid.setZIndex(0);
-				// 点滅表示設定
-				grid.registerEntityModifier(new LoopEntityModifier(new SequenceEntityModifier(
-						new AlphaModifier(0.5f, 0.2f, 0.6f),
-						new AlphaModifier(0.5f, 0.6f, 0.2f)
-						)));
 				String fileName = "actor/actor110_3_s.png";
 				long[] pFrameDurations = new long[]{100, 100, 100, 100, 100};
 				int[] pFrames = new int[]{1, 2, 3, 4, 5};
 				int index = x * y % 6;
 				switch(index) {
 				case 0:
-					grid.setColor(Color.RED);
 					fileName = "actor/actor110_1_s.png";
 					pFrames = new int[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
 					pFrameDurations = new long[]{100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100};
 					break;
 				case 1:
-					grid.setColor(Color.GREEN);
 					fileName = "actor/actor110_2_s.png";
 					pFrames = new int[]{0, 1, 2, 3, 4, 5, 9, 10, 11};
 					pFrameDurations = new long[]{100, 100, 100, 100, 100, 100, 100, 100, 100};
 					break;
 				case 2:
-					grid.setColor(Color.BLUE);
 					fileName = "actor/actor110_2_s2.png";
 					pFrames = new int[]{0, 1, 2, 3, 4, 5, 9, 10, 11};
 					pFrameDurations = new long[]{100, 100, 100, 100, 100, 100, 100, 100, 100};
 					break;
 				case 3:
-					grid.setColor(Color.YELLOW);
 					fileName = "actor/actor110_3_s.png";
 					pFrames = new int[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
 					pFrameDurations = new long[]{100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100};
 					break;
 				case 4:
-					grid.setColor(Color.PINK);
 					fileName = "actor/actor110_3_s2.png";
 					pFrames = new int[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
 					pFrameDurations = new long[]{100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100};
 					break;
 				case 5:
-					grid.setColor(Color.CYAN);
 					fileName = "actor/actor110_5_s.png";
 					pFrames = new int[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
 					pFrameDurations = new long[]{100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100};
 					break;
 				default:
-					grid.setColor(Color.BLACK);
 					break;
 				}
 				AnimatedSprite sprite = getResourceAnimatedSprite(fileName, 3, 4);
@@ -174,7 +178,7 @@ public class SandBoxScene extends SrpgBaseScene
 				sprite.setPosition(
 						pointF.x + (GRID_X / 2) - (sprite.getWidth() / 2) - (sprite.getWidth() / 8), 
 						pointF.y + (GRID_Y / 2) - sprite.getHeight() + (sprite.getHeight() / 8));
-				sprite.setZIndex(2);
+				sprite.setZIndex(3);
 				sprite.animate(pFrameDurations, pFrames, true);
 				
 				grid.setTag(x * 10 + y + 1000);
@@ -311,11 +315,13 @@ public class SandBoxScene extends SrpgBaseScene
 					if (entity instanceof AnimatedSprite) {
 						if (entity.getTag() == (mapPoint.x * 10 + mapPoint.y + 100)) {
 							((AnimatedSprite) entity).stopAnimation();
+							((AnimatedSprite) entity).setColor(new Color(0.4f, 0.4f, 0.4f));
 						}
 					} else if (entity instanceof Sprite) {
-						if (entity.getTag() == (mapPoint.x * 10 + mapPoint.y + 1000)) {
-							((Sprite) entity).setColor(Color.BLACK);
-							((Sprite) entity).clearEntityModifiers();
+						if (entity.getTag() == 99) {
+							PointF touchPoint = indexToDisp(mapPoint);
+							entity.setPosition(touchPoint.x, touchPoint.y);
+							entity.setVisible(true);
 						}
 					}
 				}
