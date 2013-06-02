@@ -423,6 +423,9 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 					cutInCallback.doAction();					
 				}
 			});
+			// カットイン中に1番目のプレイヤーまで画面を移動する
+			int playerSeqNo = playerSeqNoList.iterator().next();
+			mapMoveToPlayer(playerSeqNo);
 		}
 		@Override
 		public void showEnemyTurnCutIn(final List<Integer> enemySeqNoList, final ICutInCallback cutInCallback) {
@@ -515,6 +518,9 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		@Override
 		public void moveEnemyAnimation(int enemySeqNo, List<MapPoint> moveMapPointList,
 				final IAnimationCallback animationCallback) {
+			// ウィンドウを移動する
+			mapMoveToPlayer(enemySeqNo);
+			
 			ActorSprite enemySprite = getActorSprite(enemySeqNo);
 			// クォータービュー対応
 			for (MapPoint mapPoint : moveMapPointList) {
@@ -1286,23 +1292,7 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 			// マップをスクロール
 			float moveToX = mapBaseRect.getX() + xDistance;
 			float moveToY = mapBaseRect.getY() + yDistance;
-			// 表示可能領域で補正
-			if (getStartDispX() > moveToX) {
-				moveToX = getStartDispX();
-			}
-			if (getEndDispX(mapBaseRect) < (moveToX + mapBaseRect.getWidth())) {
-				moveToX = getEndDispX(mapBaseRect) - mapBaseRect.getWidth();
-			}
-			if (getStartDispY() > moveToY) {
-				moveToY = getStartDispY();
-			}
-			if (getEndDispY(mapBaseRect) < (moveToY + mapBaseRect.getHeight())) {
-				moveToY = getEndDispY(mapBaseRect) - mapBaseRect.getHeight();
-			}
-			
-			mapBaseRect.registerEntityModifier(new MoveModifier(0.2f, 
-					mapBaseRect.getX(), moveToX,
-					mapBaseRect.getY(), moveToY));
+			mapMove(new PointF(moveToX, moveToY));
 			
 		// スクロール以外のとき
 		} else {
@@ -1348,6 +1338,32 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		}
 	}
 	
+	private void mapMoveToPlayer(int playerSeqNo) {
+		ActorSprite actorSprite = getActorSprite(playerSeqNo);
+		float moveX = (actorSprite.getPlayer().getX() - (getWindowWidth() / 2)) * -1;
+		float moveY = (actorSprite.getPlayer().getY() - (getWindowHeight() / 2)) * -1;
+		mapMove(new PointF(moveX, moveY));
+	}
+ 	private void mapMove(PointF movePointF) {
+		Rectangle mapBaseRect = getBaseMap();
+		// 表示可能領域で補正
+		if (getStartDispX() > movePointF.x) {
+			movePointF.x = getStartDispX();
+		}
+		if (getEndDispX(mapBaseRect) < (movePointF.x + mapBaseRect.getWidth())) {
+			movePointF.x = getEndDispX(mapBaseRect) - mapBaseRect.getWidth();
+		}
+		if (getStartDispY() > movePointF.y) {
+			movePointF.y = getStartDispY();
+		}
+		if (getEndDispY(mapBaseRect) < (movePointF.y + mapBaseRect.getHeight())) {
+			movePointF.y = getEndDispY(mapBaseRect) - mapBaseRect.getHeight();
+		}
+		
+		mapBaseRect.registerEntityModifier(new MoveModifier(0.2f, 
+				mapBaseRect.getX(), movePointF.x,
+				mapBaseRect.getY(), movePointF.y));
+	}
 	private void clearMapBattle() {
 		int mapBattleId = getBaseActivity().getGameController().createSaveDataDto(this).getSceneId();
 		
