@@ -39,26 +39,7 @@ public class ActorSprite extends Rectangle {
 		return mActorPlayer.getPlayerId();
 	}
 
-//	/**
-//	 * プレイヤーステータスウィンドウ.
-//	 * TODO: ActorSpriteと別にした方がいい
-//	 */
-//	private PlayerStatusRectangle mPlayerStatusRectangle;
-//	public PlayerStatusRectangle createPlayerStatusWindow(SrpgBaseScene pBaseScene, Font pFont, float pX, float pY, float pWidth, float pHeight) {
-//		mPlayerStatusRectangle = new PlayerStatusRectangle(pBaseScene, 
-//				pFont, getActorPlayer(), getFaceFileName(getActorPlayer().getImageResId()), 
-//				pX, pY, pWidth, pHeight);
-//		mPlayerStatusRectangle.setTag(getActorPlayer().getPlayerId() + 90000);
-//		return mPlayerStatusRectangle;
-//	}
-//	public PlayerStatusRectangle getPlayerStatusRectangle() {
-//		return mPlayerStatusRectangle;
-//	}
-//	public void setPlayerStatusRectangle(PlayerStatusRectangle playerStatusRectangle) {
-//		this.mPlayerStatusRectangle = playerStatusRectangle;
-//	}
-
-	/** プレイヤーキャラクター. */
+	/** プレイヤーキャラクター(TODO: 持たないようにする). */
 	private AnimatedSprite player;
 	public AnimatedSprite getPlayer() {
 		return player;
@@ -95,7 +76,7 @@ public class ActorSprite extends Rectangle {
 		return getBaseFileName(imageResId) + "_f.png";
 	}
 	public static String getMoveFileName(int imageResId) {
-		return getBaseFileName(imageResId) + "_1_s.png";
+		return getBaseFileName(imageResId) + "_5_s.png";
 	}
 	private AnimatedSprite getMoveAnimatedSprite(KeyListenScene baseScene, int imageResId) {
 		return baseScene.getResourceAnimatedSprite(getMoveFileName(imageResId), 3, 4);
@@ -219,16 +200,16 @@ public class ActorSprite extends Rectangle {
 							lastMoveCurrentIndex = 0;
 							switch (mapPoint.getDirection()) {
 							case MOVE_DOWN:
-								lastMoveCurrentIndex = 0;
+								lastMoveCurrentIndex = 6;//0
 								break;
 							case MOVE_LEFT:
-								lastMoveCurrentIndex = 3;
+								lastMoveCurrentIndex = 0;//3
 								break;
 							case MOVE_RIGHT:
-								lastMoveCurrentIndex = 6;
+								lastMoveCurrentIndex = 9;//6
 								break;
 							case MOVE_UP:
-								lastMoveCurrentIndex = 9;
+								lastMoveCurrentIndex = 3;//9
 								break;
 							default:
 								break;
