@@ -53,6 +53,7 @@ import com.kyokomi.core.utils.JsonUtil;
 import com.kyokomi.core.utils.CollidesUtil.TouchEventFlick;
 import com.kyokomi.srpgquest.logic.TalkLogic;
 import com.kyokomi.srpgquest.constant.LayerZIndexType;
+import com.kyokomi.srpgquest.constant.MoveDirectionType;
 import com.kyokomi.srpgquest.dto.MapBattleInfoDto;
 import com.kyokomi.srpgquest.layer.CutInLayer;
 import com.kyokomi.srpgquest.layer.CutInLayer.ICutInCallback;
@@ -540,6 +541,14 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 					animationCallback.doAction();
 				}
 			});
+		}
+		
+		/**
+		 * アクターの向きを設定.
+		 */
+		@Override
+		public void acoterDirection(int acoterSeqNo, MoveDirectionType directionType) {
+			getActorSprite(acoterSeqNo).setPlayerDirection(directionType);
 		}
 
 		@Override

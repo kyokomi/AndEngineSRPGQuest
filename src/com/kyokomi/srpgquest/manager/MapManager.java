@@ -416,6 +416,35 @@ public class MapManager {
 	}
 	
 	/**
+	 * 攻撃方向検索.
+	 * @param x
+	 * @param y
+	 * @param dist
+	 * @param first
+	 */
+	public MoveDirectionType findAttackDirection(MapItem fromMapItem, MapItem toMapItem) {
+		MoveDirectionType resultType = MoveDirectionType.MOVE_DEFAULT;
+		
+		int directionX = fromMapItem.getMapPointX() - toMapItem.getMapPointX();
+		int directionY = fromMapItem.getMapPointY() - toMapItem.getMapPointY();
+		Log.d(TAG, "directX = " + directionX + " directY = " + directionY);
+		// 左
+		if (directionX >= 1) {
+			resultType = MoveDirectionType.MOVE_LEFT;			
+		// 右
+		} else if (directionX < 0) {
+			resultType = MoveDirectionType.MOVE_RIGHT;
+		// 左
+		} else if (directionY >= 1) {
+			resultType = MoveDirectionType.MOVE_UP;
+		// 右
+		} else if (directionY < 0) {
+			resultType = MoveDirectionType.MOVE_DOWN;
+		}
+		return resultType;
+	}
+	
+	/**
 	 * 移動ルート情報を作成.
 	 * movePointListに追加していきます.
 	 * 

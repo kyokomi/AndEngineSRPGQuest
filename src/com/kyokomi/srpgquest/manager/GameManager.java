@@ -9,6 +9,7 @@ import org.andengine.engine.handler.timer.TimerHandler;
 import com.kyokomi.core.dto.ActorPlayerDto;
 import com.kyokomi.srpgquest.constant.GameStateType;
 import com.kyokomi.srpgquest.constant.MapDataType;
+import com.kyokomi.srpgquest.constant.MoveDirectionType;
 import com.kyokomi.srpgquest.constant.SelectMenuType;
 import com.kyokomi.srpgquest.dto.MapBattleInfoDto;
 import com.kyokomi.srpgquest.dto.MapBattleInfoDto.MapSymbol;
@@ -320,6 +321,7 @@ public class GameManager {
 		void stopWalkingEnemyAnimation(int enemySeqNo);
 		void movePlayerAnimation(int playerSeqNo, List<MapPoint> moveMapPointList, final IAnimationCallback animationCallback);
 		void moveEnemyAnimation(int enemySeqNo, List<MapPoint> moveMapPointList, final IAnimationCallback animationCallback);
+		void acoterDirection(int acoterSeqNo, MoveDirectionType directionType);
 		// 障害物
 		void createObstacle(int obstacleId, MapPoint mapPoint);
 		// カーソル
@@ -783,7 +785,9 @@ public class GameManager {
 			isDead = false;
 		}
 		
-		// TODO: [将来対応]キャラが攻撃モーションと敵の方向を向く,敵キャラがダメージモーション
+		// 攻撃対象が攻撃者から見てどの方向にいるか取得
+		mSRPGGameManagerListener.acoterDirection(fromPlayerMapItem.getSeqNo(), 
+				mMapManager.findAttackDirection(fromPlayerMapItem, toPlayerMapItem));
 		
 		// ダメージを表示
 		PointF dispPoint = MapGridUtil.indexToDisp(

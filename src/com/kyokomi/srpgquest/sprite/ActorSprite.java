@@ -16,6 +16,7 @@ import org.andengine.util.modifier.IModifier;
 import com.kyokomi.core.constants.PlayerSpriteType;
 import com.kyokomi.core.dto.ActorPlayerDto;
 import com.kyokomi.core.scene.KeyListenScene;
+import com.kyokomi.srpgquest.constant.MoveDirectionType;
 import com.kyokomi.srpgquest.map.common.MapPoint;
 
 /**
@@ -197,25 +198,7 @@ public class ActorSprite extends Rectangle {
 						
 						@Override
 						public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
-							lastMoveCurrentIndex = 0;
-							switch (mapPoint.getDirection()) {
-							case MOVE_DOWN:
-								lastMoveCurrentIndex = 6;//0
-								break;
-							case MOVE_LEFT:
-								lastMoveCurrentIndex = 0;//3
-								break;
-							case MOVE_RIGHT:
-								lastMoveCurrentIndex = 9;//6
-								break;
-							case MOVE_UP:
-								lastMoveCurrentIndex = 3;//9
-								break;
-							default:
-								break;
-							}
-							player.setCurrentTileIndex(lastMoveCurrentIndex);
-							setPlayerToDefaultPosition();
+							setPlayerDirection(mapPoint.getDirection());
 						}
 					})
 					
@@ -236,6 +219,27 @@ public class ActorSprite extends Rectangle {
 	// ----------------------------------------------
 	// 汎用ポジション設定
 	// ----------------------------------------------
+	public void setPlayerDirection(MoveDirectionType moveDirectionType) {
+		lastMoveCurrentIndex = 0;
+		switch (moveDirectionType) {
+		case MOVE_DOWN:
+			lastMoveCurrentIndex = 6;//0
+			break;
+		case MOVE_LEFT:
+			lastMoveCurrentIndex = 0;//3
+			break;
+		case MOVE_RIGHT:
+			lastMoveCurrentIndex = 9;//6
+			break;
+		case MOVE_UP:
+			lastMoveCurrentIndex = 3;//9
+			break;
+		default:
+			break;
+		}
+		player.setCurrentTileIndex(lastMoveCurrentIndex);
+		setPlayerToDefaultPosition();
+	}
 	/**
 	 * プレイヤーデフォルトポジション設定.
 	 */
