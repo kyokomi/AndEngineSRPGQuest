@@ -37,7 +37,7 @@ public class CutInLayer extends Rectangle {
 		setColor(Color.TRANSPARENT);
 		setVisible(false);
 		setZIndex(LayerZIndexType.CUTIN_LAYER.getValue());
-		attachWithCreateMapBattleCutIn(pBaseScene);
+		attachWithCreateMapBattleCutIn(pBaseScene, mapBattleCutInLayerType);
 	}
 	
 	public MapBattleCutInLayerType getMapBattleCutInLayerType() {
@@ -46,8 +46,11 @@ public class CutInLayer extends Rectangle {
 	
 	private final static int SPRITE_TAG = 1;
 
-	private void attachWithCreateMapBattleCutIn(KeyListenScene pBaseScene) {
+	private void attachWithCreateMapBattleCutIn(KeyListenScene pBaseScene, MapBattleCutInLayerType mapBattleCutInLayerType) {
 		Sprite sprite = pBaseScene.getResourceSprite(getMapBattleCutInLayerType().getFileName());
+		if (mapBattleCutInLayerType.isWindowSize()) {
+			sprite.setSize(pBaseScene.getWindowWidth(), pBaseScene.getWindowHeight());
+		}
 		pBaseScene.placeToCenter(sprite);
 		sprite.setTag(SPRITE_TAG);
 		attachChild(sprite);

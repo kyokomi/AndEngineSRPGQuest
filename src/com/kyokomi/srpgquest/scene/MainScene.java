@@ -6,6 +6,7 @@ import java.util.List;
 import org.andengine.engine.handler.timer.TimerHandler;
 import org.andengine.entity.IEntity;
 import org.andengine.entity.modifier.AlphaModifier;
+import org.andengine.entity.modifier.ColorModifier;
 import org.andengine.entity.modifier.DelayModifier;
 import org.andengine.entity.modifier.IEntityModifier;
 import org.andengine.entity.modifier.LoopEntityModifier;
@@ -28,6 +29,7 @@ import org.andengine.opengl.font.Font;
 import org.andengine.util.HorizontalAlign;
 import org.andengine.util.color.Color;
 import org.andengine.util.modifier.IModifier;
+import org.andengine.util.modifier.LoopModifier;
 import org.andengine.util.modifier.ease.EaseBackInOut;
 
 import android.graphics.Point;
@@ -547,13 +549,33 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		 * アクターの向きを設定.
 		 */
 		@Override
-		public void acoterDirection(int acoterSeqNo, MoveDirectionType directionType) {
+		public void acotorDirection(int acoterSeqNo, MoveDirectionType directionType) {
 			getActorSprite(acoterSeqNo).setPlayerDirection(directionType);
 		}
+		
+		/**
+		 * アクターのダメージエフェクト.
+		 */
+		@Override
+		public void acotorDamageEffect(int acoterSeqNo) {
+//			getMediaManager().play(SoundType.ATTACK_SE);
+			
+			final ActorSprite actorSprite = getActorSprite(acoterSeqNo);
+			final Color color = actorSprite.getPlayer().getColor();
+			// 3回赤くなる
+			actorSprite.getPlayer().registerEntityModifier(new LoopEntityModifier(
+					new SequenceEntityModifier(
+							new ColorModifier(0.1f, color, Color.RED),
+							new ColorModifier(0.1f, Color.RED, color)
+					), 3)
+			);
+		}
 
+		/**
+		 * ダメージテキスト表示.
+		 */
 		@Override
 		public void showDamageText(int damage, final PointF dispPoint) {
-//			getMediaManager().play(SoundType.ATTACK_SE);
 			Rectangle baseMap = getBaseMap();
 			final Text damageText = (Text) baseMap.getChildByTag(DAMAGE_TEXT_TAG);
 			

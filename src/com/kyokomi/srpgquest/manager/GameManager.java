@@ -321,7 +321,8 @@ public class GameManager {
 		void stopWalkingEnemyAnimation(int enemySeqNo);
 		void movePlayerAnimation(int playerSeqNo, List<MapPoint> moveMapPointList, final IAnimationCallback animationCallback);
 		void moveEnemyAnimation(int enemySeqNo, List<MapPoint> moveMapPointList, final IAnimationCallback animationCallback);
-		void acoterDirection(int acoterSeqNo, MoveDirectionType directionType);
+		void acotorDirection(int acoterSeqNo, MoveDirectionType directionType);
+		void acotorDamageEffect(int acoterSeqNo);
 		// 障害物
 		void createObstacle(int obstacleId, MapPoint mapPoint);
 		// カーソル
@@ -786,13 +787,15 @@ public class GameManager {
 		}
 		
 		// 攻撃対象が攻撃者から見てどの方向にいるか取得
-		mSRPGGameManagerListener.acoterDirection(fromPlayerMapItem.getSeqNo(), 
+		mSRPGGameManagerListener.acotorDirection(fromPlayerMapItem.getSeqNo(), 
 				mMapManager.findAttackDirection(fromPlayerMapItem, toPlayerMapItem));
 		
 		// ダメージを表示
 		PointF dispPoint = MapGridUtil.indexToDisp(
 				toPlayerMapItem.getMapPointX(), toPlayerMapItem.getMapPointY());
 		mSRPGGameManagerListener.showDamageText(damage, dispPoint);
+		mSRPGGameManagerListener.acotorDamageEffect(toPlayerMapItem.getSeqNo());
+		
 		// ステータスウィンドウへの反映と死亡時はマップ上から消す
 		if (toPlayerMapItem.getMapDataType() == MapDataType.ENEMY) {
 			mSRPGGameManagerListener.refreshEnemyStatusWindow(toPlayerMapItem.getSeqNo());
