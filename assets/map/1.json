@@ -1,5 +1,7 @@
 [
 	{
+		"mapId": 1,
+		"mapBattleType": 0,
 		"mapSizeX":20,
 		"mapSizeY":12,
 	    "map": [

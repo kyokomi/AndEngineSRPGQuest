@@ -8,6 +8,7 @@ import org.andengine.engine.handler.timer.TimerHandler;
 
 import com.kyokomi.core.dto.ActorPlayerDto;
 import com.kyokomi.srpgquest.constant.GameStateType;
+import com.kyokomi.srpgquest.constant.MapBattleType;
 import com.kyokomi.srpgquest.constant.MapDataType;
 import com.kyokomi.srpgquest.constant.MoveDirectionType;
 import com.kyokomi.srpgquest.constant.SelectMenuType;
@@ -566,8 +567,16 @@ public class GameManager {
 		} else if (pGameStateType == GameStateType.START) {
 			
 			// プレイヤーターン開始
-			changePlayerTurn();
-			
+			if (mMapBattleInfoDto.getMapBattleType() == MapBattleType.START_PLAYER_TURN) {
+				changePlayerTurn();	
+			// 敵ターン開始
+			} else if (mMapBattleInfoDto.getMapBattleType() == MapBattleType.START_ENEMY_TURN) {
+				changeEnemyTurn();
+			// 設定ミス
+			} else {
+				// とりあえず死亡で
+				changeEnemyWin();
+			}
 		} else {
 			mGameState = pGameStateType;
 		}

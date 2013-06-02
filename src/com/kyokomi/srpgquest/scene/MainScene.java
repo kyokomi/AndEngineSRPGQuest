@@ -29,7 +29,6 @@ import org.andengine.opengl.font.Font;
 import org.andengine.util.HorizontalAlign;
 import org.andengine.util.color.Color;
 import org.andengine.util.modifier.IModifier;
-import org.andengine.util.modifier.LoopModifier;
 import org.andengine.util.modifier.ease.EaseBackInOut;
 
 import android.graphics.Point;

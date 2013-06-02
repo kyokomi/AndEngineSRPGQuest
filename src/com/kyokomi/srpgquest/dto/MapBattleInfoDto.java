@@ -7,6 +7,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.kyokomi.srpgquest.constant.MapBattleType;
+
 import android.util.SparseArray;
 
 /**
@@ -17,6 +19,7 @@ import android.util.SparseArray;
 public class MapBattleInfoDto {
 
 	private Integer mapId;
+	private MapBattleType mapBattleType;
 	private Integer mapSizeX;
 	private Integer mapSizeY;
 	
@@ -31,6 +34,7 @@ public class MapBattleInfoDto {
 				
 				JSONObject jsonObj = pJsonArray.getJSONObject(i);
 				// 基本情報を取得
+				this.mapBattleType =  MapBattleType.get(jsonObj.getInt("mapBattleType"));
 				this.mapSizeX =  jsonObj.getInt("mapSizeX");
 				this.mapSizeY =  jsonObj.getInt("mapSizeY");
 				// シンボル情報を取得
@@ -85,6 +89,12 @@ public class MapBattleInfoDto {
 		this.mapId = mapId;
 	}
 
+	public MapBattleType getMapBattleType() {
+		return mapBattleType;
+	}
+	public void setMapBattleType(MapBattleType mapBattleType) {
+		this.mapBattleType = mapBattleType;
+	}
 	public Integer getMapSizeX() {
 		return mapSizeX;
 	}
