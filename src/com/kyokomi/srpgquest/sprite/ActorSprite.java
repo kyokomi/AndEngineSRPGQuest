@@ -60,6 +60,9 @@ public class ActorSprite extends Rectangle {
 
 	/** プレイヤーキャラクター. */
 	private AnimatedSprite player;
+	public AnimatedSprite getPlayer() {
+		return player;
+	}
 	/** 最後に移動した時の向き. */
 	private int lastMoveCurrentIndex = 0;
 	
@@ -150,6 +153,7 @@ public class ActorSprite extends Rectangle {
 			player.setSize(w, h);
 		}
 	}
+	
 	/**
 	 * 水平方向反転.
 	 * @param pFlippedHorizontal

@@ -186,11 +186,12 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	 * 次シナリオへ
 	 */
 	public void nextScenario() {
+		// FPS表示以外を開放
 		for (int i = 0; i < getChildCount(); i++) {
 			if (getChildByIndex(i).getTag() == FPS_TAG) {
 				continue;
 			}
-			// タッチの検知も無効にする
+			// ボタンはタッチの検知も無効にする
 			if (getChildByIndex(i) instanceof ButtonSprite) {
 				unregisterTouchArea((ButtonSprite) getChildByIndex(i));
 			}
@@ -392,6 +393,7 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 					for (Integer seqNo : playerSeqNoList) {
 						ActorSprite actorSprite = getActorSprite(seqNo);
 						actorSprite.setPlayerToDefaultPosition();
+						actorSprite.getPlayer().setColor(Color.WHITE);
 					}
 					cutInCallback.doAction();					
 				}
@@ -399,12 +401,13 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		}
 		@Override
 		public void showEnemyTurnCutIn(final List<Integer> enemySeqNoList, final ICutInCallback cutInCallback) {
-			showCutIn(MapBattleCutInLayerType.PLAYER_TURN_CUTIN, new ICutInCallback() {
+			showCutIn(MapBattleCutInLayerType.ENEMY_TURN_CUTIN, new ICutInCallback() {
 				@Override
 				public void doAction() {
 					for (Integer seqNo : enemySeqNoList) {
 						ActorSprite enemySprite = getActorSprite(seqNo);
 						enemySprite.setPlayerToDefaultPosition();
+						enemySprite.getPlayer().setColor(Color.WHITE);
 					}
 					cutInCallback.doAction();					
 				}
@@ -443,14 +446,16 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 
 		@Override
 		public void stopWalkingPlayerAnimation(int playerSeqNo) {
-			ActorSprite ActorSprite = getActorSprite(playerSeqNo);
-			ActorSprite.setPlayerToDefaultPositionStop();
+			ActorSprite actorSprite = getActorSprite(playerSeqNo);
+			actorSprite.setPlayerToDefaultPositionStop();
+			actorSprite.getPlayer().setColor(new Color(0.4f, 0.4f, 0.4f));
 		}
 
 		@Override
 		public void stopWalkingEnemyAnimation(int enemySeqNo) {
 			ActorSprite enemySprite = getActorSprite(enemySeqNo);
 			enemySprite.setPlayerToDefaultPositionStop();
+			enemySprite.getPlayer().setColor(new Color(0.4f, 0.4f, 0.4f));
 		}
 
 		/**
@@ -580,7 +585,7 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		public void showEnemyStatusWindow(int enemySeqNo) {
 			// プレイヤーが表示されていたら下に表示
 			float y = 0;
-			PlayerStatusRectangle enemyStatusRect = getPlayerStatusRectangle(getActorSprite(enemySeqNo).getPlayerId());
+			PlayerStatusRectangle enemyStatusRect = getPlayerStatusRectangle(enemySeqNo);
 			if (enemyStatusRect != null) {
 				enemyStatusRect.show(PlayerStatusRectangleType.MINI_STATUS);
 				enemyStatusRect.setY(y);
@@ -805,12 +810,15 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		player.setTag(playerSeqNo);
 		getBaseMap().attachChild(player);
 		
-		PlayerStatusRectangle playerStatusRect = initStatusWindow(player, 0);
-		playerStatusRect.setZIndex(LayerZIndexType.POPUP_LAYER.getValue());
-		playerStatusRect.setColor(Color.BLUE);
-		playerStatusRect.setAlpha(0.5f);
-		playerStatusRect.setTag(80000 + playerSeqNo);// TODO: TAG
-		attachChild(playerStatusRect);
+		PlayerStatusRectangle playerStatusRect = getPlayerStatusRectangle(playerSeqNo);
+		if (playerStatusRect == null) { 
+			playerStatusRect = initStatusWindow(player, 0);
+			playerStatusRect.setZIndex(LayerZIndexType.POPUP_LAYER.getValue());
+			playerStatusRect.setColor(Color.BLUE);
+			playerStatusRect.setAlpha(0.5f);
+			playerStatusRect.setTag(80000 + playerSeqNo);// TODO: TAG
+			attachChild(playerStatusRect);
+		}
 		playerStatusRect.setVisible(false);
 	}
 	
@@ -834,12 +842,15 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		enemy.setTag(enemySeqNo);
 		getBaseMap().attachChild(enemy);
 		
-		PlayerStatusRectangle enemyStatusRect = initStatusWindow(enemy, 0);
-		enemyStatusRect.setZIndex(LayerZIndexType.POPUP_LAYER.getValue());
-		enemyStatusRect.setColor(Color.RED);
-		enemyStatusRect.setAlpha(0.5f);
-		enemyStatusRect.setTag(80000 + enemySeqNo);// TODO: TAG
-		attachChild(enemyStatusRect);
+		PlayerStatusRectangle enemyStatusRect = getPlayerStatusRectangle(enemySeqNo);
+		if (enemyStatusRect == null) {
+			enemyStatusRect = initStatusWindow(enemy, 0);
+			enemyStatusRect.setZIndex(LayerZIndexType.POPUP_LAYER.getValue());
+			enemyStatusRect.setColor(Color.RED);
+			enemyStatusRect.setAlpha(0.5f);
+			enemyStatusRect.setTag(80000 + enemySeqNo);// TODO: TAG
+			attachChild(enemyStatusRect);			
+		}
 		enemyStatusRect.setVisible(false);
 	}
 	
@@ -848,12 +859,11 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	 * @param mapPoint
 	 */
 	private void createObstacleSprite(int currentTileIndex, MapPoint mapPoint, float size) {
-		Sprite obstacle = getResourceSprite("icon_ob.png");
-//		obstacle.setPosition(mapPoint.getX(), mapPoint.getY());
+		Sprite obstacle = getResourceSprite("ob.png");
 		obstacle.setSize(size, size);
 		obstacle.setPosition(
 				mapPoint.getX() + (MapGridUtil.GRID_X / 2) - (obstacle.getWidth() / 2) - (obstacle.getWidth() / 8), 
-				mapPoint.getY() + (MapGridUtil.GRID_Y / 2) - obstacle.getHeight() + (obstacle.getHeight() / 8));
+				mapPoint.getY() + (MapGridUtil.GRID_Y / 2) - obstacle.getHeight() + (obstacle.getHeight() / 2));
 		obstacle.setZIndex(LayerZIndexType.ACTOR_LAYER.getValue());
 		obstacle.setTag(OBSTACLE_TAG_START + obstacleIndex); obstacleIndex++;
 		getBaseMap().attachChild(obstacle);
@@ -869,21 +879,18 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		if (actorSprite == null) {
 			return null;
 		}
-		PlayerStatusRectangle playerStatusRectangle = getPlayerStatusRectangle(actorSprite.getPlayerId());
-		if (playerStatusRectangle == null) {
-			playerStatusRectangle = new PlayerStatusRectangle(this, 
-					getFont(), actorSprite.getActorPlayer(), 
-					ActorSprite.getFaceFileName(actorSprite.getActorPlayer().getImageResId()), 
-					getWindowWidth() / 2, y, 
-					getWindowWidth() / 2, getWindowHeight() / 2);
-			playerStatusRectangle.setZIndex(LayerZIndexType.POPUP_LAYER.getValue());
-			CommonWindowRectangle commonWindowRectangle = new CommonWindowRectangle(
-					0, 0, 
-					playerStatusRectangle.getWidth(), 
-					playerStatusRectangle.getHeight() / 2,
-					Color.TRANSPARENT, 0.0f, this);
-			playerStatusRectangle.attachChild(commonWindowRectangle);
-		}
+		PlayerStatusRectangle playerStatusRectangle = new PlayerStatusRectangle(this, 
+				getFont(), actorSprite.getActorPlayer(), 
+				ActorSprite.getFaceFileName(actorSprite.getActorPlayer().getImageResId()), 
+				getWindowWidth() / 2, y, 
+				getWindowWidth() / 2, getWindowHeight() / 2);
+		playerStatusRectangle.setZIndex(LayerZIndexType.POPUP_LAYER.getValue());
+		CommonWindowRectangle commonWindowRectangle = new CommonWindowRectangle(
+				0, 0, 
+				playerStatusRectangle.getWidth(), 
+				playerStatusRectangle.getHeight() / 2,
+				Color.TRANSPARENT, 0.0f, this);
+		playerStatusRectangle.attachChild(commonWindowRectangle);
 		return playerStatusRectangle;
 	}
 	
@@ -1358,23 +1365,39 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 			}
 			placeToCenterX(itemIconRectangle, itemIconRectangle.getY());
 		}
-		
+		// 経験値振り分けウィンドウ表示
+		final ExpDistributionLayer expDistributionLayer = new ExpDistributionLayer(0, 0, 
+				getWindowWidth(), getWindowHeight(), MainScene.this);
+		expDistributionLayer.setVisible(false);
+		attachChild(expDistributionLayer);
 		// 次へボタン生成
-		ButtonSprite nextSceneButtonSprite = getResourceButtonSprite("btn/next_btn.png", "btn/next_btn_p.png");
+		final ButtonSprite nextSceneButtonSprite = getResourceButtonSprite("btn/next_btn.png", "btn/next_btn_p.png");
 		placeToCenterX(nextSceneButtonSprite, getWindowHeight() - nextSceneButtonSprite.getHeight() - 40);
 		registerTouchArea(nextSceneButtonSprite);
+		nextSceneButtonSprite.setVisible(false);
 		nextSceneButtonSprite.setOnClickListener(new ButtonSprite.OnClickListener() {
 			@Override
 			public void onClick(ButtonSprite pButtonSprite, float pTouchAreaLocalX,
 					float pTouchAreaLocalY) {
-				ExpDistributionLayer expDistributionLayer = new ExpDistributionLayer(0, 0, 
-						getWindowWidth(), getWindowHeight(), MainScene.this);
-				attachChild(expDistributionLayer);
 				// 次のシナリオへ
-//				nextScenario();
+				nextScenario();					
 			}
 		});
 		attachChild(nextSceneButtonSprite);
+		
+		// 次へボタン生成
+		ButtonSprite showExpDistributionButton = getResourceButtonSprite("btn/next_btn.png", "btn/next_btn_p.png");
+		placeToCenterX(showExpDistributionButton, getWindowHeight() - showExpDistributionButton.getHeight() - 40);
+		registerTouchArea(showExpDistributionButton);
+		showExpDistributionButton.setOnClickListener(new ButtonSprite.OnClickListener() {
+			@Override
+			public void onClick(ButtonSprite pButtonSprite, float pTouchAreaLocalX,
+					float pTouchAreaLocalY) {
+				expDistributionLayer.setVisible(true);
+				nextSceneButtonSprite.setVisible(true);
+			}
+		});
+		attachChild(showExpDistributionButton);
 	}
 
 	private void touchEventResultPart(Scene pScene, TouchEvent pSceneTouchEvent) {
