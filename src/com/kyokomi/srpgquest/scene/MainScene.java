@@ -1,5 +1,6 @@
 package com.kyokomi.srpgquest.scene;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.andengine.engine.handler.timer.TimerHandler;
@@ -197,6 +198,8 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 			}
 			detachEntity(getChildByIndex(i));
 		}
+		System.gc();
+		
 		// セーブAnd次シナリオへ進行
 		getBaseActivity().getGameController().nextScenarioAndSave(this);
 		init();
@@ -339,16 +342,38 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		}
 
 		@Override
-		public void createMoveCursors(List<MapPoint> cursorMapPointList) {
-			for (MapPoint mapPoint : cursorMapPointList) {
-				createMoveCursorSprite(mapPoint);
+		public void createMoveCursors(List<Point> cursorMapPointList) {
+			List<Sprite> cursorSpriteList = getCursorSpriteList(LayerZIndexType.MOVECURSOR_LAYER);
+			int size = cursorMapPointList.size();
+			for (int i = 0; i < size; i++) {
+				Point mapPoint = cursorMapPointList.get(i);
+				IAreaShape cursor = null;
+				if (cursorSpriteList.size() >= i) {
+					cursor = cursorSpriteList.get(i);
+					PointF pointF = MapGridUtil.indexToDisp(new Point(mapPoint.x, mapPoint.y));
+					cursor.setPosition(pointF.x, pointF.y);
+					cursor.setVisible(true);
+				} else {
+					cursor = createMoveCursorSprite(mapPoint);					
+				}
 			}
 		}
 
 		@Override
-		public void createAttackCursors(List<MapPoint> cursorMapPointList) {
-			for (MapPoint mapPoint : cursorMapPointList) {
-				createAttackCursorSprite(mapPoint);
+		public void createAttackCursors(List<Point> cursorMapPointList) {
+			List<Sprite> cursorSpriteList = getCursorSpriteList(LayerZIndexType.ATTACKCURSOR_LAYER);
+			int size = cursorMapPointList.size();
+			for (int i = 0; i < size; i++) {
+				Point mapPoint = cursorMapPointList.get(i);
+				IAreaShape cursor = null;
+				if (cursorSpriteList.size() >= i) {
+					cursor = cursorSpriteList.get(i);
+					PointF pointF = MapGridUtil.indexToDisp(new Point(mapPoint.x, mapPoint.y));
+					cursor.setPosition(pointF.x, pointF.y);
+					cursor.setVisible(true);
+				} else {
+					cursor = createAttackCursorSprite(mapPoint);					
+				}
 			}
 		}
 
@@ -632,6 +657,7 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	private MapBattleSelectMenuLayer mMapBattleSelectMenuLayer;
 	
 	private MapBattleInfoDto mMapBattleInfoDto;
+	
 	/**
 	 * SRPGマップバトルパートの初期化処理
 	 */
@@ -662,17 +688,10 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		// グリッド線表示
 		showGrid(mapBaseRect);
 
-		// 選択カーソルを用意
-		Sprite cursorSprite = getResourceSprite("grid128.png");
-		cursorSprite.setColor(Color.CYAN);
+		// 選択カーソルを用意		
+		Sprite cursorSprite = createCursorSprite(new Point(0, 0), Color.CYAN);
 		cursorSprite.setVisible(false);
 		cursorSprite.setZIndex(LayerZIndexType.SELECTCURSOR_LAYER.getValue());
-		cursorSprite.setSize(MapGridUtil.GRID_X, MapGridUtil.GRID_Y);
-		cursorSprite.registerEntityModifier(new LoopEntityModifier(new SequenceEntityModifier(
-				new AlphaModifier(0.5f, 0.2f, 0.6f),
-				new AlphaModifier(0.5f, 0.6f, 0.2f)
-				)));
-		mapBaseRect.attachChild(cursorSprite);
 		
 		// タッチレイヤー初期化
 		MapBattleClearConditionTouchLayer mMapBattleTouchLayer = new MapBattleClearConditionTouchLayer(this);
@@ -701,10 +720,42 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		mGameManager = new GameManager(mSrpgGameManagerListener);
 		mGameManager.mapInit(mMapBattleInfoDto); // 10 x 10 スケール1倍のグリッドマップ
 		
+		startMap(saveDataDto);
+	}
+	
+	/**
+	 * initMapの後に行う処理
+	 */
+	private void startMap(SaveDataDto saveDataDto) {
 		// プレイヤー情報ができてから呼び出さないといけないので注意
 		// 会話レイヤーを生成
 		initTalk(saveDataDto.getScenarioNo(), saveDataDto.getSeqNo());
-		
+
+		// 移動カーソルを予め生成しておく
+		int maxMoveCount = 0;
+		int maxAttakRange = 0;
+		List<ActorSprite> actorSpriteList = getActorSpriteList();
+		for (ActorSprite actorSprite : actorSpriteList) {
+			int attackRange = actorSprite.getActorPlayer().getAttackRange();
+			int movePoint = actorSprite.getActorPlayer().getMovePoint();
+			if (movePoint > maxMoveCount) {
+				maxMoveCount = movePoint;
+			}
+			if (attackRange > maxAttakRange) {
+				maxAttakRange = attackRange;
+			}
+		}
+		// 自分のマス + 4方向の移動可能数累乗が移動可能カーソル描画最大数
+		int cursorCount = 1 + (int) Math.pow(4, maxMoveCount);
+		for (int i = 0; i < cursorCount; i++) {
+			IAreaShape cursor = createMoveCursorSprite(new Point(0, 0));
+			cursor.setVisible(false);
+		}
+		int attackCursorCount = 1 + (int) Math.pow(4, maxAttakRange);
+		for (int i = 0; i < attackCursorCount; i++) {
+			IAreaShape cursor = createAttackCursorSprite(new Point(0, 0));
+			cursor.setVisible(false);
+		}
 	}
 	
 	/**
@@ -833,7 +884,6 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		ActorSprite enemy = new ActorSprite(enemyActor, this, 0, 0, size, size, 1.0f);
 		
 		enemy.setPlayerToDefaultPosition();
-//		enemy.setPlayerPosition(mapPoint.getX(), mapPoint.getY());
 		enemy.setPlayerSize(size, size);
 		enemy.setPlayerPosition(
 				mapPoint.getX() + (MapGridUtil.GRID_X / 2) - (enemy.getWidth() / 2) - (enemy.getWidth() / 8), 
@@ -957,6 +1007,21 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		}
 		return null;
 	}
+	/**
+	 * パフォーマンス悪そうなので多用しないように
+	 * @return
+	 */
+	private List<ActorSprite> getActorSpriteList() {
+		List<ActorSprite> actorSpriteList = new ArrayList<ActorSprite>();
+		Rectangle baseMap = getBaseMap();
+		int count = baseMap.getChildCount();
+		for (int i = 0; i < count; i++) {
+			if (baseMap.getChildByIndex(i) instanceof ActorSprite) {
+				actorSpriteList.add((ActorSprite) baseMap.getChildByIndex(i));
+			}
+		}
+		return actorSpriteList;
+	}
 	
 	private Rectangle getBaseMap() {
 		Rectangle mapBaseRect = null;
@@ -975,17 +1040,19 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	 * 移動カーソル描画.
 	 * @param mapPoint
 	 */
-	private void createMoveCursorSprite(MapPoint mapPoint) {
-		IAreaShape cursorRectangle = createCursorSprite(mapPoint, Color.GREEN);
+	private IAreaShape createMoveCursorSprite(Point mapIndexPoint) {
+		IAreaShape cursorRectangle = createCursorSprite(mapIndexPoint, Color.GREEN);
 		cursorRectangle.setZIndex(LayerZIndexType.MOVECURSOR_LAYER.getValue());
+		return cursorRectangle;
 	}
 	/**
 	 * 攻撃カーソル描画.
 	 * @param mapPoint
 	 */
-	private void createAttackCursorSprite(MapPoint mapPoint) {
-		IAreaShape cursorRectangle = createCursorSprite(mapPoint, Color.YELLOW);
+	private IAreaShape createAttackCursorSprite(Point mapIndexPoint) {
+		IAreaShape cursorRectangle = createCursorSprite(mapIndexPoint, Color.YELLOW);
 		cursorRectangle.setZIndex(LayerZIndexType.ATTACKCURSOR_LAYER.getValue());
+		return cursorRectangle;
 	}
 	/**
 	 * カーソル選択.
@@ -1013,8 +1080,8 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	 * カーソル描画.
 	 * @param mapPoint
 	 */
-	private Sprite createCursorSprite(MapPoint mapPoint, Color color) {
-		PointF pointF = MapGridUtil.indexToDisp(new Point(mapPoint.getMapPointX(), mapPoint.getMapPointY()));
+	private Sprite createCursorSprite(Point mapIndexPoint, Color color) {
+		PointF pointF = MapGridUtil.indexToDisp(new Point(mapIndexPoint.x, mapIndexPoint.y));
 		
 		Sprite cursor = getResourceSprite("grid128.png");
 		cursor.setColor(color);
@@ -1041,10 +1108,13 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 				for (int i = 0; i < baseMap.getChildCount(); i++) {
 					if (baseMap.getChildByIndex(i) instanceof Sprite) {
 						Sprite sprite = (Sprite) baseMap.getChildByIndex(i);
-						// 攻撃カーソルと移動カーソルはさようなら
-						if (sprite.getZIndex() == LayerZIndexType.MOVECURSOR_LAYER.getValue().intValue() ||
-								sprite.getZIndex() == LayerZIndexType.ATTACKCURSOR_LAYER.getValue().intValue()) {
-							detachEntity(sprite);
+						// 移動カーソル使いまわす
+						if (sprite.getZIndex() == LayerZIndexType.MOVECURSOR_LAYER.getValue().intValue()) {
+							sprite.setVisible(false);
+							
+						// 攻撃カーソルは使いまわす
+						} else if (sprite.getZIndex() == LayerZIndexType.ATTACKCURSOR_LAYER.getValue().intValue()) {
+							sprite.setVisible(false);
 							
 						// 選択カーソルは使いまわす
 						} else if (sprite.getZIndex() == LayerZIndexType.SELECTCURSOR_LAYER.getValue().intValue()) {
@@ -1054,6 +1124,26 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 				}
 			}
 		});
+	}
+	
+	/**
+	 * 指定レイヤーのカーソルをリストで取得
+	 * 重そうなので多用しない。あと描画中に使わない。（countが増えたりすると落ちるので
+	 * @param layerZIndexType
+	 * @return
+	 */
+	private List<Sprite> getCursorSpriteList(LayerZIndexType layerZIndexType) {
+		List<Sprite> cursorList = new ArrayList<Sprite>();
+		Rectangle baseMap = getBaseMap();
+		for (int i = 0; i < baseMap.getChildCount(); i++) {
+			if (baseMap.getChildByIndex(i) instanceof Sprite) {
+				Sprite sprite = (Sprite) baseMap.getChildByIndex(i);
+				if (sprite.getZIndex() == layerZIndexType.getValue().intValue()) {
+					cursorList.add(sprite);
+				} 
+			}
+		}
+		return cursorList;
 	}
 
 	// ----------------- アニメーション　演出 -------------------

@@ -21,6 +21,7 @@ import com.kyokomi.srpgquest.scene.MainScene;
 import com.kyokomi.srpgquest.scene.MainScene.IAnimationCallback;
 import com.kyokomi.srpgquest.utils.MapGridUtil;
 
+import android.graphics.Point;
 import android.graphics.PointF;
 import android.util.Log;
 import android.util.SparseArray;
@@ -322,8 +323,8 @@ public class GameManager {
 		// 障害物
 		void createObstacle(int obstacleId, MapPoint mapPoint);
 		// カーソル
-		void createMoveCursors(List<MapPoint> cursorMapPointList);
-		void createAttackCursors(List<MapPoint> cursorMapPointList);
+		void createMoveCursors(List<Point> cursorMapPointList);
+		void createAttackCursors(List<Point> cursorMapPointList);
 		void touchedCusor(MapPoint mapPoint);
 		void hideCursor();
 		// カットイン
@@ -398,10 +399,9 @@ public class GameManager {
 			Log.d(TAG, "showMoveDistCursor create error");
 			return false;
 		}
-		List<MapPoint> cursorMapPointList = new ArrayList<MapPoint>();
+		List<Point> cursorMapPointList = new ArrayList<Point>();
 		for (MapItem mapItem : mapItems) {
-			MapPoint mapItemPoint = mMapManager.calcGridPosition(mapItem.getMapPointX(), mapItem.getMapPointY());
-			cursorMapPointList.add(mapItemPoint);
+			cursorMapPointList.add(new Point(mapItem.getMapPointX(), mapItem.getMapPointY()));
 		}
 		mSRPGGameManagerListener.createMoveCursors(cursorMapPointList);
 		return true;
@@ -411,19 +411,22 @@ public class GameManager {
 	 * 攻撃範囲カーソル表示.
 	 * @param mapItem
 	 */
-	private void showAttackDistCursor(MapItem mapItem) {
+	private boolean showAttackDistCursor(MapItem mapItem) {
 		MapPoint mapPoint = mMapManager.calcGridPosition(mapItem.getMapPointX(), mapItem.getMapPointY());
-		showAttackDistCursor(mapPoint);
+		return showAttackDistCursor(mapPoint);
 	}
-	private void showAttackDistCursor(MapPoint mapPoint) {
+	private boolean showAttackDistCursor(MapPoint mapPoint) {
 		List<MapItem> mapItems = mMapManager.actorPlayerFindAttackDist(mapPoint);
-		
-		List<MapPoint> cursorMapPointList = new ArrayList<MapPoint>();
+		if (mapItems == null || mapItems.isEmpty()) {
+			Log.d(TAG, "showAttackDistCursor create error");
+			return false;
+		}
+		List<Point> cursorMapPointList = new ArrayList<Point>();
 		for (MapItem mapItem : mapItems) {
-			MapPoint mapItemPoint = mMapManager.calcGridPosition(mapItem.getMapPointX(), mapItem.getMapPointY());
-			cursorMapPointList.add(mapItemPoint);
+			cursorMapPointList.add(new Point(mapItem.getMapPointX(), mapItem.getMapPointY()));
 		}
 		mSRPGGameManagerListener.createAttackCursors(cursorMapPointList);
+		return true;
 	}
 	
 	// ----------------------------------------------------------

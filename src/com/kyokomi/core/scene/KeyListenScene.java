@@ -1,10 +1,5 @@
 package com.kyokomi.core.scene;
 
-import java.io.IOException;
-
-import org.andengine.audio.sound.Sound;
-import org.andengine.audio.sound.SoundFactory;
-import org.andengine.entity.Entity;
 import org.andengine.entity.IEntity;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.shape.IAreaShape;
@@ -24,7 +19,6 @@ import org.andengine.util.color.Color;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.utils.ResourceUtil;
-import com.kyokomi.core.manager.MediaManager;
 
 import android.content.Intent;
 import android.graphics.Typeface;
@@ -203,9 +197,20 @@ public abstract class KeyListenScene extends Scene {
 						entity.getChildByIndex(i).detachChildren();
 						entity.getChildByIndex(i).detachSelf();
 					}
+					if (entity.getChildByIndex(i) instanceof Sprite) {
+						Sprite sprite = (Sprite) entity.getChildByIndex(i);
+						sprite.dispose();
+						sprite = null;
+					}
 				}
 				entity.detachChildren();
 				entity.detachSelf();
+				
+				if (entity instanceof Sprite) {
+					Sprite sprite = (Sprite) entity;
+					sprite.dispose();
+					sprite = null;
+				}
 			}
 		});
 	}
