@@ -19,8 +19,7 @@ import com.kyokomi.srpgquest.logic.BattleLogic;
 import com.kyokomi.srpgquest.map.common.MapPoint;
 import com.kyokomi.srpgquest.map.item.ActorPlayerMapItem;
 import com.kyokomi.srpgquest.map.item.MapItem;
-import com.kyokomi.srpgquest.scene.MainScene;
-import com.kyokomi.srpgquest.scene.MainScene.IAnimationCallback;
+import com.kyokomi.srpgquest.scene.part.SRPGPart.IAnimationCallback;
 import com.kyokomi.srpgquest.utils.MapGridUtil;
 
 import android.graphics.Point;
@@ -266,8 +265,7 @@ public class GameManager {
 					
 					// 移動リストを引数にScene側の移動アニメーションを呼び出す
 					mSRPGGameManagerListener.movePlayerAnimation(mSelectActorPlayer.getSeqNo(), 
-							moveMapPointList, 
-							new MainScene.IAnimationCallback() {
+							moveMapPointList, new IAnimationCallback() {
 						@Override
 						public void doAction() {
 							// カーソルを消す
@@ -684,7 +682,7 @@ public class GameManager {
 				
 				// 移動リストを引数にScene側の移動アニメーションを呼び出す
 				mSRPGGameManagerListener.moveEnemyAnimation(enemyMapItem.getSeqNo(), moveMapPointList, 
-						new MainScene.IAnimationCallback() {
+						new IAnimationCallback() {
 					@Override
 					public void doAction() {
 						

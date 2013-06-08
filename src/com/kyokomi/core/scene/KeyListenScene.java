@@ -100,7 +100,7 @@ public abstract class KeyListenScene extends Scene {
 	 * Scene表示.
 	 * @param scene
 	 */
-	protected void showScene(KeyListenScene scene) {
+	public void showScene(KeyListenScene scene) {
 		ResourceUtil.getInstance(getBaseActivity()).resetAllTexture();
 		getBaseActivity().getEngine().setScene(scene);
 		// 履歴は残さない
@@ -186,7 +186,7 @@ public abstract class KeyListenScene extends Scene {
 	 * 画面破棄.
 	 * detachChildrenとdetachSelfを呼ぶときは別スレッドで行う。
 	 */
-	protected void detachEntity(final IEntity entity) {
+	public void detachEntity(final IEntity entity) {
 		getBaseActivity().runOnUpdateThread(new Runnable() {
 			@Override
 			public void run() {
@@ -286,7 +286,7 @@ public abstract class KeyListenScene extends Scene {
 		mBaseFont = createFont(Typeface.DEFAULT, fontSize, Color.WHITE);
 		defualtFontSize = fontSize;
 	}
-	protected Font getFont() {
+	public Font getFont() {
 		if (mBaseFont == null) {
 			initFont(defualtFontSize);
 		}

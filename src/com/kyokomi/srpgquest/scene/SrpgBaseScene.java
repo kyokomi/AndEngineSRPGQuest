@@ -5,6 +5,7 @@ import org.andengine.entity.modifier.AlphaModifier;
 import org.andengine.entity.modifier.IEntityModifier;
 import org.andengine.entity.modifier.ParallelEntityModifier;
 import org.andengine.entity.modifier.ScaleModifier;
+import org.andengine.entity.sprite.ButtonSprite;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.util.modifier.IModifier;
 
@@ -69,5 +70,35 @@ public abstract class SrpgBaseScene extends KeyListenScene {
 	
 	public SrpgBaseScene(MultiSceneActivity baseActivity) {
 		super(baseActivity);
+	}
+	
+	/**
+	 * 次シナリオへ
+	 */
+	public void nextScenario() {
+		// FPS表示以外を開放
+		for (int i = 0; i < getChildCount(); i++) {
+			if (getChildByIndex(i).getTag() == FPS_TAG) {
+				continue;
+			}
+			// ボタンはタッチの検知も無効にする
+			if (getChildByIndex(i) instanceof ButtonSprite) {
+				unregisterTouchArea((ButtonSprite) getChildByIndex(i));
+			}
+			detachEntity(getChildByIndex(i));
+		}
+		System.gc();
+		
+		// セーブAnd次シナリオへ進行
+		getBaseActivity().getGameController().nextScenarioAndSave(this);
+		init();
+	}
+	
+	public float getDispStartX() {
+		return 0;
+	}
+	
+	public float getDispStartY() {
+		return 0;
 	}
 }
