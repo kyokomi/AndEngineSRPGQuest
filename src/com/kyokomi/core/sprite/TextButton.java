@@ -1,5 +1,7 @@
 package com.kyokomi.core.sprite;
 
+import java.util.List;
+
 import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.text.Text;
 
@@ -19,14 +21,29 @@ public class TextButton extends Rectangle {
 	private OnClickListener mOnClickListener;
 
 	private boolean mEnabled = true;
-	private State mState;
+	private List<TextButtonState> mStateList;
+	private TextButtonState mState;
 	private Text mButtonText;
 	private String baseText;
 
 	// ===========================================================
 	// Constructors
 	// ===========================================================
-
+	public TextButton(List<TextButtonState> textButtonStateList, Text pText, float pX, float pY, float pAddWidth, float pAddHeight,
+			VertexBufferObjectManager pVertexBufferObjectManager, final OnClickListener pOnClickListener) {
+		super(pX, pY, pText.getWidth() + pAddWidth, pText.getHeight() + pAddHeight, pVertexBufferObjectManager);
+		this.setColor(Color.BLACK);
+		this.setAlpha(0.8f);
+		this.mOnClickListener = pOnClickListener;
+		
+		this.mButtonText = pText;
+		this.baseText = mButtonText.getText().toString();
+		this.mButtonText.setPosition(pAddWidth / 2, pAddHeight / 2);
+		attachChild(mButtonText);
+		
+		this.mStateList = textButtonStateList;
+		this.changeState(getButtonState(State.NORMAL));
+	}
 	public TextButton(Text pText, float pX, float pY, float pAddWidth, float pAddHeight,
 			VertexBufferObjectManager pVertexBufferObjectManager, final OnClickListener pOnClickListener) {
 		super(pX, pY, pText.getWidth() + pAddWidth, pText.getHeight() + pAddHeight, pVertexBufferObjectManager);
@@ -39,7 +56,7 @@ public class TextButton extends Rectangle {
 		this.mButtonText.setPosition(pAddWidth / 2, pAddHeight / 2);
 		attachChild(mButtonText);
 		
-		this.changeState(State.NORMAL);
+		this.changeState(getButtonState(State.NORMAL));
 	}
 
 	// ===========================================================
@@ -53,19 +70,19 @@ public class TextButton extends Rectangle {
 	public void setEnabled(final boolean pEnabled) {
 		this.mEnabled = pEnabled;
 
-		if(this.mEnabled && this.mState == State.DISABLED) {
-			this.changeState(State.NORMAL);
+		if(this.mEnabled && this.mState.getState() == State.DISABLED) {
+			this.changeState(getButtonState(State.NORMAL));
 		} else if(!this.mEnabled) {
-			this.changeState(State.DISABLED);
+			this.changeState(getButtonState(State.DISABLED));
 		}
 	}
 
 	public boolean isPressed() {
-		return this.mState == State.PRESSED;
+		return this.mState.getState() == State.PRESSED;
 	}
 
 	public State getState() {
-		return this.mState;
+		return this.mState.getState();
 	}
 
 	public void setOnClickListener(final OnClickListener pOnClickListener) {
@@ -79,22 +96,33 @@ public class TextButton extends Rectangle {
 	@Override
 	public boolean onAreaTouched(final TouchEvent pSceneTouchEvent, final float pTouchAreaLocalX, final float pTouchAreaLocalY) {
 		if(!this.isEnabled()) {
-			this.changeState(State.DISABLED);
+			this.changeState(getButtonState(State.DISABLED));
 		} else if(pSceneTouchEvent.isActionDown() && this.contains(pSceneTouchEvent.getX(), pSceneTouchEvent.getY())) {
-			this.changeState(State.PRESSED);
+			this.changeState(getButtonState(State.PRESSED));
 		} else if(pSceneTouchEvent.isActionCancel() || !this.contains(pSceneTouchEvent.getX(), pSceneTouchEvent.getY())) {
-			this.changeState(State.NORMAL);
-		} else if(pSceneTouchEvent.isActionUp() && this.mState == State.PRESSED && this.contains(pSceneTouchEvent.getX(), pSceneTouchEvent.getY())) {
-			this.changeState(State.NORMAL);
-
+			this.changeState(getButtonState(State.NORMAL));
+		} else if(pSceneTouchEvent.isActionUp() && this.mState.getState() == State.PRESSED && this.contains(pSceneTouchEvent.getX(), pSceneTouchEvent.getY())) {
+			this.changeState(getButtonState(State.NORMAL));
+			
 			if(this.mOnClickListener != null) {
 				this.mOnClickListener.onClick(this, pTouchAreaLocalX, pTouchAreaLocalY);
 			}
 		}
-
+		
 		return true;
 	}
 
+	private TextButtonState getButtonState(State state) {
+		TextButtonState buttonState = new TextButtonState(state);
+		if (mStateList != null) {
+			for (TextButtonState textButtonState : mStateList) {
+				if (textButtonState.getState() == state) {
+					buttonState = textButtonState; 
+				}
+			}
+		}
+		return buttonState;
+	}
 	@Override
 	public boolean contains(final float pX, final float pY) {
 		if(!this.isVisible()) {
@@ -112,15 +140,15 @@ public class TextButton extends Rectangle {
 	 * ボタンの状態変化に応じた画像変更とか.
 	 * @param pState
 	 */
-	private void changeState(final State pState) {
+	private void changeState(final TextButtonState pState) {
 		if(pState == this.mState) {
 			return;
 		}
 
 		// TODO: 色の変化、スケール変化、透明度変化、背景色変化など色々できるようにしたい
 		this.mState = pState;
-		if (baseText != null && baseText.length() > 0 && this.mState == State.NORMAL) {
-			this.mButtonText.setText(baseText);
+		if (baseText != null && baseText.length() > 0 && this.mState.getState() == State.NORMAL) {
+			this.mButtonText.setText(mState.getText());
 		} else {
 			this.mButtonText.setText(mState.getText());
 		}

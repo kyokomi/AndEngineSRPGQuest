@@ -17,8 +17,11 @@ import org.andengine.input.touch.TouchEvent;
 import org.andengine.util.color.Color;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
+import com.kyokomi.core.dto.ActorPlayerDto;
+import com.kyokomi.core.logic.ActorPlayerLogic;
 import com.kyokomi.core.utils.CollidesUtil;
 import com.kyokomi.core.utils.CollidesUtil.TouchEventFlick;
+import com.kyokomi.srpgquest.scene.part.BattlePart;
 import com.kyokomi.srpgquest.utils.MapGridUtil;
 
 import android.graphics.Point;
@@ -35,13 +38,22 @@ public class SandBoxScene extends SrpgBaseScene
 	
 	/** ドラッグ判定用 */
 	private float[] touchStartPoint;
-	
+	private BattlePart mBattlePart;
 	public SandBoxScene(MultiSceneActivity baseActivity) {
 		super(baseActivity);
 		init();
 		
 		// FPS表示
 		initFps(getWindowWidth() - 100, getWindowHeight() - 20, getFont());
+		
+		// バトルテスト
+		ActorPlayerLogic actorPlayerLogic = new ActorPlayerLogic();
+		
+		mBattlePart = new BattlePart(this);
+		ActorPlayerDto player = actorPlayerLogic.createActorPlayerDto(this, 1);
+		ActorPlayerDto enemy = actorPlayerLogic.createActorPlayerDto(this, 3);
+		
+		mBattlePart.init(player, enemy);
 	}
 
 	@Override
@@ -221,6 +233,11 @@ public class SandBoxScene extends SrpgBaseScene
 	public boolean onSceneTouchEvent(Scene pScene, TouchEvent pSceneTouchEvent) {
 		touchSprite(pSceneTouchEvent.getX(), pSceneTouchEvent.getY());
 		
+		if (mBattlePart != null) {
+			mBattlePart.touchEvent(pScene, pSceneTouchEvent);
+//			mBattlePart = null;
+			return false;
+		}
 		// タッチした位置のアニメーションの停止とマスの色を黒にして点滅を停止
 		Rectangle mapBaseRect = getBaseMap();
 		if (mapBaseRect == null) {
