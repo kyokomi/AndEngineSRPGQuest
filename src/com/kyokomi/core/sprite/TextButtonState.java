@@ -9,10 +9,12 @@ public class TextButtonState {
 		this.state = state;
 		this.text = state.getText();
 		this.color = state.getColor();
+		this.alpha = state.getAlpha();
 	}
 	private State state;
 	private String text;
 	private Color color;
+	private float alpha;
 	
 	public State getState() {
 		return state;
@@ -31,5 +33,11 @@ public class TextButtonState {
 	}
 	public void setColor(Color color) {
 		this.color = color;
+	}
+	public float getAlpha() {
+		return alpha;
+	}
+	public void setAlpha(float alpha) {
+		this.alpha = alpha;
 	}
 }

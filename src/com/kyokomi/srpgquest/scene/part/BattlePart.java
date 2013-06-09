@@ -6,19 +6,18 @@ import java.util.List;
 import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.sprite.AnimatedSprite;
-import org.andengine.entity.sprite.ButtonSprite;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.text.Text;
 import org.andengine.input.touch.TouchEvent;
+import org.andengine.opengl.font.Font;
 import org.andengine.util.color.Color;
 
+import android.graphics.Typeface;
 import android.util.Log;
 
 import com.kyokomi.core.dto.ActorPlayerDto;
 import com.kyokomi.core.dto.SaveDataDto;
 import com.kyokomi.core.sprite.TextButton;
-import com.kyokomi.core.sprite.TextButton.State;
-import com.kyokomi.core.sprite.TextButtonState;
 import com.kyokomi.srpgquest.scene.SrpgBaseScene;
 import com.kyokomi.srpgquest.sprite.ActorSprite;
 
@@ -91,6 +90,7 @@ public class BattlePart extends AbstractGamePart {
 		float y = pSceneTouchEvent.getY();
 		
 		if (pSceneTouchEvent.isActionUp()) {
+			Log.d("touchEvent", "onClick");
 			if (showBattleMenuLayer(x, y) == false) {
 				Log.d("showBattleMenuLayer", "false");
 				mBaseLayer.getChildByTag(10000).setVisible(false);
@@ -108,7 +108,9 @@ public class BattlePart extends AbstractGamePart {
 				return false;	
 			} else {
 				mBaseLayer.getChildByTag(10000).setVisible(true);
-				mBaseLayer.getChildByTag(10000).setPosition(x, y);
+				float menuWidth = ((Rectangle) mBaseLayer.getChildByTag(10000)).getWidth();
+				float menuHeight = ((Rectangle) mBaseLayer.getChildByTag(10000)).getHeight();
+				mBaseLayer.getChildByTag(10000).setPosition(x - menuWidth / 2, y - menuHeight / 2);
 				return true;
 			}
 		}
@@ -125,23 +127,21 @@ public class BattlePart extends AbstractGamePart {
 		menuList.add("道具");
 		menuList.add("特技");
 		
+		Font menuFont = getBaseScene().createFont(Typeface.DEFAULT_BOLD, 20, Color.WHITE);
 		List<TextButton> textButtonList = new ArrayList<TextButton>();
+		float sizeX = 0;
+		float sizeY = 0;
 		for (String menuStr : menuList) {
-			List<TextButtonState> textButtonStateList = new ArrayList<TextButtonState>();
-			TextButtonState textButtonState1 = new TextButtonState(State.NORMAL);
-			textButtonState1.setText(menuStr);
-			textButtonStateList.add(textButtonState1);
-			TextButtonState textButtonState2 = new TextButtonState(State.DISABLED);
-			textButtonState2.setText(menuStr);
-			textButtonStateList.add(textButtonState2);
-			TextButtonState textButtonState3 = new TextButtonState(State.PRESSED);
-			textButtonState3.setText(menuStr);
-			textButtonStateList.add(textButtonState3);
-			
-			Text text = new Text(0, 0, getBaseScene().getFont(), menuStr, 
+			Text text = new Text(0, 0, menuFont, "********", 
 					getBaseScene().getBaseActivity().getVertexBufferObjectManager());
-			
-			TextButton textButton = new TextButton(textButtonStateList, text, 0, 0, 100, 50, 
+			text.setText(menuStr);
+			if (sizeX == 0 && sizeY == 0) {
+				sizeX = text.getWidth();
+				sizeY = text.getHeight();
+			} else {
+				text.setSize(sizeX, sizeY);
+			}
+			TextButton textButton = new TextButton(text, 0, 0, 80, 30, 
 					getBaseScene().getBaseActivity().getVertexBufferObjectManager(), 
 					onClickListener);
 			textButtonList.add(textButton);
@@ -152,23 +152,28 @@ public class BattlePart extends AbstractGamePart {
 		float addX = 0;
 		int index = 0;
 		for (TextButton textButton : textButtonList) {
-			textButton.setX(startX + addX);
-			textButton.setY(startY + addY);
 			getBaseScene().registerTouchArea(textButton);
 			battleMenuLayer.attachChild(textButton);
 			if (index == 0) {
-				addX += textButton.getWidth();
+				textButton.setX(startX);
+				textButton.setY(startY);
+				addX = textButton.getWidth();
+				addY = textButton.getHeight();
 			} else if (index == 1) {
-				addX = startX;
-				addY += textButton.getHeight();
+				textButton.setX(startX + addX);
+				textButton.setY(startY);
 			} else if (index == 2) {
-				addX += textButton.getWidth();
+				textButton.setX(startX);
+				textButton.setY(startY + addY);
 			} else if (index == 3) {
-				
+				textButton.setX(startX + addX);
+				textButton.setY(startY + addY);
 			}
 			index++;
 		}
+		battleMenuLayer.setSize(addX * 2, addY * 2);
 		battleMenuLayer.setTag(10000); // TODO: とりあえず
+		battleMenuLayer.setPosition(x - battleMenuLayer.getWidth() / 2, y - battleMenuLayer.getHeight() / 2);
 		mBaseLayer.attachChild(battleMenuLayer);
 		
 		return true;
@@ -180,7 +185,7 @@ public class BattlePart extends AbstractGamePart {
 		public void onClick(TextButton pTextButtonSprite, float pTouchAreaLocalX,
 				float pTouchAreaLocalY) {
 			// TODO Auto-generated method stub
-			
+			Log.d("showBattleMenuLayer", "onClick");
 		}
 	};
 

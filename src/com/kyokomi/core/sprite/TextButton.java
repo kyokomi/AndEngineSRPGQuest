@@ -1,5 +1,6 @@
 package com.kyokomi.core.sprite;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.andengine.entity.primitive.Rectangle;
@@ -24,7 +25,6 @@ public class TextButton extends Rectangle {
 	private List<TextButtonState> mStateList;
 	private TextButtonState mState;
 	private Text mButtonText;
-	private String baseText;
 
 	// ===========================================================
 	// Constructors
@@ -37,13 +37,13 @@ public class TextButton extends Rectangle {
 		this.mOnClickListener = pOnClickListener;
 		
 		this.mButtonText = pText;
-		this.baseText = mButtonText.getText().toString();
 		this.mButtonText.setPosition(pAddWidth / 2, pAddHeight / 2);
 		attachChild(mButtonText);
 		
 		this.mStateList = textButtonStateList;
 		this.changeState(getButtonState(State.NORMAL));
 	}
+	
 	public TextButton(Text pText, float pX, float pY, float pAddWidth, float pAddHeight,
 			VertexBufferObjectManager pVertexBufferObjectManager, final OnClickListener pOnClickListener) {
 		super(pX, pY, pText.getWidth() + pAddWidth, pText.getHeight() + pAddHeight, pVertexBufferObjectManager);
@@ -52,10 +52,10 @@ public class TextButton extends Rectangle {
 		this.mOnClickListener = pOnClickListener;
 		
 		this.mButtonText = pText;
-		this.baseText = mButtonText.getText().toString();
 		this.mButtonText.setPosition(pAddWidth / 2, pAddHeight / 2);
 		attachChild(mButtonText);
 		
+		this.mStateList = TextButton.createTextButtonStateList(pText.getText().toString());
 		this.changeState(getButtonState(State.NORMAL));
 	}
 
@@ -147,13 +147,10 @@ public class TextButton extends Rectangle {
 
 		// TODO: 色の変化、スケール変化、透明度変化、背景色変化など色々できるようにしたい
 		this.mState = pState;
-		if (baseText != null && baseText.length() > 0 && this.mState.getState() == State.NORMAL) {
-			this.mButtonText.setText(mState.getText());
-		} else {
-			this.mButtonText.setText(mState.getText());
-		}
-		
+
+		this.mButtonText.setText(mState.getText());
 		this.setColor(mState.getColor());
+		this.setAlpha(mState.getAlpha());
 	}
 
 	// ===========================================================
@@ -171,15 +168,30 @@ public class TextButton extends Rectangle {
 
 		public void onClick(final TextButton pTextButtonSprite, final float pTouchAreaLocalX, final float pTouchAreaLocalY);
 	}
+	
+	/**
+	 * デフォルト設定のtextリストを作成.
+	 * @param text
+	 * @return デフォルトテキストリスト
+	 */
+	public static List<TextButtonState> createTextButtonStateList(String text) {
+		List<TextButtonState> textButtonStateList = new ArrayList<TextButtonState>();
+		for (State state : State.values()) {
+			TextButtonState textButtonState = new TextButtonState(state);
+			textButtonState.setText(text);
+			textButtonStateList.add(textButtonState);	
+		}
+		return textButtonStateList;
+	}
 
 	public static enum State {
 		// ===========================================================
 		// Elements
 		// ===========================================================
 
-		NORMAL(0,   "NORMAL", Color.BLACK),
-		PRESSED(1,  "PRESSED", Color.BLUE),
-		DISABLED(2, "DISABLED", new Color(0.7f, 0.7f, 0.7f, 1));
+		NORMAL(0,   "NORMAL", Color.BLACK, 0.8f),
+		PRESSED(1,  "PRESSED", Color.BLUE, 0.8f),
+		DISABLED(2, "DISABLED", new Color(0.7f, 0.7f, 0.7f, 1), 0.8f);
 
 		// ===========================================================
 		// Constants
@@ -192,15 +204,17 @@ public class TextButton extends Rectangle {
 		private final int mTiledTextureRegionIndex;
 		private final String mText;
 		private final Color mColor;
+		private final float mAlpha;
 
 		// ===========================================================
 		// Constructors
 		// ===========================================================
 
-		private State(final int pTiledTextureRegionIndex, final String pText, final Color pColor) {
+		private State(final int pTiledTextureRegionIndex, final String pText, final Color pColor, float pAlpha) {
 			this.mTiledTextureRegionIndex = pTiledTextureRegionIndex;
 			this.mText = pText;
 			this.mColor = pColor;
+			this.mAlpha = pAlpha;
 		}
 
 		// ===========================================================
@@ -211,20 +225,17 @@ public class TextButton extends Rectangle {
 			return this.mTiledTextureRegionIndex;
 		}
 
-		/**
-		 * @return the mText
-		 */
 		public String getText() {
 			return mText;
 		}
 
-		/**
-		 * @return the mColor
-		 */
 		public Color getColor() {
 			return mColor;
 		}
 
+		public float getAlpha() {
+			return mAlpha;
+		}
 		// ===========================================================
 		// Methods for/from SuperClass/Interfaces
 		// ===========================================================
