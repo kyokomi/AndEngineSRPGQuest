@@ -25,6 +25,38 @@ public class BattlePart extends AbstractGamePart {
 
 	private Rectangle mBaseLayer;
 	
+	public enum BattleStateType {
+		START(0),
+		PLAYER_TURN(1),
+		ENEMY_TURN(2),
+		BATTLE_START(3),
+		BATTLE_SELECT(4),
+		BATTLE_ANIMATION(5),
+		BATTLE_END(6),
+		END(6),
+		;
+		private Integer value;
+
+		private BattleStateType(Integer value) {
+			this.value = value;
+		}
+		
+		public Integer getValue() {
+			return value;
+		}
+		public static BattleStateType get(Integer value) {
+			BattleStateType[] values = values();
+			for (BattleStateType type : values) {
+				if (type.getValue() == value) {
+					return type;
+				}
+			}
+			throw new RuntimeException("find not tag type.");
+		}
+	}
+	private BattleStateType mBattleState;
+	
+	
 	public BattlePart(SrpgBaseScene pBaseScene) {
 		super(pBaseScene);
 	}
@@ -173,7 +205,8 @@ public class BattlePart extends AbstractGamePart {
 		}
 		battleMenuLayer.setSize(addX * 2, addY * 2);
 		battleMenuLayer.setTag(10000); // TODO: とりあえず
-		battleMenuLayer.setPosition(x - battleMenuLayer.getWidth() / 2, y - battleMenuLayer.getHeight() / 2);
+		battleMenuLayer.setPosition(x - battleMenuLayer.getWidth() / 2, 
+				y - battleMenuLayer.getHeight() / 2);
 		mBaseLayer.attachChild(battleMenuLayer);
 		
 		return true;
