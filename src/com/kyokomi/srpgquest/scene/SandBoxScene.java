@@ -235,7 +235,7 @@ public class SandBoxScene extends SrpgBaseScene
 		touchSprite(pSceneTouchEvent.getX(), pSceneTouchEvent.getY());
 		
 		if (mBattlePart != null) {
-			if (mBattlePart.getBattleState() != BattleStateType.END) {
+			if (mBattlePart.getBattleState() != BattleStateType.EXIT) {
 				mBattlePart.touchEvent(pScene, pSceneTouchEvent);
 //				mBattlePart = null;
 				return false;				

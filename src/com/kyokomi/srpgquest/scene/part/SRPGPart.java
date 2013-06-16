@@ -584,7 +584,7 @@ public class SRPGPart extends AbstractGamePart {
 						
 						// 勝利条件表示
 //						getMediaManager().play(MusicType.BATTLE1_BGM);
-						mMapBattleTouchLayer.showTouchLayer(getBaseScene());
+						mMapBattleTouchLayer.showTouchLayer();
 					}
 					
 				} else if (mMapBattleTouchLayer.isTouchLayer(x, y)) {
@@ -592,7 +592,7 @@ public class SRPGPart extends AbstractGamePart {
 //					getMediaManager().play(SoundType.BTN_PRESSED_SE);
 					
 					// 勝利条件を非表示にする
-					mMapBattleTouchLayer.hideTouchLayer(getBaseScene());
+					mMapBattleTouchLayer.hideTouchLayer();
 					
 					// ゲーム開始
 					mGameManager.gameStart();

@@ -12,6 +12,11 @@ import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.srpgquest.constant.LayerZIndexType;
 import com.kyokomi.srpgquest.constant.MapBattleCutInLayerType;
 
+/**
+ * 自動的に消えるカットイン.
+ * @author kyokomi
+ *
+ */
 public class CutInLayer extends Rectangle {
 	
 	private final MapBattleCutInLayerType mapBattleCutInLayerType;

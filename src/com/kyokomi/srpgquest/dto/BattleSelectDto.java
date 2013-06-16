@@ -6,11 +6,21 @@ import com.kyokomi.srpgquest.constant.BattleMenuType;
 
 public class BattleSelectDto {
 
+	private boolean isAction;
+	
 	private BattleActorType battleActorType;
 	private ActorPlayerDto actorPlayerDto;
 	private ActorPlayerDto targetDto;
 	
 	private BattleMenuType battleMenuType;
+
+	public boolean isAction() {
+		return isAction;
+	}
+
+	public void setAction(boolean isAction) {
+		this.isAction = isAction;
+	}
 
 	public BattleActorType getBattleActorType() {
 		return battleActorType;

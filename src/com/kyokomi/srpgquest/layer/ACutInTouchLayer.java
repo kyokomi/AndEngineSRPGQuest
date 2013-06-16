@@ -6,6 +6,11 @@ import org.andengine.entity.shape.IAreaShape;
 
 import com.kyokomi.core.scene.KeyListenScene;
 
+/**
+ * タッチしたら消えるカットインの基底クラス.
+ * @author kyokomi
+ *
+ */
 public abstract class ACutInTouchLayer extends Rectangle {
 	
 	public ACutInTouchLayer(KeyListenScene pBaseScene) {
@@ -18,10 +23,10 @@ public abstract class ACutInTouchLayer extends Rectangle {
 		super(pX, pY, pWidth, pHeight, pRectangleVertexBufferObject);
 	}
 	
-	public void showTouchLayer(KeyListenScene pBaseScene) {
+	public void showTouchLayer() {
 		setVisibleTouchLayer(true);
 	}
-	public void hideTouchLayer(KeyListenScene pBaseScene) {
+	public void hideTouchLayer() {
 		setVisibleTouchLayer(false);
 	}
 	public void setVisibleTouchLayer(boolean isVisible) {

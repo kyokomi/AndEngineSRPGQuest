@@ -3,6 +3,13 @@ package com.kyokomi.srpgquest.scene.part;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.andengine.entity.IEntity;
+import org.andengine.entity.modifier.DelayModifier;
+import org.andengine.entity.modifier.IEntityModifier;
+import org.andengine.entity.modifier.MoveModifier;
+import org.andengine.entity.modifier.ParallelEntityModifier;
+import org.andengine.entity.modifier.ScaleModifier;
+import org.andengine.entity.modifier.SequenceEntityModifier;
 import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.sprite.AnimatedSprite;
@@ -11,7 +18,10 @@ import org.andengine.entity.text.Text;
 import org.andengine.input.touch.TouchEvent;
 import org.andengine.opengl.font.Font;
 import org.andengine.util.color.Color;
+import org.andengine.util.modifier.IModifier;
+import org.andengine.util.modifier.ease.EaseBackInOut;
 
+import android.graphics.PointF;
 import android.graphics.Typeface;
 import android.util.Log;
 
@@ -20,19 +30,36 @@ import com.kyokomi.core.dto.SaveDataDto;
 import com.kyokomi.core.sprite.TextButton;
 import com.kyokomi.srpgquest.constant.BattleActorType;
 import com.kyokomi.srpgquest.constant.BattleMenuType;
+import com.kyokomi.srpgquest.constant.LayerZIndexType;
 import com.kyokomi.srpgquest.dto.BattleSelectDto;
+import com.kyokomi.srpgquest.layer.TextCutInTouchLayer;
+import com.kyokomi.srpgquest.logic.BattleLogic;
 import com.kyokomi.srpgquest.scene.SrpgBaseScene;
 import com.kyokomi.srpgquest.sprite.ActorSprite;
 
 public class BattlePart extends AbstractGamePart {
-
+	// ==================================================
+	// TAG
+	// ==================================================
+	
+	private static final int DAMAGE_TEXT_TAG = 1000;
+	private static final int TARGET_CURSOR_TAG = 2000;
+	
+	private static final int BATTLE_MENU_TAG = 10000;
+	
+	private static final int BATTLE_START_CUTIN_TAG = 20000;
+	private static final int BATTLE_END_CUTIN_TAG = 20001;
+	
+	// ==================================================
+	
 	private Rectangle mBaseLayer;
 	
 	private static int TURN_COUNT_LIMIT = 1;
 	private int mTurnCount = 0;
 	
 	public enum BattleStateType {
-		START(0),
+		INIT(0),
+		START(1),
 		
 		PLAYER_TURN(1000),
 		PLAYER_TURN_TARGET_SELECT(1001),
@@ -45,6 +72,7 @@ public class BattlePart extends AbstractGamePart {
 		BATTLE_END(6000),
 		
 		END(9000),
+		EXIT(9999)
 		;
 		private Integer value;
 
@@ -75,10 +103,48 @@ public class BattlePart extends AbstractGamePart {
 	private BattleSelectDto mTempSelect;
 	private List<BattleSelectDto> mBattleSelectList;
 	
+	// ==================================================
+	// ボタンイベント
+	// ==================================================
+	private TextButton.OnClickListener mBattleMenuOnClickListener = new TextButton.OnClickListener() {
+		@Override
+		public void onClick(TextButton pTextButtonSprite, float pTouchAreaLocalX,
+				float pTouchAreaLocalY) {
+			Log.d("showBattleMenuLayer", "onClick");
+
+			// メニュー閉じる
+			hideBattleMenuLayer();
+			
+			if (pTextButtonSprite.getTag() == BattleMenuType.ATTACK.getValue()) {
+				mTempSelect.setBattleMenuType(BattleMenuType.ATTACK);
+				
+				// ターゲット選択
+				changeState(BattleStateType.PLAYER_TURN_TARGET_SELECT);
+				
+			} else if (pTextButtonSprite.getTag() == BattleMenuType.DEFENCE.getValue()) {
+				// 行動確定
+				// TODO: あとで実装
+				
+			} else if (pTextButtonSprite.getTag() == BattleMenuType.SKILL.getValue()) {
+				// スキルウィンドウ表示
+				// TODO: あとで実装
+			} else if (pTextButtonSprite.getTag() == BattleMenuType.ITEM.getValue()) {
+				// アイテムウィンドウ表示
+				// TODO: あとで実装
+			}
+		}
+	};
+	
+	// ==================================================
+	// コンストラクタ
+	// ==================================================
 	public BattlePart(SrpgBaseScene pBaseScene) {
 		super(pBaseScene);
 	}
 
+	// ==================================================
+	// メソッド
+	// ==================================================
 	/**
 	 * @deprecated init(ActorPlayerDto player, ActorPlayerDto enemy)使って下さい
 	 * @param saveDataDto
@@ -88,7 +154,7 @@ public class BattlePart extends AbstractGamePart {
 		
 	}
 	public void init(ActorPlayerDto player, ActorPlayerDto enemy) {
-		changeState(BattleStateType.START);
+		changeState(BattleStateType.INIT);
 		
 		mPlayerList = new ArrayList<ActorPlayerDto>();
 		mEnemyList = new ArrayList<ActorPlayerDto>();
@@ -100,6 +166,8 @@ public class BattlePart extends AbstractGamePart {
 				getBaseScene().getWindowWidth(), getBaseScene().getWindowHeight(), 
 				getBaseScene().getBaseActivity().getVertexBufferObjectManager());
 		mBaseLayer.setColor(Color.TRANSPARENT);
+		
+		initDamageText(mBaseLayer);
 		
 		// 背景表示
 		initBackground();
@@ -130,8 +198,9 @@ public class BattlePart extends AbstractGamePart {
 		
 		// ベースレイヤをattach
 		getBaseScene().attachChild(mBaseLayer);
+		mBaseLayer.sortChildren();
 		
-		changeState(BattleStateType.PLAYER_TURN);
+		changeState(BattleStateType.START);
 	}
 	
 	/**
@@ -152,51 +221,71 @@ public class BattlePart extends AbstractGamePart {
 		
 		if (pSceneTouchEvent.isActionUp()) {
 			Log.d("touchEvent", "up mBattleState = " + mBattleState);
-			if (mBattleState == BattleStateType.PLAYER_TURN_TARGET_SELECT) {
+			
+			if (mBattleState == BattleStateType.START) {
+				// カットインを非表示
+				TextCutInTouchLayer battleStartLayer = (TextCutInTouchLayer) mBaseLayer.getChildByTag(BATTLE_START_CUTIN_TAG);
+				battleStartLayer.hideTouchLayer();
+				
+				// バトル開始
+				changeState(BattleStateType.PLAYER_TURN);
+				
+			} else if (mBattleState == BattleStateType.END) {
+				// カットインを非表示
+				TextCutInTouchLayer battleEndLayer = (TextCutInTouchLayer) mBaseLayer.getChildByTag(BATTLE_END_CUTIN_TAG);
+				battleEndLayer.hideTouchLayer();
+				
+				// バトルパート終了
+				end();
+				
+			} else if (mBattleState == BattleStateType.PLAYER_TURN_TARGET_SELECT) {
 				for (ActorPlayerDto enemyDto : mEnemyList) {
 					if (enemyDto.getHitPoint() <= 0) {
 						continue;
 					} else {
-						AnimatedSprite acotorSprite = (AnimatedSprite) mBaseLayer.getChildByTag(enemyDto.getPlayerId());
+						AnimatedSprite acotorSprite = getActorSprite(enemyDto.getPlayerId());
 						if (acotorSprite.contains(x, y)) {
 							Log.d("touchEvent", "target select end");
 							// タッチした時
 							// 攻撃対象決定
 							mTempSelect.setTargetDto(enemyDto);
 							mBattleSelectList.add(mTempSelect);
+							
+							// ターゲットカーソルを消す
+							hideTargetCursor();
+							
 							changeState(BattleStateType.PLAYER_TURN);
 							break;
 						}
 					}
 				}
 			}
-//			Log.d("touchEvent", "onClick");
-//			if (showBattleMenuLayer(x, y) == false) {
-//				Log.d("showBattleMenuLayer", "false");
-//				mBaseLayer.getChildByTag(10000).setVisible(false);
-//				mBaseLayer.getChildByTag(10000).setPosition(-1000, -1000);
-//			} else {
-//				Log.d("showBattleMenuLayer", "true");
-//			}
 		}
-		//end();
 	}
 	
-	
-	public boolean showBattleMenuLayer(float x, float y) {
-		if (mBaseLayer.getChildByTag(10000) != null) {
-			if (mBaseLayer.getChildByTag(10000).isVisible()) {
+	private void hideBattleMenuLayer() {
+		Rectangle battleMenu = (Rectangle) mBaseLayer.getChildByTag(BATTLE_MENU_TAG);
+		if (battleMenu != null) {
+			battleMenu.setVisible(false);
+			battleMenu.setPosition(getBaseScene().getWindowWidth() * 4, 
+					getBaseScene().getWindowHeight() * 4);
+		}
+	}
+	private boolean showBattleMenuLayer(float x, float y) {
+		if (mBaseLayer.getChildByTag(BATTLE_MENU_TAG) != null) {
+			if (mBaseLayer.getChildByTag(BATTLE_MENU_TAG).isVisible()) {
 				return false;	
 			} else {
-				mBaseLayer.getChildByTag(10000).setVisible(true);
-				float menuWidth = ((Rectangle) mBaseLayer.getChildByTag(10000)).getWidth();
-				float menuHeight = ((Rectangle) mBaseLayer.getChildByTag(10000)).getHeight();
-				mBaseLayer.getChildByTag(10000).setPosition(x - menuWidth / 2, y - menuHeight / 2);
+				mBaseLayer.getChildByTag(BATTLE_MENU_TAG).setVisible(true);
+				float menuWidth = ((Rectangle) mBaseLayer.getChildByTag(BATTLE_MENU_TAG)).getWidth();
+				float menuHeight = ((Rectangle) mBaseLayer.getChildByTag(BATTLE_MENU_TAG)).getHeight();
+				mBaseLayer.getChildByTag(BATTLE_MENU_TAG).setPosition(x - menuWidth / 2, y - menuHeight / 2);
 				return true;
 			}
 		}
 		
-		Rectangle battleMenuLayer = new Rectangle(getBaseScene().getWindowWidth()/ 2, getBaseScene().getWindowHeight() / 2, 
+		Rectangle battleMenuLayer = new Rectangle(
+				getBaseScene().getWindowWidth()/ 2, getBaseScene().getWindowHeight() / 2, 
 				getBaseScene().getWindowWidth() / 4, 
 				getBaseScene().getWindowHeight() / 2, 
 				getBaseScene().getBaseActivity().getVertexBufferObjectManager());
@@ -218,7 +307,7 @@ public class BattlePart extends AbstractGamePart {
 			}
 			TextButton textButton = new TextButton(text, 0, 0, 80, 30, 
 					getBaseScene().getBaseActivity().getVertexBufferObjectManager(), 
-					battleMenuOnClickListener);
+					mBattleMenuOnClickListener);
 			textButton.setTag(menu.getValue());
 			textButtonList.add(textButton);
 		}
@@ -248,7 +337,7 @@ public class BattlePart extends AbstractGamePart {
 			index++;
 		}
 		battleMenuLayer.setSize(addX * 2, addY * 2);
-		battleMenuLayer.setTag(10000); // TODO: とりあえず
+		battleMenuLayer.setTag(BATTLE_MENU_TAG);
 		battleMenuLayer.setPosition(x - battleMenuLayer.getWidth() / 2, 
 				y - battleMenuLayer.getHeight() / 2);
 		mBaseLayer.attachChild(battleMenuLayer);
@@ -256,41 +345,18 @@ public class BattlePart extends AbstractGamePart {
 		return true;
 	}
 	
-	private TextButton.OnClickListener battleMenuOnClickListener = new TextButton.OnClickListener() {
-		
-		@Override
-		public void onClick(TextButton pTextButtonSprite, float pTouchAreaLocalX,
-				float pTouchAreaLocalY) {
-			Log.d("showBattleMenuLayer", "onClick");
-			
-			if (pTextButtonSprite.getTag() == BattleMenuType.ATTACK.getValue()) {
-				mTempSelect.setBattleMenuType(BattleMenuType.ATTACK);
-				// ターゲット選択
-				changeState(BattleStateType.PLAYER_TURN_TARGET_SELECT);
-				
-			} else if (pTextButtonSprite.getTag() == BattleMenuType.DEFENCE.getValue()) {
-				// 行動確定
-				// TODO: あとで実装
-				
-			} else if (pTextButtonSprite.getTag() == BattleMenuType.SKILL.getValue()) {
-				// スキルウィンドウ表示
-				// TODO: あとで実装
-			} else if (pTextButtonSprite.getTag() == BattleMenuType.ITEM.getValue()) {
-				// アイテムウィンドウ表示
-				// TODO: あとで実装
-			}
-		}
-	};
-
 	@Override
 	public void end() {
+		changeState(BattleStateType.EXIT);
+		
 		if (mBaseLayer != null) {
-			mBaseLayer.detachChildren();
-			mBaseLayer.detachSelf();
-			mBaseLayer = null;
+			getBaseScene().detachEntity(mBaseLayer);
 		}
 	}
 	
+	// ==================================================
+	// インラインメソッド
+	// ==================================================
 	/**
 	 * 状態変更
 	 * @param pBattleStateType
@@ -300,8 +366,17 @@ public class BattlePart extends AbstractGamePart {
 		BattleStateType beforeStateType = this.mBattleState;
 		this.mBattleState = pBattleStateType;
 		
+		// 開始時カットイン
+		if (pBattleStateType == BattleStateType.START) {
+		
+			TextCutInTouchLayer battleStartLayer = new TextCutInTouchLayer(getBaseScene(), "バトル開始");
+			battleStartLayer.setTag(BATTLE_START_CUTIN_TAG);
+			mBaseLayer.attachChild(battleStartLayer);
+			// 表示
+			battleStartLayer.showTouchLayer();
+			
 		// 最初またはバトルフェイズ後にプレイヤーターンになったとき
-		if (pBattleStateType == BattleStateType.PLAYER_TURN) {
+		} else if (pBattleStateType == BattleStateType.PLAYER_TURN) {
 			// バトル終了か開始から来た場合
 			if ((beforeStateType == BattleStateType.BATTLE_END || beforeStateType == BattleStateType.START)) {
 				// 初期化
@@ -330,10 +405,11 @@ public class BattlePart extends AbstractGamePart {
 			}
 			if (player != null) {
 				Log.d("BattlePart", "playerId = " + player.getPlayerId());
-				AnimatedSprite playerSprite = (AnimatedSprite) mBaseLayer.getChildByTag(player.getPlayerId());
+				AnimatedSprite playerSprite = getActorSprite(player.getPlayerId());
 				mTempSelect = new BattleSelectDto();
 				mTempSelect.setBattleActorType(BattleActorType.PLAYER);
 				mTempSelect.setActorPlayerDto(player);
+				mTempSelect.setAction(false);
 				// プレイヤーの攻撃ウィンドウを表示
 				showBattleMenuLayer(playerSprite.getX(), playerSprite.getY());
 			} else {
@@ -352,26 +428,27 @@ public class BattlePart extends AbstractGamePart {
 				}
 			}
 		} else if (pBattleStateType == BattleStateType.ENEMY_TURN) {
-			BattleSelectDto battleSelectDto = new BattleSelectDto();
+			BattleSelectDto battleSelect = new BattleSelectDto();
 			for (ActorPlayerDto enemyDto : mEnemyList) {
 				if (enemyDto.getHitPoint() <= 0) {
 					continue;
 				} else {
 					// TODO: 攻撃対象をHPの量とか強さで判断するようにする
-					battleSelectDto.setActorPlayerDto(enemyDto);
-					battleSelectDto.setBattleActorType(BattleActorType.PLAYER);
-					battleSelectDto.setBattleMenuType(BattleMenuType.ATTACK);
+					battleSelect.setActorPlayerDto(enemyDto);
+					battleSelect.setAction(false);
+					battleSelect.setBattleActorType(BattleActorType.PLAYER);
+					battleSelect.setBattleMenuType(BattleMenuType.ATTACK);
 					// 攻撃対象を選択
 					for (ActorPlayerDto playerDto : mPlayerList) {
 						if (playerDto.getHitPoint() <= 0) {
 							continue;
 						} else {
 							// 攻撃対象を選択
-							battleSelectDto.setTargetDto(playerDto);
+							battleSelect.setTargetDto(playerDto);
 							break;
 						}
 					}
-					mBattleSelectList.add(battleSelectDto);
+					mBattleSelectList.add(battleSelect);
 				}
 			}
 			// バトル開始
@@ -384,7 +461,10 @@ public class BattlePart extends AbstractGamePart {
 			for (BattleSelectDto battleSelect : mBattleSelectList) {
 				if (battleSelect.getActorPlayerDto().getHitPoint() <= 0) {
 					// バトルフェイズに死亡した
-					//mBattleSelectList.remove(battleSelect);
+					continue;
+				}
+				if (battleSelect.isAction()) {
+					// 行動済み
 					continue;
 				}
 
@@ -409,18 +489,24 @@ public class BattlePart extends AbstractGamePart {
 				}
 				if (battleSelect.getTargetDto() == null) {
 					// 攻撃可能な敵がいないので諦める
-					//mBattleSelectList.remove(battleSelect);
 					continue;
 				}
-				// TODO: 攻撃アニメーション開始
-				//changeState(BattleStateType.BATTLE_ANIMATION);
-
-				// TODO: 攻撃で倒した場合はHpが減ったりする
+				BattleLogic battleLogic = new BattleLogic();
+				int damage = battleLogic.attack(battleSelect.getActorPlayerDto(), battleSelect.getTargetDto());
 				
-				// TODO: アニメーションが終わったらリストから削除
-				//mBattleSelectList.remove(battleSelect);
+				// 攻撃アニメーション開始
+				changeState(BattleStateType.BATTLE_ANIMATION);
+				attackAnimation(battleSelect.getActorPlayerDto(), battleSelect.getTargetDto(), damage);
+
+				// 行動済みにして一旦抜ける（アニメーションのコールバックで改めてBATTLE_SELECTモードに移行する
+				battleSelect.setAction(true);
+				break;
 			}
-			changeState(BattleStateType.BATTLE_END);
+			
+			// アニメーション中はバトル終了はしない
+			if (mBattleState != BattleStateType.BATTLE_ANIMATION) {
+				changeState(BattleStateType.BATTLE_END);				
+			}
 			
 		} else if (pBattleStateType == BattleStateType.BATTLE_END) {
 			mTurnCount++;
@@ -433,16 +519,151 @@ public class BattlePart extends AbstractGamePart {
 			}
 		} else if (pBattleStateType == BattleStateType.END) {
 			// バトルパート終了
-			end();
+			TextCutInTouchLayer battleEndLayer = new TextCutInTouchLayer(getBaseScene(), "バトル終了");
+			battleEndLayer.setTag(BATTLE_END_CUTIN_TAG);
+			mBaseLayer.attachChild(battleEndLayer);
+			// 表示
+			battleEndLayer.showTouchLayer();
+			
+		} else if (pBattleStateType == BattleStateType.EXIT) {
+			// 終わり
 		}
 	}
 	
+	private void attackAnimation(final ActorPlayerDto attackFrom, final ActorPlayerDto attackTo, final int damage) {
+		
+		final AnimatedSprite attackFromSprite = getActorSprite(attackFrom.getPlayerId());
+		final AnimatedSprite attackToSprite = getActorSprite(attackTo.getPlayerId());
+		
+		// 移動方向を算出
+		float directionDiff_x = attackFromSprite.getX() - attackToSprite.getX();
+		// TODO: 移動方向に合わせて画像のコマを変更
+		if (directionDiff_x > 0) {
+			// 攻撃者が右側にいる
+			directionDiff_x = 1;
+		} else {
+			// 攻撃者が左側にいる
+			directionDiff_x = -1;
+		}
+		
+		// 移動先を算出
+		final float pFromX = attackFromSprite.getX();
+		final float pToX = attackToSprite.getX() + (20 * directionDiff_x);
+		final float pFromY = attackFromSprite.getY();
+		final float pToY = attackToSprite.getY();
+		attackFromSprite.registerEntityModifier(new SequenceEntityModifier(
+			// 攻撃対象に向かって移動するアニメーション
+			new MoveModifier(0.5f, pFromX, pToX, pFromY, pToY, 
+					new IEntityModifier.IEntityModifierListener() {
+				@Override
+				public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
+				}
+				
+				@Override
+				public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+				}
+			}),
+			
+			// TODO: 攻撃アニメーションとエフェクト表示
+			
+			// ダメージテキスト表示
+			new DelayModifier(0.5f, new IEntityModifier.IEntityModifierListener() {
+				
+				@Override
+				public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
+					// ダメージテキスト表示
+					showDamageText(damage, new PointF(attackToSprite.getX(), attackToSprite.getY()));
+				}
+				
+				@Override
+				public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+					// 死亡してたら死亡画像にする
+					if (attackTo.getHitPoint() <= 0) {
+						// TODO: 死亡アニメーション
+						attackToSprite.setVisible(false);
+					}
+				}
+			}),
+			
+			// 戻りアニメーション
+			new MoveModifier(0.5f, pToX, pFromX, pToY, pFromY, 
+					new IEntityModifier.IEntityModifierListener() {
+				@Override
+				public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
+				}
+				
+				@Override
+				public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+					// アニメーション終わり
+					changeState(BattleStateType.BATTLE_SELECT);
+				}
+			})
+		));
+	}
+
+	/**
+	 * ダメージテキスト初期化
+	 */
+	private void initDamageText(IEntity entity) {
+		Text damageText = new Text(0, 0, getBaseScene().getFont(), "00000", 
+				getBaseScene().getBaseActivity().getVertexBufferObjectManager());
+		damageText.setColor(Color.TRANSPARENT);
+		damageText.setZIndex(LayerZIndexType.TEXT_LAYER.getValue());
+		damageText.setTag(DAMAGE_TEXT_TAG);
+		entity.attachChild(damageText);
+	}
+	
+	/**
+	 * ダメージテキスト表示.
+	 */
+	private void showDamageText(int damage, final PointF dispPoint) {
+		final Text damageText = (Text) mBaseLayer.getChildByTag(DAMAGE_TEXT_TAG);
+		
+		damageText.setScale(0.5f);
+		// 頭の上くらいに表示
+		damageText.setX(dispPoint.x + 64 / 2);
+		damageText.setY(dispPoint.y - 64 / 2);
+		damageText.setText(String.valueOf(damage));
+		damageText.setColor(Color.WHITE);
+		
+		damageText.registerEntityModifier(new SequenceEntityModifier(
+			new ParallelEntityModifier(
+				new ScaleModifier(0.5f, 0.5f, 2.0f, EaseBackInOut.getInstance()),
+				new SequenceEntityModifier(
+						new MoveModifier(0.25f, damageText.getX(), damageText.getX(), 
+								damageText.getY(), damageText.getY() - 15, 
+								EaseBackInOut.getInstance()),
+						new MoveModifier(0.25f, damageText.getX(), damageText.getX(), 
+								damageText.getY() - 15, damageText.getY(), 
+								EaseBackInOut.getInstance()))
+				),
+			new DelayModifier(0.2f, new IEntityModifier.IEntityModifierListener() {
+				@Override
+				public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
+				}
+				@Override
+				public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+					damageText.setColor(Color.TRANSPARENT);
+				}
+		})));
+	}
+	
 	private void showTargetCursor(ActorPlayerDto actorPlayerDto) {
-		AnimatedSprite actorSprite = (AnimatedSprite) mBaseLayer.getChildByTag(actorPlayerDto.getPlayerId());
+		// TODO: ターゲットカーソルは後で画像を用意する
+		AnimatedSprite actorSprite = getActorSprite(actorPlayerDto.getPlayerId());
 		Rectangle cursorRectangle = new Rectangle(actorSprite.getX(), actorSprite.getY(), 50, 50, 
 				getBaseScene().getBaseActivity().getVertexBufferObjectManager());
 		cursorRectangle.setColor(Color.YELLOW);
 		cursorRectangle.setAlpha(0.5f);
+		cursorRectangle.setTag(TARGET_CURSOR_TAG);
 		mBaseLayer.attachChild(cursorRectangle);
+	}
+	private void hideTargetCursor() {
+		final Rectangle targetRectangle = (Rectangle) mBaseLayer.getChildByTag(TARGET_CURSOR_TAG);
+		targetRectangle.detachSelf();
+	}
+	
+	private AnimatedSprite getActorSprite(int actorId) {
+		return (AnimatedSprite) mBaseLayer.getChildByTag(actorId);
 	}
 }

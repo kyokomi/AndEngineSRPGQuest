@@ -10,7 +10,6 @@ import android.util.SparseArray;
 
 import com.kyokomi.core.dto.PlayerTalkDto;
 import com.kyokomi.core.dto.SaveDataDto;
-import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.core.sprite.TalkLayer;
 import com.kyokomi.srpgquest.constant.CommonTag;
 import com.kyokomi.srpgquest.constant.LayerZIndexType;
@@ -46,7 +45,7 @@ public class NovelPart extends AbstractGamePart {
 			ScenarioStartCutInTouchLayer scenarioStartCutInTouchLayer = 
 					new ScenarioStartCutInTouchLayer(getBaseScene(), saveDataDto);
 			getBaseScene().attachChild(scenarioStartCutInTouchLayer);
-			scenarioStartCutInTouchLayer.showTouchLayer(getBaseScene());
+			scenarioStartCutInTouchLayer.showTouchLayer();
 		} else {
 			talkLayer.nextTalk();
 		}
@@ -63,7 +62,7 @@ public class NovelPart extends AbstractGamePart {
 			TalkLayer talkLayer = (TalkLayer) getBaseScene().getChildByTag(CommonTag.TALK_LAYER_TAG.getValue());
 			if (startTouchLayer != null && startTouchLayer.isTouchLayer(x, y)) {
 				// タップで消える
-				startTouchLayer.hideTouchLayer((KeyListenScene) pScene);
+				startTouchLayer.hideTouchLayer();
 				// 会話を開始
 				if (talkLayer != null) {
 					talkLayer.nextTalk();
