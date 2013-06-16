@@ -22,6 +22,7 @@ import com.kyokomi.core.logic.ActorPlayerLogic;
 import com.kyokomi.core.utils.CollidesUtil;
 import com.kyokomi.core.utils.CollidesUtil.TouchEventFlick;
 import com.kyokomi.srpgquest.scene.part.BattlePart;
+import com.kyokomi.srpgquest.scene.part.BattlePart.BattleStateType;
 import com.kyokomi.srpgquest.utils.MapGridUtil;
 
 import android.graphics.Point;
@@ -234,9 +235,11 @@ public class SandBoxScene extends SrpgBaseScene
 		touchSprite(pSceneTouchEvent.getX(), pSceneTouchEvent.getY());
 		
 		if (mBattlePart != null) {
-			mBattlePart.touchEvent(pScene, pSceneTouchEvent);
-//			mBattlePart = null;
-			return false;
+			if (mBattlePart.getBattleState() != BattleStateType.END) {
+				mBattlePart.touchEvent(pScene, pSceneTouchEvent);
+//				mBattlePart = null;
+				return false;				
+			}
 		}
 		// タッチした位置のアニメーションの停止とマスの色を黒にして点滅を停止
 		Rectangle mapBaseRect = getBaseMap();
