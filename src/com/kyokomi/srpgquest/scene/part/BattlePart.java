@@ -12,6 +12,7 @@ import org.andengine.entity.modifier.ScaleModifier;
 import org.andengine.entity.modifier.SequenceEntityModifier;
 import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.scene.Scene;
+import org.andengine.entity.shape.IAreaShape;
 import org.andengine.entity.sprite.AnimatedSprite;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.text.Text;
@@ -21,7 +22,6 @@ import org.andengine.util.color.Color;
 import org.andengine.util.modifier.IModifier;
 import org.andengine.util.modifier.ease.EaseBackInOut;
 
-import android.graphics.PointF;
 import android.graphics.Typeface;
 import android.util.Log;
 
@@ -35,7 +35,7 @@ import com.kyokomi.srpgquest.dto.BattleSelectDto;
 import com.kyokomi.srpgquest.layer.TextCutInTouchLayer;
 import com.kyokomi.srpgquest.logic.BattleLogic;
 import com.kyokomi.srpgquest.scene.SrpgBaseScene;
-import com.kyokomi.srpgquest.sprite.ActorSprite;
+import com.kyokomi.srpgquest.utils.ActorSpriteUtil;
 
 public class BattlePart extends AbstractGamePart {
 	// ==================================================
@@ -176,7 +176,7 @@ public class BattlePart extends AbstractGamePart {
 		
 		// キャラ表示
 		AnimatedSprite playerSprite = getBaseScene().getResourceAnimatedSprite(
-				ActorSprite.getMoveFileName(player.getImageResId()), 3, 4);
+				ActorSpriteUtil.getMoveFileName(player.getImageResId()), 3, 4);
 		playerSprite.setSize(64, 64);
 		playerSprite.setTag(player.getPlayerId());
 		// 右上から表示
@@ -188,7 +188,7 @@ public class BattlePart extends AbstractGamePart {
 		
 		// キャラ表示
 		AnimatedSprite enemySprite = getBaseScene().getResourceAnimatedSprite(
-				ActorSprite.getMoveFileName(enemy.getImageResId()), 3, 4);
+				ActorSpriteUtil.getMoveFileName(enemy.getImageResId()), 3, 4);
 		enemySprite.setSize(64, 64);
 		enemySprite.setTag(enemy.getPlayerId());
 		// 左上から表示
@@ -243,7 +243,7 @@ public class BattlePart extends AbstractGamePart {
 					if (enemyDto.getHitPoint() <= 0) {
 						continue;
 					} else {
-						AnimatedSprite acotorSprite = getActorSprite(enemyDto.getPlayerId());
+						AnimatedSprite acotorSprite = findActorSprite(enemyDto.getPlayerId());
 						if (acotorSprite.contains(x, y)) {
 							Log.d("touchEvent", "target select end");
 							// タッチした時
@@ -405,7 +405,7 @@ public class BattlePart extends AbstractGamePart {
 			}
 			if (player != null) {
 				Log.d("BattlePart", "playerId = " + player.getPlayerId());
-				AnimatedSprite playerSprite = getActorSprite(player.getPlayerId());
+				AnimatedSprite playerSprite = findActorSprite(player.getPlayerId());
 				mTempSelect = new BattleSelectDto();
 				mTempSelect.setBattleActorType(BattleActorType.PLAYER);
 				mTempSelect.setActorPlayerDto(player);
@@ -532,8 +532,8 @@ public class BattlePart extends AbstractGamePart {
 	
 	private void attackAnimation(final ActorPlayerDto attackFrom, final ActorPlayerDto attackTo, final int damage) {
 		
-		final AnimatedSprite attackFromSprite = getActorSprite(attackFrom.getPlayerId());
-		final AnimatedSprite attackToSprite = getActorSprite(attackTo.getPlayerId());
+		final AnimatedSprite attackFromSprite = findActorSprite(attackFrom.getPlayerId());
+		final AnimatedSprite attackToSprite = findActorSprite(attackTo.getPlayerId());
 		
 		// 移動方向を算出
 		float directionDiff_x = attackFromSprite.getX() - attackToSprite.getX();
@@ -572,14 +572,14 @@ public class BattlePart extends AbstractGamePart {
 				@Override
 				public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
 					// ダメージテキスト表示
-					showDamageText(damage, new PointF(attackToSprite.getX(), attackToSprite.getY()));
+					showDamageText(damage, attackToSprite);
 				}
 				
 				@Override
 				public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
 					// 死亡してたら死亡画像にする
 					if (attackTo.getHitPoint() <= 0) {
-						// TODO: 死亡アニメーション
+						// TODO: 死亡アニメーションとりあえず消滅
 						attackToSprite.setVisible(false);
 					}
 				}
@@ -616,13 +616,13 @@ public class BattlePart extends AbstractGamePart {
 	/**
 	 * ダメージテキスト表示.
 	 */
-	private void showDamageText(int damage, final PointF dispPoint) {
+	private void showDamageText(int damage, final IAreaShape areaShape) {
 		final Text damageText = (Text) mBaseLayer.getChildByTag(DAMAGE_TEXT_TAG);
 		
 		damageText.setScale(0.5f);
 		// 頭の上くらいに表示
-		damageText.setX(dispPoint.x + 64 / 2);
-		damageText.setY(dispPoint.y - 64 / 2);
+		damageText.setX(areaShape.getX() + areaShape.getWidth() / 2);
+		damageText.setY(areaShape.getY() - areaShape.getHeight() / 2);
 		damageText.setText(String.valueOf(damage));
 		damageText.setColor(Color.WHITE);
 		
@@ -648,9 +648,13 @@ public class BattlePart extends AbstractGamePart {
 		})));
 	}
 	
+	/**
+	 * ターゲットカーソル表示。
+	 * @param actorPlayerDto アクター情報
+	 */
 	private void showTargetCursor(ActorPlayerDto actorPlayerDto) {
 		// TODO: ターゲットカーソルは後で画像を用意する
-		AnimatedSprite actorSprite = getActorSprite(actorPlayerDto.getPlayerId());
+		AnimatedSprite actorSprite = findActorSprite(actorPlayerDto.getPlayerId());
 		Rectangle cursorRectangle = new Rectangle(actorSprite.getX(), actorSprite.getY(), 50, 50, 
 				getBaseScene().getBaseActivity().getVertexBufferObjectManager());
 		cursorRectangle.setColor(Color.YELLOW);
@@ -658,12 +662,20 @@ public class BattlePart extends AbstractGamePart {
 		cursorRectangle.setTag(TARGET_CURSOR_TAG);
 		mBaseLayer.attachChild(cursorRectangle);
 	}
+	/**
+	 * ターゲットカーソル非表示。
+	 */
 	private void hideTargetCursor() {
 		final Rectangle targetRectangle = (Rectangle) mBaseLayer.getChildByTag(TARGET_CURSOR_TAG);
 		targetRectangle.detachSelf();
 	}
 	
-	private AnimatedSprite getActorSprite(int actorId) {
+	/**
+	 * アクタースプライト検索
+	 * @param actorId アクターID
+	 * @return アクタースプライト
+	 */
+	private AnimatedSprite findActorSprite(int actorId) {
 		return (AnimatedSprite) mBaseLayer.getChildByTag(actorId);
 	}
 }

@@ -13,9 +13,9 @@ import com.kyokomi.core.logic.ActorPlayerLogic;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.core.sprite.CommonWindowRectangle;
 import com.kyokomi.srpgquest.logic.TextLogic;
-import com.kyokomi.srpgquest.sprite.ActorSprite;
 import com.kyokomi.srpgquest.sprite.PlayerStatusRectangle;
 import com.kyokomi.srpgquest.sprite.PlayerStatusRectangle.PlayerStatusRectangleType;
+import com.kyokomi.srpgquest.utils.ActorSpriteUtil;
 
 public class ExpDistributionLayer extends Rectangle {
 
@@ -57,7 +57,7 @@ public class ExpDistributionLayer extends Rectangle {
 		TextLogic textLogic = new TextLogic();
 		Font defaultFont = pBaseScene.createFont(Typeface.SANS_SERIF, 16, Color.WHITE);
 		Font paramFont = pBaseScene.createFont(Typeface.DEFAULT, 16, Color.YELLOW);
-		Font upParamFont = pBaseScene.createFont(Typeface.DEFAULT, 16, Color.BLUE);
+		//Font upParamFont = pBaseScene.createFont(Typeface.DEFAULT, 16, Color.BLUE);
 		// Expの表示
 		float expY = titleLineY + 4;
 		Rectangle totalExpTextRect = textLogic.createTextRectangle("所持経験値:", defaultFont, "100 Exp", paramFont, 
@@ -91,7 +91,7 @@ public class ExpDistributionLayer extends Rectangle {
 		ActorPlayerDto actorPlayerDto = actorPlayerLogic.createActorPlayerDto(pBaseScene, 1);
 		
 		PlayerStatusRectangle playerStatusRectangle = new PlayerStatusRectangle(pBaseScene, defaultFont, 
-				actorPlayerDto, ActorSprite.getFaceFileName(actorPlayerDto.getImageResId()), playerX, playerY);
+				actorPlayerDto, ActorSpriteUtil.getFaceFileName(actorPlayerDto.getImageResId()), playerX, playerY);
 		playerStatusRectangle.show(PlayerStatusRectangleType.MINI_STATUS);
 		attachChild(playerStatusRectangle);
 	}

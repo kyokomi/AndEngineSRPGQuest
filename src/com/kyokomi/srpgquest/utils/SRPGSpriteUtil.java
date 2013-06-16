@@ -3,12 +3,11 @@ package com.kyokomi.srpgquest.utils;
 import org.andengine.entity.sprite.TiledSprite;
 
 import com.kyokomi.core.scene.KeyListenScene;
-import com.kyokomi.srpgquest.sprite.ActorSprite;
 
 public class SRPGSpriteUtil {
 
 	public static TiledSprite getResourceFaceSprite(KeyListenScene pBaseScene, int playerId, int imageResId) {
-		return getResourceFaceSprite(pBaseScene, playerId, ActorSprite.getFaceFileName(imageResId));
+		return getResourceFaceSprite(pBaseScene, playerId, ActorSpriteUtil.getFaceFileName(imageResId));
 	}
 	public static TiledSprite getResourceFaceSprite(KeyListenScene pBaseScene, int tag, String faceFileName) {
 		TiledSprite tiledSprite = pBaseScene.getResourceTiledSprite(faceFileName, 4, 2);

@@ -16,9 +16,9 @@ import com.kyokomi.core.dto.SaveDataDto;
 import com.kyokomi.core.sprite.CommonWindowRectangle;
 import com.kyokomi.core.logic.ActorPlayerLogic;
 import com.kyokomi.srpgquest.logic.TextLogic;
-import com.kyokomi.srpgquest.sprite.ActorSprite;
 import com.kyokomi.srpgquest.sprite.PlayerStatusRectangle;
 import com.kyokomi.srpgquest.sprite.PlayerStatusRectangle.PlayerStatusRectangleType;
+import com.kyokomi.srpgquest.utils.ActorSpriteUtil;
 
 import android.graphics.Typeface;
 import android.view.KeyEvent;
@@ -76,7 +76,7 @@ public class InitialScene extends SrpgBaseScene
 		ActorPlayerDto actorPlayerDto = actorPlayerLogic.createActorPlayerDto(this, 1);
 		PlayerStatusRectangle statusRect = new PlayerStatusRectangle(
 				this, getFont(), actorPlayerDto, 
-				ActorSprite.getFaceFileName(actorPlayerDto.getImageResId()), 0, 0);
+				ActorSpriteUtil.getFaceFileName(actorPlayerDto.getImageResId()), 0, 0);
 		statusRect.setColor(Color.BLACK);
 		statusRect.setAlpha(0.5f);
 		// 枠は別

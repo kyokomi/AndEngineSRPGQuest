@@ -16,7 +16,7 @@ import com.kyokomi.core.dto.PlayerTalkDto;
 import com.kyokomi.core.dto.PlayerTalkDto.TalkDirection;
 import com.kyokomi.core.entity.MActorEntity;
 import com.kyokomi.core.scene.KeyListenScene;
-import com.kyokomi.srpgquest.sprite.ActorSprite;
+import com.kyokomi.srpgquest.utils.ActorSpriteUtil;
 import com.kyokomi.srpgquest.utils.SRPGSpriteUtil;
 
 public class TalkLogic {
@@ -77,7 +77,7 @@ public class TalkLogic {
 			if (actorFaces.indexOfKey(mActorEntity.getActorId()) >= 0 ) {
 				continue;
 			}
-			String faceName = ActorSprite.getFaceFileName(mActorEntity.getImageResId());
+			String faceName = ActorSpriteUtil.getFaceFileName(mActorEntity.getImageResId());
 			TiledSprite faceSprite = SRPGSpriteUtil.getResourceFaceSprite(pBaseScene,
 					mActorEntity.getActorId(), faceName);
 			actorFaces.put(mActorEntity.getActorId(), faceSprite);

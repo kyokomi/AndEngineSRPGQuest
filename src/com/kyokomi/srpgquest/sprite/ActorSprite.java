@@ -18,10 +18,10 @@ import com.kyokomi.core.dto.ActorPlayerDto;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.srpgquest.constant.MoveDirectionType;
 import com.kyokomi.srpgquest.map.common.MapPoint;
+import com.kyokomi.srpgquest.utils.ActorSpriteUtil;
 
 /**
  * アクター
- * TODO: メンバ変数でspriteもつのをやめる
  * @author kyokomi
  *
  */
@@ -40,14 +40,18 @@ public class ActorSprite extends Rectangle {
 		return mActorPlayer.getPlayerId();
 	}
 
-	/** プレイヤーキャラクター(TODO: 持たないようにする). */
-	private AnimatedSprite player;
+	/** プレイヤーキャラクター. */
 	public AnimatedSprite getPlayer() {
-		return player;
+		return (AnimatedSprite) getChildByTag(getPlayerId());
 	}
-	/** 最後に移動した時の向き. */
-	private int lastMoveCurrentIndex = 0;
 	
+	private int lastMoveCurrentIndex;
+	public int getLastMoveCurrentIndex() {
+		return lastMoveCurrentIndex;
+	}
+	public void setLastMoveCurrentIndex(int lastMoveCurrentIndex) {
+		this.lastMoveCurrentIndex = lastMoveCurrentIndex;
+	}
 	/**
 	 * コンストラクタ.
 	 * @param pActorPlayer
@@ -70,22 +74,10 @@ public class ActorSprite extends Rectangle {
 		playerSpriteInit(baseScene, pX, pY, scale);
 	}
 	
-	public static String getBaseFileName(int imageResId) {
-		return "actor/actor" + imageResId;
-	}	
-	public static String getFaceFileName(int imageResId) {
-		return getBaseFileName(imageResId) + "_f.png";
-	}
-	public static String getMoveFileName(int imageResId) {
-		return getBaseFileName(imageResId) + "_5_s.png";
-	}
-	private AnimatedSprite getMoveAnimatedSprite(KeyListenScene baseScene, int imageResId) {
-		return baseScene.getResourceAnimatedSprite(getMoveFileName(imageResId), 3, 4);
-	}
-	
 	private void playerSpriteInit(KeyListenScene baseScene, float x, float y, float scale) {
 		// playerキャラを追加 攻撃と防御のスプライトもセットで読み込んでおく
-		player = getMoveAnimatedSprite(baseScene, getActorPlayer().getImageResId());
+		AnimatedSprite player = ActorSpriteUtil.getMoveAnimatedSprite(baseScene, getActorPlayer().getImageResId());
+		player.setTag(getPlayerId());
 		attachChild(player);
 
 		// デフォルト表示
@@ -104,36 +96,28 @@ public class ActorSprite extends Rectangle {
 		setPlayerScale(pScale);
 	}
 	public void setPlayerScale(float scale) {
-		if (player != null) {
-			player.setScale(scale);
-		}
+		getPlayer().setScale(scale);
 	}
 	@Override
 	public void setPosition(IEntity pOtherEntity) {
 		setPlayerPosition(pOtherEntity);
 	}
 	public void setPlayerPosition(IEntity pOtherEntity) {
-		if (player != null) {
-			player.setPosition(pOtherEntity.getX(), pOtherEntity.getY());
-		}
+		getPlayer().setPosition(pOtherEntity.getX(), pOtherEntity.getY());
 	}
 	@Override
 	public void setPosition(float pX, float pY) {
 		setPlayerPosition(pX, pY);
 	}
 	public void setPlayerPosition(float x, float y) {
-		if (player != null) {
-			player.setPosition(x, y);
-		}
+		getPlayer().setPosition(x, y);
 	}
 	@Override
 	public void setSize(float pWidth, float pHeight) {
 		setPlayerSize(pWidth, pHeight);
 	}
 	public void setPlayerSize(float w, float h) {
-		if (player != null) {
-			player.setSize(w, h);
-		}
+		getPlayer().setSize(w, h);
 	}
 	
 	/**
@@ -141,9 +125,7 @@ public class ActorSprite extends Rectangle {
 	 * @param pFlippedHorizontal
 	 */
 	public void setPlayerFlippedHorizontal(boolean pFlippedHorizontal) {
-		if (player != null) {
-			player.setFlippedHorizontal(pFlippedHorizontal);
-		}
+		getPlayer().setFlippedHorizontal(pFlippedHorizontal);
 	}
 	
 	// ----------------------------------------------
@@ -161,9 +143,7 @@ public class ActorSprite extends Rectangle {
 		default:
 			break;
 		}
-		if (player != null) {
-			player.setAlpha(normal);
-		}
+		getPlayer().setAlpha(normal);
 	}
 	
 	// ----------------------------------------------
@@ -177,13 +157,13 @@ public class ActorSprite extends Rectangle {
 	 */
 	public void move(float duration, List<MapPoint> moveMapPointList, 
 			IEntityModifier.IEntityModifierListener pEntityModifierListener) {
-		if (player == null) {
+		if (getPlayer() == null) {
 			return;
 		}
 		
 		List<IEntityModifier> modifierList = new ArrayList<IEntityModifier>();
-		float moveStartX = player.getX();
-		float moveStartY = player.getY();
+		float moveStartX = getPlayer().getX();
+		float moveStartY = getPlayer().getY();
 		float stepDuration = duration / moveMapPointList.size();
 		if (stepDuration == duration) {
 			stepDuration = stepDuration / 4;
@@ -213,52 +193,21 @@ public class ActorSprite extends Rectangle {
 		SequenceEntityModifier sequenceEntityModifier  = new SequenceEntityModifier(
 				modifierList.toArray(new IEntityModifier[0]));
 		// 移動
-		player.registerEntityModifier(sequenceEntityModifier);
+		getPlayer().registerEntityModifier(sequenceEntityModifier);
 	}
 
 	// ----------------------------------------------
 	// 汎用ポジション設定
 	// ----------------------------------------------
 	public void setPlayerDirection(MoveDirectionType moveDirectionType) {
-		lastMoveCurrentIndex = 0;
-		switch (moveDirectionType) {
-		case MOVE_DOWN:
-			lastMoveCurrentIndex = 6;//0
-			break;
-		case MOVE_LEFT:
-			lastMoveCurrentIndex = 0;//3
-			break;
-		case MOVE_RIGHT:
-			lastMoveCurrentIndex = 9;//6
-			break;
-		case MOVE_UP:
-			lastMoveCurrentIndex = 3;//9
-			break;
-		default:
-			break;
-		}
-		player.setCurrentTileIndex(lastMoveCurrentIndex);
-		setPlayerToDefaultPosition();
+		this.lastMoveCurrentIndex = moveDirectionType.getDirection();
+		ActorSpriteUtil.setPlayerDirection(getPlayer(), moveDirectionType);
 	}
-	/**
-	 * プレイヤーデフォルトポジション設定.
-	 */
 	public void setPlayerToDefaultPosition() {
-		if (player != null) {
-			player.animate(
-					new long[]{100, 100, 100}, 
-					new int[]{lastMoveCurrentIndex, lastMoveCurrentIndex+1, lastMoveCurrentIndex+2}, 
-					true);
-			showPlayer(PlayerSpriteType.PLAYER_TYPE_NORMAL);
-		}
+		ActorSpriteUtil.setPlayerToDefaultPosition(getPlayer(), this.lastMoveCurrentIndex);
 	}
-	/**
-	 * プレイヤーデフォルトポジション設定.
-	 */
-	public void setPlayerToDefaultPositionStop() {
-		if (player != null) {
-			player.stopAnimation(lastMoveCurrentIndex);
-			showPlayer(PlayerSpriteType.PLAYER_TYPE_NORMAL);
-		}
+	
+	public void stopAnimation() {
+		getPlayer().stopAnimation(lastMoveCurrentIndex);
 	}
 }

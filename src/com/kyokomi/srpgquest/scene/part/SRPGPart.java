@@ -61,6 +61,7 @@ import com.kyokomi.srpgquest.scene.SrpgBaseScene;
 import com.kyokomi.srpgquest.sprite.ActorSprite;
 import com.kyokomi.srpgquest.sprite.PlayerStatusRectangle;
 import com.kyokomi.srpgquest.sprite.PlayerStatusRectangle.PlayerStatusRectangleType;
+import com.kyokomi.srpgquest.utils.ActorSpriteUtil;
 import com.kyokomi.srpgquest.utils.MapGridUtil;
 
 public class SRPGPart extends AbstractGamePart {
@@ -240,14 +241,14 @@ public class SRPGPart extends AbstractGamePart {
 		@Override
 		public void stopWalkingPlayerAnimation(int playerSeqNo) {
 			ActorSprite actorSprite = getActorSprite(playerSeqNo);
-			actorSprite.setPlayerToDefaultPositionStop();
+			actorSprite.stopAnimation();
 			actorSprite.getPlayer().setColor(new Color(0.4f, 0.4f, 0.4f));
 		}
 
 		@Override
 		public void stopWalkingEnemyAnimation(int enemySeqNo) {
 			ActorSprite enemySprite = getActorSprite(enemySeqNo);
-			enemySprite.setPlayerToDefaultPositionStop();
+			enemySprite.stopAnimation();
 			enemySprite.getPlayer().setColor(new Color(0.4f, 0.4f, 0.4f));
 		}
 
@@ -257,15 +258,15 @@ public class SRPGPart extends AbstractGamePart {
 		@Override
 		public void movePlayerAnimation(int playerSeqNo, List<MapPoint> moveMapPointList,
 				final IAnimationCallback animationCallback) {
-			ActorSprite ActorSprite = getActorSprite(playerSeqNo);
+			ActorSprite actorSprite = getActorSprite(playerSeqNo);
 			// クォータービュー対応
 			for (MapPoint mapPoint : moveMapPointList) {
 				mapPoint.setX(
-						mapPoint.getX() + (MapGridUtil.GRID_X / 2) - (ActorSprite.getWidth() / 2) - (ActorSprite.getWidth() / 8)); 
+						mapPoint.getX() + (MapGridUtil.GRID_X / 2) - (actorSprite.getWidth() / 2) - (actorSprite.getWidth() / 8)); 
 				mapPoint.setY(
-						mapPoint.getY() + (MapGridUtil.GRID_Y / 2) - ActorSprite.getHeight() + (ActorSprite.getHeight() / 8));
+						mapPoint.getY() + (MapGridUtil.GRID_Y / 2) - actorSprite.getHeight() + (actorSprite.getHeight() / 8));
 			}
-			ActorSprite.move(1.0f, moveMapPointList, new IEntityModifier.IEntityModifierListener() {
+			actorSprite.move(1.0f, moveMapPointList, new IEntityModifier.IEntityModifierListener() {
 				@Override
 				public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
 				}
@@ -793,7 +794,7 @@ public class SRPGPart extends AbstractGamePart {
 		}
 		PlayerStatusRectangle playerStatusRectangle = new PlayerStatusRectangle(getBaseScene(), 
 				getBaseScene().getFont(), actorSprite.getActorPlayer(), 
-				ActorSprite.getFaceFileName(actorSprite.getActorPlayer().getImageResId()), 
+				ActorSpriteUtil.getFaceFileName(actorSprite.getActorPlayer().getImageResId()), 
 				getBaseScene().getWindowWidth() / 2, y, 
 				getBaseScene().getWindowWidth() / 2, getBaseScene().getWindowHeight() / 2);
 		playerStatusRectangle.setZIndex(LayerZIndexType.POPUP_LAYER.getValue());

@@ -52,7 +52,7 @@ public class SandBoxScene extends SrpgBaseScene
 		
 		mBattlePart = new BattlePart(this);
 		ActorPlayerDto player = actorPlayerLogic.createActorPlayerDto(this, 1);
-		ActorPlayerDto enemy = actorPlayerLogic.createActorPlayerDto(this, 3);
+		ActorPlayerDto enemy = actorPlayerLogic.createActorPlayerDto(this, 2);
 		
 		mBattlePart.init(player, enemy);
 	}
