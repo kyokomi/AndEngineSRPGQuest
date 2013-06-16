@@ -31,11 +31,12 @@ import com.kyokomi.core.sprite.TextButton;
 import com.kyokomi.srpgquest.constant.BattleActorType;
 import com.kyokomi.srpgquest.constant.BattleMenuType;
 import com.kyokomi.srpgquest.constant.LayerZIndexType;
+import com.kyokomi.srpgquest.constant.MoveDirectionType;
 import com.kyokomi.srpgquest.dto.BattleSelectDto;
 import com.kyokomi.srpgquest.layer.TextCutInTouchLayer;
 import com.kyokomi.srpgquest.logic.BattleLogic;
 import com.kyokomi.srpgquest.scene.SrpgBaseScene;
-import com.kyokomi.srpgquest.utils.ActorSpriteUtil;
+import com.kyokomi.srpgquest.sprite.ActorSprite;
 
 public class BattlePart extends AbstractGamePart {
 	// ==================================================
@@ -175,9 +176,9 @@ public class BattlePart extends AbstractGamePart {
 		float acotrBaseY = getBaseScene().getWindowHeight() / 2;
 		
 		// キャラ表示
-		AnimatedSprite playerSprite = getBaseScene().getResourceAnimatedSprite(
-				ActorSpriteUtil.getMoveFileName(player.getImageResId()), 3, 4);
+		ActorSprite playerSprite = new ActorSprite(player, getBaseScene(), 0, 0, 64, 64);
 		playerSprite.setSize(64, 64);
+		playerSprite.setPlayerDirection(MoveDirectionType.MOVE_LEFT);
 		playerSprite.setTag(player.getPlayerId());
 		// 右上から表示
 		playerSprite.setPosition(getBaseScene().getWindowWidth() - 
@@ -187,9 +188,9 @@ public class BattlePart extends AbstractGamePart {
 		mBaseLayer.attachChild(playerSprite);
 		
 		// キャラ表示
-		AnimatedSprite enemySprite = getBaseScene().getResourceAnimatedSprite(
-				ActorSpriteUtil.getMoveFileName(enemy.getImageResId()), 3, 4);
+		ActorSprite enemySprite = new ActorSprite(enemy, getBaseScene(), 0, 0, 64, 64);
 		enemySprite.setSize(64, 64);
+		enemySprite.setPlayerDirection(MoveDirectionType.MOVE_DOWN);
 		enemySprite.setTag(enemy.getPlayerId());
 		// 左上から表示
 		enemySprite.setPosition(getBaseScene().getWindowWidth() / 8, 
@@ -243,7 +244,7 @@ public class BattlePart extends AbstractGamePart {
 					if (enemyDto.getHitPoint() <= 0) {
 						continue;
 					} else {
-						AnimatedSprite acotorSprite = findActorSprite(enemyDto.getPlayerId());
+						AnimatedSprite acotorSprite = findActorSprite(enemyDto.getPlayerId()).getPlayer();
 						if (acotorSprite.contains(x, y)) {
 							Log.d("touchEvent", "target select end");
 							// タッチした時
@@ -274,7 +275,7 @@ public class BattlePart extends AbstractGamePart {
 	private boolean showBattleMenuLayer(float x, float y) {
 		if (mBaseLayer.getChildByTag(BATTLE_MENU_TAG) != null) {
 			if (mBaseLayer.getChildByTag(BATTLE_MENU_TAG).isVisible()) {
-				return false;	
+				return false;
 			} else {
 				mBaseLayer.getChildByTag(BATTLE_MENU_TAG).setVisible(true);
 				float menuWidth = ((Rectangle) mBaseLayer.getChildByTag(BATTLE_MENU_TAG)).getWidth();
@@ -405,7 +406,7 @@ public class BattlePart extends AbstractGamePart {
 			}
 			if (player != null) {
 				Log.d("BattlePart", "playerId = " + player.getPlayerId());
-				AnimatedSprite playerSprite = findActorSprite(player.getPlayerId());
+				AnimatedSprite playerSprite = findActorSprite(player.getPlayerId()).getPlayer();
 				mTempSelect = new BattleSelectDto();
 				mTempSelect.setBattleActorType(BattleActorType.PLAYER);
 				mTempSelect.setActorPlayerDto(player);
@@ -532,8 +533,8 @@ public class BattlePart extends AbstractGamePart {
 	
 	private void attackAnimation(final ActorPlayerDto attackFrom, final ActorPlayerDto attackTo, final int damage) {
 		
-		final AnimatedSprite attackFromSprite = findActorSprite(attackFrom.getPlayerId());
-		final AnimatedSprite attackToSprite = findActorSprite(attackTo.getPlayerId());
+		final AnimatedSprite attackFromSprite = findActorSprite(attackFrom.getPlayerId()).getPlayer();
+		final AnimatedSprite attackToSprite = findActorSprite(attackTo.getPlayerId()).getPlayer();
 		
 		// 移動方向を算出
 		float directionDiff_x = attackFromSprite.getX() - attackToSprite.getX();
@@ -654,7 +655,7 @@ public class BattlePart extends AbstractGamePart {
 	 */
 	private void showTargetCursor(ActorPlayerDto actorPlayerDto) {
 		// TODO: ターゲットカーソルは後で画像を用意する
-		AnimatedSprite actorSprite = findActorSprite(actorPlayerDto.getPlayerId());
+		AnimatedSprite actorSprite = findActorSprite(actorPlayerDto.getPlayerId()).getPlayer();
 		Rectangle cursorRectangle = new Rectangle(actorSprite.getX(), actorSprite.getY(), 50, 50, 
 				getBaseScene().getBaseActivity().getVertexBufferObjectManager());
 		cursorRectangle.setColor(Color.YELLOW);
@@ -675,7 +676,7 @@ public class BattlePart extends AbstractGamePart {
 	 * @param actorId アクターID
 	 * @return アクタースプライト
 	 */
-	private AnimatedSprite findActorSprite(int actorId) {
-		return (AnimatedSprite) mBaseLayer.getChildByTag(actorId);
+	private ActorSprite findActorSprite(int actorId) {
+		return (ActorSprite) mBaseLayer.getChildByTag(actorId);
 	}
 }

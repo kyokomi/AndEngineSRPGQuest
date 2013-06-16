@@ -713,7 +713,7 @@ public class SRPGPart extends AbstractGamePart {
 	 * @param mapPoint
 	 */
 	private void createPlayerSprite(int playerSeqNo, ActorPlayerDto playerActor, MapPoint mapPoint, float size) {
-		ActorSprite player = new ActorSprite(playerActor, getBaseScene(), 0, 0, size, size, 1.0f);
+		ActorSprite player = new ActorSprite(playerActor, getBaseScene(), 0, 0, size, size);
 		
 		player.setPlayerToDefaultPosition();
 		player.setPlayerSize(size, size);
@@ -744,7 +744,7 @@ public class SRPGPart extends AbstractGamePart {
 	 * @param size
 	 */
 	private void createEnemySprite(int enemySeqNo, ActorPlayerDto enemyActor, MapPoint mapPoint, float size) {
-		ActorSprite enemy = new ActorSprite(enemyActor, getBaseScene(), 0, 0, size, size, 1.0f);
+		ActorSprite enemy = new ActorSprite(enemyActor, getBaseScene(), 0, 0, size, size);
 		
 		enemy.setPlayerToDefaultPosition();
 		enemy.setPlayerSize(size, size);

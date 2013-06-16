@@ -64,17 +64,17 @@ public class ActorSprite extends Rectangle {
 	 * @param pVertexBufferObjectManager
 	 */
 	public ActorSprite(ActorPlayerDto pActorPlayer, KeyListenScene baseScene, 
-			float pX, float pY, float pWidth, float pHeight, float scale) {
+			float pX, float pY, float pWidth, float pHeight) {
 		super(pX, pY, pWidth, pHeight, baseScene.getBaseActivity().getVertexBufferObjectManager());
 		
 		this.mActorPlayer = pActorPlayer;
 		
 		setColor(Color.TRANSPARENT);
 		
-		playerSpriteInit(baseScene, pX, pY, scale);
+		playerSpriteInit(baseScene, pX, pY);
 	}
 	
-	private void playerSpriteInit(KeyListenScene baseScene, float x, float y, float scale) {
+	private void playerSpriteInit(KeyListenScene baseScene, float x, float y) {
 		// playerキャラを追加 攻撃と防御のスプライトもセットで読み込んでおく
 		AnimatedSprite player = ActorSpriteUtil.getMoveAnimatedSprite(baseScene, getActorPlayer().getImageResId());
 		player.setTag(getPlayerId());
@@ -82,7 +82,6 @@ public class ActorSprite extends Rectangle {
 
 		// デフォルト表示
 		showPlayer(PlayerSpriteType.PLAYER_TYPE_NORMAL);
-		setPlayerScale(scale);
 		
 		// タグ設定
 		setTag(mActorPlayer.getPlayerId());
@@ -91,13 +90,6 @@ public class ActorSprite extends Rectangle {
 	// ----------------------------------------------
 	// Sprite設定系
 	// ----------------------------------------------
-	@Override
-	public void setScale(float pScale) {
-		setPlayerScale(pScale);
-	}
-	public void setPlayerScale(float scale) {
-		getPlayer().setScale(scale);
-	}
 	@Override
 	public void setPosition(IEntity pOtherEntity) {
 		setPlayerPosition(pOtherEntity);
@@ -109,8 +101,8 @@ public class ActorSprite extends Rectangle {
 	public void setPosition(float pX, float pY) {
 		setPlayerPosition(pX, pY);
 	}
-	public void setPlayerPosition(float x, float y) {
-		getPlayer().setPosition(x, y);
+	public void setPlayerPosition(float pX, float pY) {
+		getPlayer().setPosition(pX, pY);
 	}
 	@Override
 	public void setSize(float pWidth, float pHeight) {
