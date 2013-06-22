@@ -37,7 +37,6 @@ import com.kyokomi.srpgquest.constant.MoveDirectionType;
 import com.kyokomi.srpgquest.dto.BattleSelectDto;
 import com.kyokomi.srpgquest.layer.TextCutInTouchLayer;
 import com.kyokomi.srpgquest.logic.BattleLogic;
-import com.kyokomi.srpgquest.scene.MainScene;
 import com.kyokomi.srpgquest.scene.SrpgBaseScene;
 import com.kyokomi.srpgquest.sprite.ActorSprite;
 
@@ -394,9 +393,9 @@ public class BattlePart extends AbstractGamePart {
 		if (mBaseLayer != null) {
 			getBaseScene().detachEntity(mBaseLayer);
 		}
-		
-		// ここだけ仕方ない...
-		((MainScene)getBaseScene()).endBattlePart();
+//		
+//		// ここだけ仕方ない...
+//		((MainScene)getBaseScene()).endBattlePart();
 	}
 	
 	// ==================================================

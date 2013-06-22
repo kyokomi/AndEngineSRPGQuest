@@ -8,13 +8,10 @@ import org.andengine.input.touch.TouchEvent;
 import android.view.KeyEvent;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
-import com.kyokomi.core.dto.ActorPlayerDto;
 import com.kyokomi.core.dto.SaveDataDto;
-import com.kyokomi.srpgquest.scene.part.BattlePart;
 import com.kyokomi.srpgquest.scene.part.NovelPart;
 import com.kyokomi.srpgquest.scene.part.ResultPart;
 import com.kyokomi.srpgquest.scene.part.SRPGPart;
-import com.kyokomi.srpgquest.scene.part.BattlePart.BattleInitType;
 
 public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	
@@ -92,7 +89,6 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 	private GamePartType mGamePartType;
 	private NovelPart mNovelPart;
 	private ResultPart mResultPart;
-	private BattlePart mBattlePart;
 	private SRPGPart mSRPGPart;
 	
 	/**
@@ -143,19 +139,6 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 		setOnSceneTouchListener(this);
 	}
 	
-	public void startBattlePart(ActorPlayerDto toActor, ActorPlayerDto fromActor, BattleInitType pBattleInitType) {
-		mGamePartType = GamePartType.BATTLE_PART;
-		if (mBattlePart == null) {
-			mBattlePart = new BattlePart(this);
-		}
-		mBattlePart.init(toActor, fromActor, pBattleInitType);
-	}
-	public void endBattlePart() {
-		mGamePartType = GamePartType.SRPG_PART;
-		mBattlePart = null;
-		mSRPGPart.battleEnd();
-	}
-	
 	/**
 	 * 画面タッチイベント
 	 * プレイ中のパートに振り分ける
@@ -173,9 +156,6 @@ public class MainScene extends SrpgBaseScene implements IOnSceneTouchListener {
 			break;
 		case RESULT_PART:
 			mResultPart.touchEvent(pScene, pSceneTouchEvent);
-			break;
-		case BATTLE_PART:
-			mBattlePart.touchEvent(pScene, pSceneTouchEvent);
 			break;
 		default:
 			break;

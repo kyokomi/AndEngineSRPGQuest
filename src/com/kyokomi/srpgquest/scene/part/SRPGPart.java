@@ -57,9 +57,9 @@ import com.kyokomi.srpgquest.manager.GameManager;
 import com.kyokomi.srpgquest.manager.GameManager.SRPGGameManagerListener;
 import com.kyokomi.srpgquest.map.common.MapPoint;
 import com.kyokomi.srpgquest.scene.InitialScene;
-import com.kyokomi.srpgquest.scene.MainScene;
 import com.kyokomi.srpgquest.scene.SrpgBaseScene;
 import com.kyokomi.srpgquest.scene.part.BattlePart.BattleInitType;
+import com.kyokomi.srpgquest.scene.part.BattlePart.BattleStateType;
 import com.kyokomi.srpgquest.sprite.ActorSprite;
 import com.kyokomi.srpgquest.sprite.PlayerStatusRectangle;
 import com.kyokomi.srpgquest.sprite.PlayerStatusRectangle.PlayerStatusRectangleType;
@@ -82,6 +82,19 @@ public class SRPGPart extends AbstractGamePart {
 	private MapBattleSelectMenuLayer mMapBattleSelectMenuLayer;
 	
 	private MapBattleInfoDto mMapBattleInfoDto;
+	
+	private BattlePart mBattlePart;
+	
+	public void startBattlePart(ActorPlayerDto toActor, ActorPlayerDto fromActor, BattleInitType pBattleInitType) {
+		if (mBattlePart == null) {
+			mBattlePart = new BattlePart(getBaseScene());
+		}
+		mBattlePart.init(toActor, fromActor, pBattleInitType);
+	}
+	public void endBattlePart() {
+		mBattlePart = null;
+		battleEnd();
+	}
 	
 	private SRPGGameManagerListener mSrpgGameManagerListener = new SRPGGameManagerListener() {
 		
@@ -455,8 +468,7 @@ public class SRPGPart extends AbstractGamePart {
 		
 		@Override
 		public void battleStart(ActorPlayerDto toActor, ActorPlayerDto fromActor, BattleInitType pBattleInitType) {
-			// ここは仕方ない...
-			((MainScene)getBaseScene()).startBattlePart(toActor, fromActor, pBattleInitType);
+			startBattlePart(toActor, fromActor, pBattleInitType);
 		}
 	};
 	
@@ -467,6 +479,7 @@ public class SRPGPart extends AbstractGamePart {
 	@Override
 	public void init(SaveDataDto saveDataDto) {
 		// 初期化
+		mBattlePart = null;
 		mActorPlayerLogic = new ActorPlayerLogic();
 		touchStartPoint = new float[2];
 		
@@ -536,6 +549,16 @@ public class SRPGPart extends AbstractGamePart {
 		if (mapBaseRect == null) {
 			return;
 		}
+		
+		// TODO: バトルパート中はそっちへ
+		if (mBattlePart != null) {
+			mBattlePart.touchEvent(pScene, pSceneTouchEvent);
+			if (mBattlePart.getBattleState() == BattleStateType.EXIT) {
+				endBattlePart();
+			}
+			return;
+		}
+		
 		float mapDispX = pSceneTouchEvent.getX() - mapBaseRect.getX();
 		float mapDispY = pSceneTouchEvent.getY() - mapBaseRect.getY();
 		// タッチ位置をスクロールを考慮したマップ座標に変換
