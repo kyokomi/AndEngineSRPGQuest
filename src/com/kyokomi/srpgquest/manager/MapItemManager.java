@@ -77,6 +77,19 @@ public class MapItemManager {
 		}
 		return objectList;
 	}
+	public List<MapItem> getActorMapItemList() {
+		List<MapItem> objectList = new ArrayList<MapItem>();
+		for (int x = 0; x < mObjectMapItemLayer.length; x++) {
+			for (int y = 0; y < mObjectMapItemLayer[x].length; y++) {
+				if (getObject(x,y) != null && 
+						(getObject(x,y).getMapDataType() == MapDataType.PLAYER 
+						|| getObject(x,y).getMapDataType() == MapDataType.ENEMY)) {
+					objectList.add(getObject(x,y));
+				}
+			}	
+		}
+		return objectList;
+	}
 	
 	public void setCursor(MapPoint mapPoint, MapItem mapItem) {
 		setCursor(mapPoint.getMapPointX(), mapPoint.getMapPointY(), mapItem);

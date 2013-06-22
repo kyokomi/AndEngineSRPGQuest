@@ -1,6 +1,8 @@
 package com.kyokomi.srpgquest.scene.part;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.andengine.entity.IEntity;
@@ -35,6 +37,7 @@ import com.kyokomi.srpgquest.constant.MoveDirectionType;
 import com.kyokomi.srpgquest.dto.BattleSelectDto;
 import com.kyokomi.srpgquest.layer.TextCutInTouchLayer;
 import com.kyokomi.srpgquest.logic.BattleLogic;
+import com.kyokomi.srpgquest.scene.MainScene;
 import com.kyokomi.srpgquest.scene.SrpgBaseScene;
 import com.kyokomi.srpgquest.sprite.ActorSprite;
 
@@ -58,6 +61,29 @@ public class BattlePart extends AbstractGamePart {
 	private static int TURN_COUNT_LIMIT = 1;
 	private int mTurnCount = 0;
 	
+	public enum BattleInitType {
+		PLAYER_ATTACK(10),
+		ENEMY_ATTACK(20)
+		;
+		private Integer value;
+
+		private BattleInitType(Integer value) {
+			this.value = value;
+		}
+		
+		public Integer getValue() {
+			return value;
+		}
+		public static BattleInitType get(Integer value) {
+			BattleInitType[] values = values();
+			for (BattleInitType type : values) {
+				if (type.getValue() == value) {
+					return type;
+				}
+			}
+			throw new RuntimeException("find not tag type.");
+		}
+	}
 	public enum BattleStateType {
 		INIT(0),
 		START(1),
@@ -98,6 +124,7 @@ public class BattlePart extends AbstractGamePart {
 	public BattleStateType getBattleState() {
 		return mBattleState;
 	}
+	private BattleInitType mBattleInitType;
 	private List<ActorPlayerDto> mPlayerList;
 	private List<ActorPlayerDto> mEnemyList;
 	
@@ -118,20 +145,29 @@ public class BattlePart extends AbstractGamePart {
 			
 			if (pTextButtonSprite.getTag() == BattleMenuType.ATTACK.getValue()) {
 				mTempSelect.setBattleMenuType(BattleMenuType.ATTACK);
-				
 				// ターゲット選択
 				changeState(BattleStateType.PLAYER_TURN_TARGET_SELECT);
 				
 			} else if (pTextButtonSprite.getTag() == BattleMenuType.DEFENCE.getValue()) {
 				// 行動確定
 				// TODO: あとで実装
+				// とりあえず攻撃
+				mTempSelect.setBattleMenuType(BattleMenuType.ATTACK);
+				changeState(BattleStateType.PLAYER_TURN_TARGET_SELECT);
 				
 			} else if (pTextButtonSprite.getTag() == BattleMenuType.SKILL.getValue()) {
 				// スキルウィンドウ表示
 				// TODO: あとで実装
+				// とりあえず攻撃
+				mTempSelect.setBattleMenuType(BattleMenuType.ATTACK);
+				changeState(BattleStateType.PLAYER_TURN_TARGET_SELECT);
+				
 			} else if (pTextButtonSprite.getTag() == BattleMenuType.ITEM.getValue()) {
 				// アイテムウィンドウ表示
 				// TODO: あとで実装
+				// とりあえず攻撃
+				mTempSelect.setBattleMenuType(BattleMenuType.ATTACK);
+				changeState(BattleStateType.PLAYER_TURN_TARGET_SELECT);
 			}
 		}
 	};
@@ -154,9 +190,13 @@ public class BattlePart extends AbstractGamePart {
 	public void init(SaveDataDto saveDataDto) {
 		
 	}
-	public void init(ActorPlayerDto player, ActorPlayerDto enemy) {
-		changeState(BattleStateType.INIT);
+	public void init(ActorPlayerDto player, ActorPlayerDto enemy, BattleInitType pBattleInitType) {
+		Log.d("BattlePart", player.toString());
+		Log.d("BattlePart", enemy.toString());
 		
+		changeState(BattleStateType.INIT);
+
+		mBattleInitType = pBattleInitType;
 		mPlayerList = new ArrayList<ActorPlayerDto>();
 		mEnemyList = new ArrayList<ActorPlayerDto>();
 		mPlayerList.add(player);
@@ -286,7 +326,8 @@ public class BattlePart extends AbstractGamePart {
 		}
 		
 		Rectangle battleMenuLayer = new Rectangle(
-				getBaseScene().getWindowWidth()/ 2, getBaseScene().getWindowHeight() / 2, 
+				getBaseScene().getWindowWidth()/ 2, 
+				getBaseScene().getWindowHeight() / 2, 
 				getBaseScene().getWindowWidth() / 4, 
 				getBaseScene().getWindowHeight() / 2, 
 				getBaseScene().getBaseActivity().getVertexBufferObjectManager());
@@ -339,8 +380,8 @@ public class BattlePart extends AbstractGamePart {
 		}
 		battleMenuLayer.setSize(addX * 2, addY * 2);
 		battleMenuLayer.setTag(BATTLE_MENU_TAG);
-		battleMenuLayer.setPosition(x - battleMenuLayer.getWidth() / 2, 
-				y - battleMenuLayer.getHeight() / 2);
+		battleMenuLayer.setPosition(x - battleMenuLayer.getWidth(), 
+				y - battleMenuLayer.getHeight());
 		mBaseLayer.attachChild(battleMenuLayer);
 		
 		return true;
@@ -353,6 +394,9 @@ public class BattlePart extends AbstractGamePart {
 		if (mBaseLayer != null) {
 			getBaseScene().detachEntity(mBaseLayer);
 		}
+		
+		// ここだけ仕方ない...
+		((MainScene)getBaseScene()).endBattlePart();
 	}
 	
 	// ==================================================
@@ -437,7 +481,7 @@ public class BattlePart extends AbstractGamePart {
 					// TODO: 攻撃対象をHPの量とか強さで判断するようにする
 					battleSelect.setActorPlayerDto(enemyDto);
 					battleSelect.setAction(false);
-					battleSelect.setBattleActorType(BattleActorType.PLAYER);
+					battleSelect.setBattleActorType(BattleActorType.ENEMY);
 					battleSelect.setBattleMenuType(BattleMenuType.ATTACK);
 					// 攻撃対象を選択
 					for (ActorPlayerDto playerDto : mPlayerList) {
@@ -456,6 +500,34 @@ public class BattlePart extends AbstractGamePart {
 			changeState(BattleStateType.BATTLE_START);
 		} else if (pBattleStateType == BattleStateType.BATTLE_START) {
 			// TODO: 素早い順に並び替える
+			
+			// TODO: とりあえず攻撃しかけた順にする
+			final BattleActorType firstAttackActorType;
+			if (mBattleInitType == BattleInitType.PLAYER_ATTACK) {
+				firstAttackActorType = BattleActorType.PLAYER;
+			} else if (mBattleInitType == BattleInitType.ENEMY_ATTACK) {
+				firstAttackActorType = BattleActorType.ENEMY;
+			} else {
+				firstAttackActorType = null;
+			}
+			if (firstAttackActorType != null) {
+				Collections.sort(mBattleSelectList, new Comparator<BattleSelectDto>() {
+					@Override
+					public int compare(BattleSelectDto p1, BattleSelectDto p2) {
+						Log.d("sort", "p1 = " + p1.getBattleActorType() + " p2 = " + p2.getBattleActorType() + " first = " + firstAttackActorType );
+						if (p1.getBattleActorType() == p2.getBattleActorType()) {
+							return 0;
+						} else if (p1.getBattleActorType() == firstAttackActorType) {
+							return -1;
+						} else if (p2.getBattleActorType() == firstAttackActorType) {
+							return 1;
+						} else {
+							return 0;
+						}
+					}
+				});
+			}
+			
 			changeState(BattleStateType.BATTLE_SELECT);
 			
 		} else if (pBattleStateType == BattleStateType.BATTLE_SELECT) {
@@ -494,6 +566,8 @@ public class BattlePart extends AbstractGamePart {
 				}
 				BattleLogic battleLogic = new BattleLogic();
 				int damage = battleLogic.attack(battleSelect.getActorPlayerDto(), battleSelect.getTargetDto());
+				Log.d("battleLogic", battleSelect.getActorPlayerDto().toString());
+				Log.d("battleLogic", battleSelect.getTargetDto().toString());
 				
 				// 攻撃アニメーション開始
 				changeState(BattleStateType.BATTLE_ANIMATION);
@@ -538,7 +612,6 @@ public class BattlePart extends AbstractGamePart {
 		
 		// 移動方向を算出
 		float directionDiff_x = attackFromSprite.getX() - attackToSprite.getX();
-		// TODO: 移動方向に合わせて画像のコマを変更
 		if (directionDiff_x > 0) {
 			// 攻撃者が右側にいる
 			directionDiff_x = 1;

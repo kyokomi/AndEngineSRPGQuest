@@ -601,6 +601,17 @@ public class MapManager {
 	// 汎用
 	// ----------------------------------------------------------
 	
+//	public ActorPlayerMapItem getSeqNoToActorMapItem(int seqNo) {
+//		List<MapItem> actorList = mMapItemManager.getActorMapItemList();
+//		for (MapItem actor : actorList) {
+//			if (actor instanceof ActorPlayerMapItem) {
+//				if (((ActorPlayerMapItem) actor).getSeqNo() == seqNo) {
+//					return (ActorPlayerMapItem) actor;
+//				}
+//			}
+//		}
+//		return null;
+//	}
 	public ActorPlayerMapItem getSeqNoToActorMapItem(int seqNo, MapDataType mapDataType) {
 		List<MapItem> actorList = mMapItemManager.getObjectMapItemList(mapDataType);
 		for (MapItem actor : actorList) {

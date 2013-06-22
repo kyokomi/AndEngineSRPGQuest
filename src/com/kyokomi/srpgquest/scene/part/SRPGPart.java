@@ -57,7 +57,9 @@ import com.kyokomi.srpgquest.manager.GameManager;
 import com.kyokomi.srpgquest.manager.GameManager.SRPGGameManagerListener;
 import com.kyokomi.srpgquest.map.common.MapPoint;
 import com.kyokomi.srpgquest.scene.InitialScene;
+import com.kyokomi.srpgquest.scene.MainScene;
 import com.kyokomi.srpgquest.scene.SrpgBaseScene;
+import com.kyokomi.srpgquest.scene.part.BattlePart.BattleInitType;
 import com.kyokomi.srpgquest.sprite.ActorSprite;
 import com.kyokomi.srpgquest.sprite.PlayerStatusRectangle;
 import com.kyokomi.srpgquest.sprite.PlayerStatusRectangle.PlayerStatusRectangleType;
@@ -450,6 +452,12 @@ public class SRPGPart extends AbstractGamePart {
 		public void hideSelectMenu() {
 			mMapBattleSelectMenuLayer.hideSelectMenu();
 		}
+		
+		@Override
+		public void battleStart(ActorPlayerDto toActor, ActorPlayerDto fromActor, BattleInitType pBattleInitType) {
+			// ここは仕方ない...
+			((MainScene)getBaseScene()).startBattlePart(toActor, fromActor, pBattleInitType);
+		}
 	};
 	
 	public SRPGPart(SrpgBaseScene pBaseScene) {
@@ -609,6 +617,10 @@ public class SRPGPart extends AbstractGamePart {
 	@Override
 	public void end() {
 		getBaseScene().nextScenario();
+	}
+	
+	public void battleEnd() {
+		mGameManager.battleEnd();
 	}
 	
 	/**

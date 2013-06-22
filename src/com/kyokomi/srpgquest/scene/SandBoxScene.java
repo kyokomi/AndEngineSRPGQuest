@@ -22,6 +22,7 @@ import com.kyokomi.core.logic.ActorPlayerLogic;
 import com.kyokomi.core.utils.CollidesUtil;
 import com.kyokomi.core.utils.CollidesUtil.TouchEventFlick;
 import com.kyokomi.srpgquest.scene.part.BattlePart;
+import com.kyokomi.srpgquest.scene.part.BattlePart.BattleInitType;
 import com.kyokomi.srpgquest.scene.part.BattlePart.BattleStateType;
 import com.kyokomi.srpgquest.utils.MapGridUtil;
 
@@ -54,7 +55,7 @@ public class SandBoxScene extends SrpgBaseScene
 		ActorPlayerDto player = actorPlayerLogic.createActorPlayerDto(this, 1);
 		ActorPlayerDto enemy = actorPlayerLogic.createActorPlayerDto(this, 2);
 		
-		mBattlePart.init(player, enemy);
+		mBattlePart.init(player, enemy, BattleInitType.PLAYER_ATTACK);
 	}
 
 	@Override

@@ -7,6 +7,7 @@ import org.andengine.engine.handler.timer.ITimerCallback;
 import org.andengine.engine.handler.timer.TimerHandler;
 
 import com.kyokomi.core.dto.ActorPlayerDto;
+import com.kyokomi.srpgquest.constant.BattleActorType;
 import com.kyokomi.srpgquest.constant.GameStateType;
 import com.kyokomi.srpgquest.constant.MapBattleType;
 import com.kyokomi.srpgquest.constant.MapDataType;
@@ -19,6 +20,7 @@ import com.kyokomi.srpgquest.logic.BattleLogic;
 import com.kyokomi.srpgquest.map.common.MapPoint;
 import com.kyokomi.srpgquest.map.item.ActorPlayerMapItem;
 import com.kyokomi.srpgquest.map.item.MapItem;
+import com.kyokomi.srpgquest.scene.part.BattlePart.BattleInitType;
 import com.kyokomi.srpgquest.scene.part.SRPGPart.IAnimationCallback;
 import com.kyokomi.srpgquest.utils.MapGridUtil;
 
@@ -223,19 +225,20 @@ public class GameManager {
 					// TODO: [将来対応]攻撃確認ウィンドウ表示				
 					
 					// ------- 攻撃処理 --------
-					boolean isDead = battleStart(mSelectActorPlayer, enemy);
-					
-					// 攻撃済みにする
-					mSelectActorPlayer.setAttackDone(true);
-					if (mSelectActorPlayer.isWaitDone()) {
-						// アニメーション停止
-						mSRPGGameManagerListener.stopWalkingPlayerAnimation(mSelectActorPlayer.getSeqNo());
-					}
-					// 攻撃終了後 倒れたアクターをマップ上から削除とかカーソルを初期化など
-					mMapManager.attackEndChangeMapItem(mSelectActorPlayer, enemy, isDead);
-					
-					// プレイヤーターンに戻る
-					changeGameState(GameStateType.PLAYER_TURN);
+					// TODO: バトルパート後に行う
+					battleStart(mSelectActorPlayer, enemy);
+//					boolean isDead = battleStart(mSelectActorPlayer, enemy);
+//					// 攻撃済みにする
+//					mSelectActorPlayer.setAttackDone(true);
+//					if (mSelectActorPlayer.isWaitDone()) {
+//						// アニメーション停止
+//						mSRPGGameManagerListener.stopWalkingPlayerAnimation(mSelectActorPlayer.getSeqNo());
+//					}
+//					// 攻撃終了後 倒れたアクターをマップ上から削除とかカーソルを初期化など
+//					mMapManager.attackEndChangeMapItem(mSelectActorPlayer, enemy, isDead);
+//					
+//					// プレイヤーターンに戻る
+//					changeGameState(GameStateType.PLAYER_TURN);
 				}
 			} else {
 				// キャンセル
@@ -346,6 +349,8 @@ public class GameManager {
 		// メニュー
 		void showSelectMenu(boolean isAttackDone, boolean isMovedDone, MapPoint mapPoint);
 		void hideSelectMenu();
+		// バトル
+		void battleStart(ActorPlayerDto toActor, ActorPlayerDto fromActor, BattleInitType pBattleInitType);
 		// sortとか
 		void refresh();
 	}
@@ -526,8 +531,13 @@ public class GameManager {
 			mGameState = pGameStateType;
 		
 		} else if (pGameStateType == GameStateType.ENEMY_TURN) {
+			// プレイヤー勝利判定
+			if (!isBeingEnemy()) {
+				// プレイヤー勝利
+				changePlayerWin();
+				
 			// 敵の勝利判定
-			if (!isBeingPlayer()) {
+			} else if (!isBeingPlayer()) {
 				// 敵勝利
 				changeEnemyWin();
 				// タイマーを停止
@@ -552,6 +562,13 @@ public class GameManager {
 			if (!isBeingEnemy()) {
 				// プレイヤー勝利
 				changePlayerWin();
+				
+			// 敵の勝利判定
+			} else if (!isBeingPlayer()) {
+				// 敵勝利
+				changeEnemyWin();
+				// タイマーを停止
+				mSRPGGameManagerListener.stopEnemyTurnTimer();
 				
 			} else {
 				// プレイヤーターンエンド判定
@@ -706,24 +723,18 @@ public class GameManager {
 							// 攻撃範囲にプレイヤーが存在する場合
 							// TODO: 判定仮
 							if (true) {
-								boolean isDead = battleStart(enemyMapItem, attackTarget);
-								// 攻撃済みにする
-								enemyMapItem.setAttackDone(true);
-								if (enemyMapItem.isWaitDone()) {
-									// アニメーション停止
-									mSRPGGameManagerListener.stopWalkingEnemyAnimation(enemyMapItem.getSeqNo());
-								}
-								// 攻撃終了後 倒れたアクターをマップ上から削除とかカーソルを初期化など
-								mMapManager.attackEndChangeMapItem(enemyMapItem, attackTarget, isDead);
+								// TODO :バトルパート後に処理する
+								battleStart(enemyMapItem, attackTarget);
+//								boolean isDead = battleStart(enemyMapItem, attackTarget);
 							}						
 						} else {
 							// アニメーション停止
 							mSRPGGameManagerListener.stopWalkingEnemyAnimation(enemyMapItem.getSeqNo());
+							
+							// 待機
+							enemyMapItem.setWaitDone(true);
+							changeGameState(GameStateType.ENEMY_TURN);
 						}	
-
-						// 待機
-						enemyMapItem.setWaitDone(true);
-						changeGameState(GameStateType.ENEMY_TURN);
 					}
 				}); // コールバックEND
 				
@@ -768,6 +779,9 @@ public class GameManager {
 	// ----------------------------------------------------------
 	// Battle
 	// ----------------------------------------------------------
+	private ActorPlayerMapItem mBattleToMapitem;
+	private ActorPlayerMapItem mBattleFromMapitem;
+	
 	/**
 	 * バトル開始し、倒したかの結果を返します.
 	 * TODO: 反撃できるようにしたら　返り討ちになる場合もあるのでbooleanじゃフラグが足りない
@@ -776,48 +790,112 @@ public class GameManager {
 	 * @param enemy 更新しちゃいます (注意)
 	 * @return true:倒した / false:倒してない
 	 */
-	private boolean battleStart(ActorPlayerMapItem fromPlayerMapItem, ActorPlayerMapItem toPlayerMapItem) {
-		boolean isDead = false;
+	private void battleStart(ActorPlayerMapItem fromPlayerMapItem, ActorPlayerMapItem toPlayerMapItem) {
+		mBattleToMapitem = toPlayerMapItem;
+		mBattleFromMapitem = fromPlayerMapItem;
 		
-		ActorPlayerDto formPlayer = getActorMapItemActorPlayer(fromPlayerMapItem);
-		ActorPlayerDto toPlayer = getActorMapItemActorPlayer(toPlayerMapItem);
-
+		ActorPlayerDto fromActor = getActorMapItemActorPlayer(fromPlayerMapItem);
+		ActorPlayerDto toActor = getActorMapItemActorPlayer(toPlayerMapItem);
+		Log.d("GameManager", fromActor.toString());
+		Log.d("GameManager", toActor.toString());
 		// バトルロジック実行
-		int damage = mBattleLogic.attack(formPlayer, toPlayer);
+		if (fromPlayerMapItem.getMapDataType() == MapDataType.PLAYER) {
+			mSRPGGameManagerListener.battleStart(fromActor, toActor, BattleInitType.PLAYER_ATTACK);	
+		} else {
+			mSRPGGameManagerListener.battleStart(toActor, fromActor, BattleInitType.ENEMY_ATTACK);
+		}
+	}
+	
+	public void battleEnd() {
+		boolean isToDead = false;
+		boolean isFromDead = false;
+		
+		ActorPlayerDto fromActor = getActorMapItemActorPlayer(mBattleFromMapitem);
+		ActorPlayerDto toActor = getActorMapItemActorPlayer(mBattleToMapitem);
+		
 		// 死亡判定
-		if (toPlayer.getHitPoint() <= 0) {
+		if (toActor.getHitPoint() <= 0) {
 			// 死亡
-			isDead = true;
+			isToDead = true;
 		} else {
 			// 生き残り
-			isDead = false;
+			isToDead = false;
+		}
+		// 死亡判定
+		if (fromActor.getHitPoint() <= 0) {
+			// 死亡
+			isFromDead = true;
+		} else {
+			// 生き残り
+			isFromDead = false;
 		}
 		
 		// 攻撃対象が攻撃者から見てどの方向にいるか取得
-		mSRPGGameManagerListener.acotorDirection(fromPlayerMapItem.getSeqNo(), 
-				mMapManager.findAttackDirection(fromPlayerMapItem, toPlayerMapItem));
+		Log.d("actorDirection", "fromActorMapItem.getSeqNo() = " + mBattleFromMapitem.getSeqNo());
+		mSRPGGameManagerListener.acotorDirection(mBattleFromMapitem.getSeqNo(), 
+				mMapManager.findAttackDirection(mBattleFromMapitem, mBattleToMapitem));
 		
-		// ダメージを表示
-		PointF dispPoint = MapGridUtil.indexToDisp(
-				toPlayerMapItem.getMapPointX(), toPlayerMapItem.getMapPointY());
-		mSRPGGameManagerListener.showDamageText(damage, dispPoint);
-		mSRPGGameManagerListener.acotorDamageEffect(toPlayerMapItem.getSeqNo());
+//		// ダメージを表示
+//		PointF dispPoint = MapGridUtil.indexToDisp(
+//				toActorMapItem.getMapPointX(), toActorMapItem.getMapPointY());
+//		mSRPGGameManagerListener.showDamageText(damage, dispPoint);
+//		mSRPGGameManagerListener.acotorDamageEffect(toActorMapItem.getSeqNo());
 		
 		// ステータスウィンドウへの反映と死亡時はマップ上から消す
-		if (toPlayerMapItem.getMapDataType() == MapDataType.ENEMY) {
-			mSRPGGameManagerListener.refreshEnemyStatusWindow(toPlayerMapItem.getSeqNo());
-			if (isDead) {
-				mSRPGGameManagerListener.removeEnemy(toPlayerMapItem.getSeqNo());
-				mEnemyList.remove(toPlayerMapItem.getSeqNo());
+		if (mBattleToMapitem.getMapDataType() == MapDataType.ENEMY) {
+			mSRPGGameManagerListener.refreshEnemyStatusWindow(mBattleToMapitem.getSeqNo());
+			if (isToDead) {
+				mSRPGGameManagerListener.removeEnemy(mBattleToMapitem.getSeqNo());
+				mEnemyList.remove(mBattleToMapitem.getSeqNo());
 			}
-		} else if (toPlayerMapItem.getMapDataType() == MapDataType.PLAYER) {
-			mSRPGGameManagerListener.refreshPlayerStatusWindow(toPlayerMapItem.getSeqNo());
-			if (isDead) {
-				mSRPGGameManagerListener.removePlayer(toPlayerMapItem.getSeqNo());
-				mPlayerList.remove(toPlayerMapItem.getSeqNo());
+		} else if (mBattleToMapitem.getMapDataType() == MapDataType.PLAYER) {
+			mSRPGGameManagerListener.refreshPlayerStatusWindow(mBattleToMapitem.getSeqNo());
+			if (isToDead) {
+				mSRPGGameManagerListener.removePlayer(mBattleToMapitem.getSeqNo());
+				mPlayerList.remove(mBattleToMapitem.getSeqNo());
 			}
 		}
-		return isDead;
+		// 攻撃する側
+		if (mBattleFromMapitem.getMapDataType() == MapDataType.ENEMY) {
+			mSRPGGameManagerListener.refreshEnemyStatusWindow(mBattleFromMapitem.getSeqNo());
+			if (isFromDead) {
+				mSRPGGameManagerListener.removeEnemy(mBattleFromMapitem.getSeqNo());
+				mEnemyList.remove(mBattleFromMapitem.getSeqNo());
+			}
+		} else if (mBattleFromMapitem.getMapDataType() == MapDataType.PLAYER) {
+			mSRPGGameManagerListener.refreshPlayerStatusWindow(mBattleFromMapitem.getSeqNo());
+			if (isFromDead) {
+				mSRPGGameManagerListener.removePlayer(mBattleFromMapitem.getSeqNo());
+				mPlayerList.remove(mBattleFromMapitem.getSeqNo());
+			}
+		}
+		
+		// 攻撃を仕掛けた側の行動を終了（死んでないとき）
+		if (!isFromDead) {
+			mBattleFromMapitem.setAttackDone(true);
+			if (mBattleFromMapitem.isWaitDone()) {
+				if (mBattleFromMapitem.getMapDataType() == MapDataType.PLAYER) {
+					mSRPGGameManagerListener.stopWalkingPlayerAnimation(mBattleFromMapitem.getSeqNo());	
+				} else if (mBattleFromMapitem.getMapDataType() == MapDataType.ENEMY) {
+					mSRPGGameManagerListener.stopWalkingEnemyAnimation(mBattleFromMapitem.getSeqNo());
+				}
+			}
+			mBattleFromMapitem.setWaitDone(true);
+		}
+		
+		if (isToDead) {
+			mMapManager.attackEndChangeMapItem(mBattleFromMapitem, mBattleToMapitem, isToDead);
+		}
+		
+		if (isFromDead) {
+			mMapManager.attackEndChangeMapItem(mBattleToMapitem, mBattleFromMapitem, isFromDead);
+		}
+		
+		if (mBattleFromMapitem.getMapDataType() == MapDataType.PLAYER) {
+			changeGameState(GameStateType.PLAYER_TURN);	
+		} else if (mBattleFromMapitem.getMapDataType() == MapDataType.ENEMY) {
+			changeGameState(GameStateType.ENEMY_TURN);
+		}
 	}
 	
 	// ----------------------------------------------------------
