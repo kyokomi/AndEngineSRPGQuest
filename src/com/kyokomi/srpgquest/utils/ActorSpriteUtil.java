@@ -44,10 +44,16 @@ public class ActorSpriteUtil {
 	public static String getMoveFileName(int pImageResId) {
 		return getBaseFileName(pImageResId) + "_5_s.png";
 	}
+	public static String getBattleFileName(int pImageResId) {
+		return getBaseFileName(pImageResId) + "_3_s.png";
+	}
 	private static String getBaseFileName(int pImageResId) {
 		return "actor/actor" + pImageResId;
 	}
 	public static AnimatedSprite getMoveAnimatedSprite(KeyListenScene pBaseScene, int pImageResId) {
 		return pBaseScene.getResourceAnimatedSprite(getMoveFileName(pImageResId), 3, 4);
+	}
+	public static AnimatedSprite getBattleAnimatedSprite(KeyListenScene pBaseScene, int pImageResId) {
+		return pBaseScene.getResourceAnimatedSprite(getBattleFileName(pImageResId), 3, 4);
 	}
 }

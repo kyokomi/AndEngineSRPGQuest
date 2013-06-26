@@ -16,6 +16,7 @@ import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.shape.IAreaShape;
 import org.andengine.entity.sprite.AnimatedSprite;
+import org.andengine.entity.sprite.AnimatedSprite.IAnimationListener;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.text.Text;
 import org.andengine.input.touch.TouchEvent;
@@ -33,12 +34,11 @@ import com.kyokomi.core.sprite.TextButton;
 import com.kyokomi.srpgquest.constant.BattleActorType;
 import com.kyokomi.srpgquest.constant.BattleMenuType;
 import com.kyokomi.srpgquest.constant.LayerZIndexType;
-import com.kyokomi.srpgquest.constant.MoveDirectionType;
 import com.kyokomi.srpgquest.dto.BattleSelectDto;
 import com.kyokomi.srpgquest.layer.TextCutInTouchLayer;
 import com.kyokomi.srpgquest.logic.BattleLogic;
 import com.kyokomi.srpgquest.scene.SrpgBaseScene;
-import com.kyokomi.srpgquest.sprite.ActorSprite;
+import com.kyokomi.srpgquest.sprite.ActorBattleSprite;
 
 public class BattlePart extends AbstractGamePart {
 	// ==================================================
@@ -53,6 +53,8 @@ public class BattlePart extends AbstractGamePart {
 	
 	private static final int BATTLE_START_CUTIN_TAG = 20000;
 	private static final int BATTLE_END_CUTIN_TAG = 20001;
+	
+	private static final int ACTOR_ATTACK_EFFETC_TAG = 100000;
 	
 	// ==================================================
 	
@@ -223,9 +225,8 @@ public class BattlePart extends AbstractGamePart {
 		float acotrBaseY = getBaseScene().getWindowHeight() / 2;
 		
 		// キャラ表示
-		ActorSprite playerSprite = new ActorSprite(player, getBaseScene(), 0, 0, 64, 64);
+		ActorBattleSprite playerSprite = new ActorBattleSprite(player, getBaseScene(), 0, 0, 64, 64);
 		playerSprite.setSize(64, 64);
-		playerSprite.setPlayerDirection(MoveDirectionType.MOVE_LEFT);
 		playerSprite.setTag(player.getPlayerId());
 		// 右上から表示
 		playerSprite.setPosition(getBaseScene().getWindowWidth() - 
@@ -235,14 +236,28 @@ public class BattlePart extends AbstractGamePart {
 		mBaseLayer.attachChild(playerSprite);
 		
 		// キャラ表示
-		ActorSprite enemySprite = new ActorSprite(enemy, getBaseScene(), 0, 0, 64, 64);
+		ActorBattleSprite enemySprite = new ActorBattleSprite(enemy, getBaseScene(), 0, 0, 64, 64);
 		enemySprite.setSize(64, 64);
-		enemySprite.setPlayerDirection(MoveDirectionType.MOVE_DOWN);
 		enemySprite.setTag(enemy.getPlayerId());
 		// 左上から表示
 		enemySprite.setPosition(getBaseScene().getWindowWidth() / 8, 
 				acotrBaseY);
 		mBaseLayer.attachChild(enemySprite);
+		
+		// 攻撃エフェクトを用意
+		// TODO: ファイル固定にしているけど、wewaponImgResIdでから引っ張れるようにする
+		AnimatedSprite playerAttackEffectSprite = getBaseScene().getResourceAnimatedSprite(
+				"effect/rapier.png", 5, 4);
+		playerAttackEffectSprite.setVisible(false);
+		playerAttackEffectSprite.setTag(ACTOR_ATTACK_EFFETC_TAG + player.getEquipDto().getWeaponImgResId());
+		mBaseLayer.attachChild(playerAttackEffectSprite);
+		
+		AnimatedSprite enemyAttackEffectSprite = getBaseScene().getResourceAnimatedSprite(
+				"effect/shock.png", 5, 2);
+		enemyAttackEffectSprite.setVisible(false);
+		enemyAttackEffectSprite.setColor(Color.YELLOW);
+		enemyAttackEffectSprite.setTag(ACTOR_ATTACK_EFFETC_TAG + enemy.getEquipDto().getWeaponImgResId()); 
+		mBaseLayer.attachChild(enemyAttackEffectSprite);
 		
 		// ベースレイヤをattach
 		getBaseScene().attachChild(mBaseLayer);
@@ -630,9 +645,11 @@ public class BattlePart extends AbstractGamePart {
 		
 		// 移動先を算出
 		final float pFromX = attackFromSprite.getX();
-		final float pToX = attackToSprite.getX() + (20 * directionDiff_x);
+		final float pToX = attackToSprite.getX() + (attackToSprite.getWidth() * directionDiff_x);
 		final float pFromY = attackFromSprite.getY();
 		final float pToY = attackToSprite.getY();
+		final float effectX = attackToSprite.getX() + attackToSprite.getWidth() / 2;
+		final float effectY = attackToSprite.getY() + attackToSprite.getHeight() / 2;
 		attackFromSprite.registerEntityModifier(new SequenceEntityModifier(
 			// 攻撃対象に向かって移動するアニメーション
 			new MoveModifier(0.5f, pFromX, pToX, pFromY, pToY, 
@@ -646,8 +663,49 @@ public class BattlePart extends AbstractGamePart {
 				}
 			}),
 			
-			// TODO: 攻撃アニメーションとエフェクト表示
-			
+			// 攻撃アニメーション
+			new DelayModifier(0.1f, new IEntityModifier.IEntityModifierListener() {
+				@Override
+				public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
+					attackFromSprite.animate(
+							new long[]{100, 100, 100, 100}, 
+							new int[]{6, 7, 8, 7}, 
+							false);
+				}
+				@Override
+				public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+					AnimatedSprite effect = (AnimatedSprite) mBaseLayer.getChildByTag(
+							ACTOR_ATTACK_EFFETC_TAG + attackFrom.getEquipDto().getWeaponImgResId());
+					effect.setPosition(effectX - effect.getWidth() / 2, effectY - effect.getHeight() / 2);
+					effect.setCurrentTileIndex(0);
+					effect.setVisible(true);
+					effect.animate(
+							new long[]{20, 20, 20, 20, 20, 20, 20, 20, 20, 20}, 
+							new int[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, 
+							false, new IAnimationListener() {
+								
+								@Override
+								public void onAnimationStarted(AnimatedSprite pAnimatedSprite,
+										int pInitialLoopCount) {
+								}
+								
+								@Override
+								public void onAnimationLoopFinished(AnimatedSprite pAnimatedSprite,
+										int pRemainingLoopCount, int pInitialLoopCount) {
+								}
+								
+								@Override
+								public void onAnimationFrameChanged(AnimatedSprite pAnimatedSprite,
+										int pOldFrameIndex, int pNewFrameIndex) {
+								}
+								
+								@Override
+								public void onAnimationFinished(AnimatedSprite pAnimatedSprite) {
+									pAnimatedSprite.setVisible(false);
+								}
+							});
+				}
+			}),
 			// ダメージテキスト表示
 			new DelayModifier(0.5f, new IEntityModifier.IEntityModifierListener() {
 				
@@ -790,7 +848,7 @@ public class BattlePart extends AbstractGamePart {
 	 * @param actorId アクターID
 	 * @return アクタースプライト
 	 */
-	private ActorSprite findActorSprite(int actorId) {
-		return (ActorSprite) mBaseLayer.getChildByTag(actorId);
+	private ActorBattleSprite findActorSprite(int actorId) {
+		return (ActorBattleSprite) mBaseLayer.getChildByTag(actorId);
 	}
 }
