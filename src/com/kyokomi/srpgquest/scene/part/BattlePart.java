@@ -6,8 +6,10 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.andengine.entity.IEntity;
+import org.andengine.entity.modifier.ColorModifier;
 import org.andengine.entity.modifier.DelayModifier;
 import org.andengine.entity.modifier.IEntityModifier;
+import org.andengine.entity.modifier.LoopEntityModifier;
 import org.andengine.entity.modifier.MoveModifier;
 import org.andengine.entity.modifier.ParallelEntityModifier;
 import org.andengine.entity.modifier.ScaleModifier;
@@ -39,6 +41,7 @@ import com.kyokomi.srpgquest.layer.TextCutInTouchLayer;
 import com.kyokomi.srpgquest.logic.BattleLogic;
 import com.kyokomi.srpgquest.scene.SrpgBaseScene;
 import com.kyokomi.srpgquest.sprite.ActorBattleSprite;
+import com.kyokomi.srpgquest.sprite.ActorSprite;
 
 public class BattlePart extends AbstractGamePart {
 	// ==================================================
@@ -674,6 +677,19 @@ public class BattlePart extends AbstractGamePart {
 				}
 				@Override
 				public void onModifierFinished(IModifier<IEntity> pModifier, IEntity pItem) {
+					// ダメージエフェクト
+					final Color color = attackToSprite.getColor();
+					
+					final Color white2 = new Color(0.5f, 0.5f, 0.5f, 1);
+					// 3回点滅
+					attackToSprite.registerEntityModifier(new LoopEntityModifier(
+							new SequenceEntityModifier(
+									new ColorModifier(0.1f, color, white2),
+									new ColorModifier(0.1f, white2, color)
+							), 3)
+					);
+					
+					// 攻撃エフェクト
 					AnimatedSprite effect = (AnimatedSprite) mBaseLayer.getChildByTag(
 							ACTOR_ATTACK_EFFETC_TAG + attackFrom.getEquipDto().getWeaponImgResId());
 					effect.setPosition(effectX - effect.getWidth() / 2, effectY - effect.getHeight() / 2);
