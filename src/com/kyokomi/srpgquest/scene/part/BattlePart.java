@@ -46,6 +46,7 @@ public class BattlePart extends AbstractGamePart {
 	// ==================================================
 	
 	private static final int DAMAGE_TEXT_TAG = 1000;
+	private static final int INFO_MESSAGE_TEXT_TAG = 1001;
 	private static final int TARGET_CURSOR_TAG = 2000;
 	
 	private static final int BATTLE_MENU_TAG = 10000;
@@ -144,6 +145,8 @@ public class BattlePart extends AbstractGamePart {
 			
 			if (pTextButtonSprite.getTag() == BattleMenuType.ATTACK.getValue()) {
 				mTempSelect.setBattleMenuType(BattleMenuType.ATTACK);
+				showInfoMessageText("攻撃対象を選択してください。");
+				
 				// ターゲット選択
 				changeState(BattleStateType.PLAYER_TURN_TARGET_SELECT);
 				
@@ -155,6 +158,8 @@ public class BattlePart extends AbstractGamePart {
 				changeState(BattleStateType.PLAYER_TURN_TARGET_SELECT);
 				
 			} else if (pTextButtonSprite.getTag() == BattleMenuType.SKILL.getValue()) {
+				showInfoMessageText("使用するスキルを選択してください。");
+				
 				// スキルウィンドウ表示
 				// TODO: あとで実装
 				// とりあえず攻撃
@@ -162,6 +167,8 @@ public class BattlePart extends AbstractGamePart {
 				changeState(BattleStateType.PLAYER_TURN_TARGET_SELECT);
 				
 			} else if (pTextButtonSprite.getTag() == BattleMenuType.ITEM.getValue()) {
+				showInfoMessageText("使用するアイテムを選択してください。");
+				
 				// アイテムウィンドウ表示
 				// TODO: あとで実装
 				// とりあえず攻撃
@@ -208,6 +215,7 @@ public class BattlePart extends AbstractGamePart {
 		mBaseLayer.setColor(Color.TRANSPARENT);
 		
 		initDamageText(mBaseLayer);
+		initInfoMessageText(mBaseLayer);
 		
 		// 背景表示
 		initBackground();
@@ -393,9 +401,6 @@ public class BattlePart extends AbstractGamePart {
 		if (mBaseLayer != null) {
 			getBaseScene().detachEntity(mBaseLayer);
 		}
-//		
-//		// ここだけ仕方ない...
-//		((MainScene)getBaseScene()).endBattlePart();
 	}
 	
 	// ==================================================
@@ -454,6 +459,9 @@ public class BattlePart extends AbstractGamePart {
 				mTempSelect.setBattleActorType(BattleActorType.PLAYER);
 				mTempSelect.setActorPlayerDto(player);
 				mTempSelect.setAction(false);
+				
+				showInfoMessageText(player.getName() + "の行動を選択してください。");
+				
 				// プレイヤーの攻撃ウィンドウを表示
 				showBattleMenuLayer(playerSprite.getX(), playerSprite.getY());
 			} else {
@@ -567,7 +575,8 @@ public class BattlePart extends AbstractGamePart {
 				int damage = battleLogic.attack(battleSelect.getActorPlayerDto(), battleSelect.getTargetDto());
 				Log.d("battleLogic", battleSelect.getActorPlayerDto().toString());
 				Log.d("battleLogic", battleSelect.getTargetDto().toString());
-				
+
+				showInfoMessageText(battleSelect.getActorPlayerDto().getName() + "の攻撃");
 				// 攻撃アニメーション開始
 				changeState(BattleStateType.BATTLE_ANIMATION);
 				attackAnimation(battleSelect.getActorPlayerDto(), battleSelect.getTargetDto(), damage);
@@ -644,6 +653,7 @@ public class BattlePart extends AbstractGamePart {
 				
 				@Override
 				public void onModifierStarted(IModifier<IEntity> pModifier, IEntity pItem) {
+					showInfoMessageText(attackTo.getName() + "に" + damage + "ダメージ");
 					// ダメージテキスト表示
 					showDamageText(damage, attackToSprite);
 				}
@@ -719,6 +729,38 @@ public class BattlePart extends AbstractGamePart {
 					damageText.setColor(Color.TRANSPARENT);
 				}
 		})));
+	}
+	
+	/**
+	 * 戦闘ログテキスト初期化
+	 */
+	private void initInfoMessageText(IEntity entity) {
+		float width = getBaseScene().getWindowWidth() - (getBaseScene().getWindowWidth() / 10);
+		float height = 40;
+		Rectangle rectangle = getBaseScene().createRectangle(0, 0, width, height);
+		rectangle.setColor(Color.BLACK);
+		rectangle.setAlpha(0.5f);
+		rectangle.setZIndex(LayerZIndexType.TEXT_LAYER.getValue());
+		rectangle.setTag(INFO_MESSAGE_TEXT_TAG);
+		
+		Text text = new Text(10, 10, getBaseScene().createFont(Typeface.DEFAULT, 20, Color.WHITE), 
+				"000000000000000000000000000000000000000000000000000000000000000", 
+				getBaseScene().getBaseActivity().getVertexBufferObjectManager());
+		rectangle.attachChild(text);
+
+		getBaseScene().placeToCenterX(rectangle, 10);
+		rectangle.setVisible(false);
+		
+		entity.attachChild(rectangle);
+	}
+	private void showInfoMessageText(String message) {
+		final Rectangle infoMessageRect = (Rectangle) mBaseLayer.getChildByTag(INFO_MESSAGE_TEXT_TAG);
+		((Text)infoMessageRect.getChildByIndex(0)).setText(message);
+		infoMessageRect.setVisible(true);
+	}
+	private void hideInfoMessageText() {
+		final Rectangle infoMessageRect = (Rectangle) mBaseLayer.getChildByTag(INFO_MESSAGE_TEXT_TAG);
+		infoMessageRect.setVisible(false);
 	}
 	
 	/**

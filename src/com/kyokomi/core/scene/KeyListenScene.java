@@ -1,6 +1,7 @@
 package com.kyokomi.core.scene;
 
 import org.andengine.entity.IEntity;
+import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.shape.IAreaShape;
 import org.andengine.entity.sprite.AnimatedSprite;
@@ -110,6 +111,10 @@ public abstract class KeyListenScene extends Scene {
 	// -------------------
 	// 汎用追加メソッド
 	// -------------------
+	
+	public Rectangle createRectangle(float pX, float pY, float pWidth, float pHeight) {
+		return new Rectangle(pX, pY, pWidth, pHeight, getBaseActivity().getVertexBufferObjectManager());
+	}
 	/**
 	 * ボタンの配置.
 	 * @param baseEntity   配置先
