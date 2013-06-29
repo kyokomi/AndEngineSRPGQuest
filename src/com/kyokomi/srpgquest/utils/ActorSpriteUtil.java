@@ -42,13 +42,13 @@ public class ActorSpriteUtil {
 		return getBaseFileName(pImageResId) + "_f.png";
 	}
 	public static String getMoveFileName(int pImageResId) {
-		return getBaseFileName(pImageResId) + "_5_s.png";
+		return getBaseFileName(pImageResId) + "_5.png";
 	}
 	public static String getBattleFileName(int pImageResId) {
-		return getBaseFileName(pImageResId) + "_3_s.png";
+		return getBaseFileName(pImageResId) + "_3.png";
 	}
 	private static String getBaseFileName(int pImageResId) {
-		return "actor/actor" + pImageResId;
+		return "actor/actor" + pImageResId + "/actor" + pImageResId;
 	}
 	public static AnimatedSprite getMoveAnimatedSprite(KeyListenScene pBaseScene, int pImageResId) {
 		return pBaseScene.getResourceAnimatedSprite(getMoveFileName(pImageResId), 3, 4);

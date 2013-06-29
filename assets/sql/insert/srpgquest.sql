@@ -19,8 +19,20 @@ insert into M_SCENARIO values(100, 99, 99, 99, 99, "クリア済み・・・");
 
 insert into M_ACTOR values(1, "アスリーン", 110);
 insert into M_ACTOR values(2, "ラーティ・クルス", 34);
-insert into M_ACTOR values(3, "スライム的な何か", 901);
+insert into M_ACTOR values(3, "スライム", 901);
 insert into M_ACTOR values(4, "村長", 902);
+insert into M_ACTOR values(5, "ミア", 11);
+insert into M_ACTOR values(6, "ケルティ", 20);
+insert into M_ACTOR values(7, "ルーテシア", 33);
+insert into M_ACTOR values(8, "カティナ", 37);
+insert into M_ACTOR values(9, "サチ", 4);
+insert into M_ACTOR values(10, "レーネ", 5);
+insert into M_ACTOR values(11, "メルティナ", 61);
+insert into M_ACTOR values(12, "エリオ", 63);
+insert into M_ACTOR values(13, "タルト", 64);
+insert into M_ACTOR values(14, "マリク", 70);
+insert into M_ACTOR values(15, "スミレ", 8);
+
 
 insert into M_ITEM values(1000, "ポーション", 64,	 3, 1);
 insert into M_ITEM values(2000, "赤魔道師のマント", 47, 3, 3);
@@ -40,6 +52,17 @@ insert into T_ACTOR_STATUS values(1, 1, 0, 100, 60, 30, 100, 0, 5, 1, 3000, 2001
 insert into T_ACTOR_STATUS values(2, 1, 0, 100, 30, 20, 100, 0, 5, 1, 0, 0);
 insert into T_ACTOR_STATUS values(3, 1, 0, 100, 10, 10,  40, 0, 4, 1, 0, 0);
 insert into T_ACTOR_STATUS values(4, 1, 0, 100, 10, 10,  40, 0, 4, 1, 0, 0);
+insert into T_ACTOR_STATUS values(5, 1, 0, 100, 30, 20, 100, 0, 5, 1, 0, 0);
+insert into T_ACTOR_STATUS values(6, 1, 0, 100, 30, 20, 100, 0, 5, 1, 0, 0);
+insert into T_ACTOR_STATUS values(7, 1, 0, 100, 30, 20, 100, 0, 5, 1, 0, 0);
+insert into T_ACTOR_STATUS values(8, 1, 0, 100, 30, 20, 100, 0, 5, 1, 0, 0);
+insert into T_ACTOR_STATUS values(9, 1, 0, 100, 30, 20, 100, 0, 5, 1, 0, 0);
+insert into T_ACTOR_STATUS values(10, 1, 0, 100, 30, 20, 100, 0, 5, 1, 0, 0);
+insert into T_ACTOR_STATUS values(11, 1, 0, 100, 30, 20, 100, 0, 5, 1, 0, 0);
+insert into T_ACTOR_STATUS values(12, 1, 0, 100, 30, 20, 100, 0, 5, 1, 0, 0);
+insert into T_ACTOR_STATUS values(13, 1, 0, 100, 30, 20, 100, 0, 5, 1, 0, 0);
+insert into T_ACTOR_STATUS values(14, 1, 0, 100, 30, 20, 100, 0, 5, 1, 0, 0);
+insert into T_ACTOR_STATUS values(15, 1, 0, 100, 30, 20, 100, 0, 5, 1, 0, 0);
 
 insert into M_MAP_BATTLE_REWARD values(1, 1, 1, 100);
 insert into M_MAP_BATTLE_REWARD values(2, 1, 2, 1000);
