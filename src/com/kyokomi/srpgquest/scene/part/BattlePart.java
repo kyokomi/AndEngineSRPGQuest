@@ -41,7 +41,6 @@ import com.kyokomi.srpgquest.layer.TextCutInTouchLayer;
 import com.kyokomi.srpgquest.logic.BattleLogic;
 import com.kyokomi.srpgquest.scene.SrpgBaseScene;
 import com.kyokomi.srpgquest.sprite.ActorBattleSprite;
-import com.kyokomi.srpgquest.sprite.ActorSprite;
 
 public class BattlePart extends AbstractGamePart {
 	// ==================================================
@@ -273,7 +272,8 @@ public class BattlePart extends AbstractGamePart {
 	 * 背景表示.
 	 */
 	private void initBackground() {
-		Sprite backgroundSprite = getBaseScene().getResourceSprite("bk/main_bg.jpg");
+		SaveDataDto saveDataDto = getBaseScene().getBaseActivity().getGameController().createSaveDataDto(getBaseScene());
+		Sprite backgroundSprite = getBaseScene().getResourceSprite(saveDataDto.getBackImgFilePath());
 		backgroundSprite.setSize(getBaseScene().getWindowWidth(), getBaseScene().getWindowHeight());
 		backgroundSprite.setZIndex(-1);
 		mBaseLayer.attachChild(backgroundSprite);
@@ -832,10 +832,11 @@ public class BattlePart extends AbstractGamePart {
 		((Text)infoMessageRect.getChildByIndex(0)).setText(message);
 		infoMessageRect.setVisible(true);
 	}
-	private void hideInfoMessageText() {
-		final Rectangle infoMessageRect = (Rectangle) mBaseLayer.getChildByTag(INFO_MESSAGE_TEXT_TAG);
-		infoMessageRect.setVisible(false);
-	}
+	// 現在未使用
+//	private void hideInfoMessageText() {
+//		final Rectangle infoMessageRect = (Rectangle) mBaseLayer.getChildByTag(INFO_MESSAGE_TEXT_TAG);
+//		infoMessageRect.setVisible(false);
+//	}
 	
 	/**
 	 * ターゲットカーソル表示。

@@ -65,7 +65,7 @@ public class SandBoxScene extends SrpgBaseScene
 		
 		// 背景
 		Sprite bg = getBaseActivity().getResourceUtil().getSprite(
-				"bk/bg_jan.jpg");
+				"bk/006-Desert01.jpg");
 		bg.setPosition(0, 0);
 		bg.setSize(getWindowWidth(), getWindowHeight());
 		attachChild(bg);

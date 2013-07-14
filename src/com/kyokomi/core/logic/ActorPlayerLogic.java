@@ -41,6 +41,7 @@ public class ActorPlayerLogic {
 		
 		actorPlayer.setName(mActorEntity.getActorName());
 		actorPlayer.setImageResId(mActorEntity.getImageResId());
+		actorPlayer.setFaceImgId(mActorEntity.getFaceImgId());
 		actorPlayer.setLv(tActorStatusEntity.getLevel());
 		actorPlayer.setExp(tActorStatusEntity.getExp());
 		actorPlayer.setNextExp(tActorStatusEntity.getNextExp());

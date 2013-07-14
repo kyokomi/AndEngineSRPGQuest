@@ -40,7 +40,7 @@ public class ResultPart extends AbstractGamePart {
 				getBaseScene(), saveDataDto.getSceneId());
 
 		// 背景
-		Sprite backImage = getBaseScene().getResourceSprite("bk/back_mori2.jpg");
+		Sprite backImage = getBaseScene().getResourceSprite(saveDataDto.getBackImgFilePath());
 		backImage.setSize(getBaseScene().getWindowWidth(), getBaseScene().getWindowHeight());
 		getBaseScene().attachChild(backImage);
 

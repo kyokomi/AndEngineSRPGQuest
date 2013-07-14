@@ -101,6 +101,8 @@ public class PlayerStatusRectangle extends Rectangle {
 		
 		mFaceTiledSprite = SRPGSpriteUtil.getResourceFaceSprite(pBaseScene,
 				mActorPlayerDto.getPlayerId(), pFaceFileName);
+		mFaceTiledSprite.setCurrentTileIndex(mActorPlayerDto.getFaceImgId());
+		
 		mFaceTiledSprite.setPosition(BASE_X, BASE_Y);
 		attachChild(mFaceTiledSprite);
 		

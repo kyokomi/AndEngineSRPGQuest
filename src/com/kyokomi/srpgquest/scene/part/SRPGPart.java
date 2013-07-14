@@ -484,7 +484,7 @@ public class SRPGPart extends AbstractGamePart {
 		touchStartPoint = new float[2];
 		
 		// 背景
-		initBackground();
+		initBackground(saveDataDto);
 		
 		// マップ情報を読み込む
 		mMapBattleInfoDto = new MapBattleInfoDto();
@@ -684,20 +684,19 @@ public class SRPGPart extends AbstractGamePart {
 	/**
 	 * 背景表示.
 	 */
-	private void initBackground() {
-		Sprite backgroundSprite = getBaseScene().getResourceSprite("bk/main_bg.jpg");
+	private void initBackground(SaveDataDto saveDataDto) {
+		Sprite backgroundSprite = getBaseScene().getResourceSprite(saveDataDto.getBackImgFilePath());
 		backgroundSprite.setSize(getBaseScene().getWindowWidth(), getBaseScene().getWindowHeight());
 		backgroundSprite.setZIndex(-1);
 		getBaseScene().attachChild(backgroundSprite);
 	}
 	
-
-	
 	/**
 	 * ダメージテキスト初期化
 	 */
 	private void initDamageText(IEntity entity) {
-		Text damageText = new Text(0, 0, getBaseScene().getFont(), "00000", getBaseScene().getBaseActivity().getVertexBufferObjectManager());
+		Text damageText = new Text(0, 0, getBaseScene().getFont(), "00000", 
+				getBaseScene().getBaseActivity().getVertexBufferObjectManager());
 		damageText.setColor(Color.TRANSPARENT);
 		damageText.setZIndex(LayerZIndexType.TEXT_LAYER.getValue());
 		damageText.setTag(DAMAGE_TEXT_TAG); //TODO: TAG管理

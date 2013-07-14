@@ -42,7 +42,7 @@ public class InitialScene extends SrpgBaseScene
 	public void init() {
 		// 背景
 		Sprite bg = getBaseActivity().getResourceUtil().getSprite(
-				"bk/bg_jan.jpg");
+				"bk/002-Woods01.jpg");
 		bg.setPosition(0, 0);
 		bg.setSize(getWindowWidth(), getWindowHeight());
 		attachChild(bg);
