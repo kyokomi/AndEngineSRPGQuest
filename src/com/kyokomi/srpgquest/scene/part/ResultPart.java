@@ -27,7 +27,6 @@ public class ResultPart extends AbstractGamePart {
 
 	public ResultPart(SrpgBaseScene pBaseScene) {
 		super(pBaseScene);
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override

@@ -179,6 +179,7 @@ public class GameController {
 		
 		saveDataDto.setSceneType(mScenarioEntity.getSceneType());
 		saveDataDto.setSceneId(mScenarioEntity.getSceneId());
+		saveDataDto.setBackImgFilePath(mScenarioEntity.getBackImgFilePath());
 		return saveDataDto;
 	}
 	

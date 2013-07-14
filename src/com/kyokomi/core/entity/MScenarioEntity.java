@@ -17,6 +17,7 @@ public class MScenarioEntity implements IDatabaseEntity {
 	private Integer sceneType;
 	private Integer sceneId;
 	private String scenarioTitle; // TODO: 正規化対象
+	private String backImgFilePath; // TODO: imageIdにして管理したいね
 	
 	public MScenarioEntity() {
 		
@@ -26,12 +27,14 @@ public class MScenarioEntity implements IDatabaseEntity {
 	}
 	@Override
 	public void initCursor(Cursor pCursor) {
-		this.scenarioId    = pCursor.getInt(0);
-		this.scenarioNo    = pCursor.getInt(1);
-		this.seqNo         = pCursor.getInt(2);
-		this.sceneType     = pCursor.getInt(3);
-		this.sceneId       = pCursor.getInt(4);
-		this.scenarioTitle = pCursor.getString(5);
+		int count = 0;
+		this.scenarioId    = pCursor.getInt(count); count++;
+		this.scenarioNo    = pCursor.getInt(count); count++;
+		this.seqNo         = pCursor.getInt(count); count++;
+		this.sceneType     = pCursor.getInt(count); count++;
+		this.sceneId       = pCursor.getInt(count); count++;
+		this.scenarioTitle = pCursor.getString(count); count++;
+		this.backImgFilePath = pCursor.getString(count); count++;
 	}
 	public Integer getScenarioId() {
 		return scenarioId;
@@ -73,6 +76,12 @@ public class MScenarioEntity implements IDatabaseEntity {
 		this.sceneId = sceneId;
 	}
 	
+	public String getBackImgFilePath() {
+		return backImgFilePath;
+	}
+	public void setBackImgFilePath(String backImgFilePath) {
+		this.backImgFilePath = backImgFilePath;
+	}
 	@Override
 	public ContentValues createContentValues() {
 		// マスターはupdateもinsertもしないから不要

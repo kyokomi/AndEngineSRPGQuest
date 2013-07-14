@@ -3,6 +3,7 @@ package com.kyokomi.srpgquest.scene.part;
 import java.util.List;
 
 import org.andengine.entity.scene.Scene;
+import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.sprite.TiledSprite;
 import org.andengine.input.touch.TouchEvent;
 
@@ -25,6 +26,10 @@ public class NovelPart extends AbstractGamePart {
 
 	@Override
 	public void init(SaveDataDto saveDataDto) {
+		Sprite backImg = getBaseScene().getResourceSprite(saveDataDto.getBackImgFilePath());
+		backImg.setSize(getBaseScene().getWindowWidth(), getBaseScene().getWindowHeight());
+		getBaseScene().attachChild(backImg);
+		
 		// 会話内容取得
 		TalkLogic talkLogic = new TalkLogic();
 		List<PlayerTalkDto> talks = talkLogic.getTalkDtoList(getBaseScene(),
@@ -63,6 +68,9 @@ public class NovelPart extends AbstractGamePart {
 			if (startTouchLayer != null && startTouchLayer.isTouchLayer(x, y)) {
 				// タップで消える
 				startTouchLayer.hideTouchLayer();
+				
+				// 背景表示
+				
 				// 会話を開始
 				if (talkLayer != null) {
 					talkLayer.nextTalk();

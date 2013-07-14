@@ -1,21 +1,21 @@
 
-insert into M_SCENARIO values(1, 1, 1, 1, 1, "とある村の話");
-insert into M_SCENARIO values(2, 1, 2, 2, 1, "バトル１");
-insert into M_SCENARIO values(3, 1, 3, 3, 1, "バトル１リザルト");
-insert into M_SCENARIO values(4, 1, 4, 1, 1, "バトル後");
+insert into M_SCENARIO values(1, 1, 1, 1, 1, "とある村の話", "bk/BG24a_80.jpg");
+insert into M_SCENARIO values(2, 1, 2, 2, 1, "バトル１", "bk/main_bg.jpg");
+insert into M_SCENARIO values(3, 1, 3, 3, 1, "バトル１リザルト", "bk/back_mori2.jpg");
+insert into M_SCENARIO values(4, 1, 4, 1, 1, "バトル後", "bk/BG24a_80.jpg");
 
-insert into M_SCENARIO values(5, 2, 1, 1, 1, "洞窟の中は・・・");
-insert into M_SCENARIO values(6, 2, 2, 2, 2, "バトル２");
-insert into M_SCENARIO values(7, 2, 3, 3, 2, "バトル２リザルト");
-insert into M_SCENARIO values(8, 2, 4, 1, 1, "バトル後");
+insert into M_SCENARIO values(5, 2, 1, 1, 1, "洞窟の中は・・・", "bk/BG10d_80.jpg");
+insert into M_SCENARIO values(6, 2, 2, 2, 2, "バトル２", "bk/main_bg.jpg");
+insert into M_SCENARIO values(7, 2, 3, 3, 2, "バトル２リザルト", "bk/back_mori2.jpg");
+insert into M_SCENARIO values(8, 2, 4, 1, 1, "バトル後", "bk/BG24a_80.jpg");
 
-insert into M_SCENARIO values(9, 3, 1, 1, 1, "モンスターも馬鹿ではない");
-insert into M_SCENARIO values(10, 3, 2, 2, 3, "バトル３");
-insert into M_SCENARIO values(11, 3, 3, 3, 3, "バトル３リザルト");
-insert into M_SCENARIO values(12, 3, 4, 1, 1, "バトル後");
+insert into M_SCENARIO values(9, 3, 1, 1, 1, "モンスターも馬鹿ではない", "bk/BG10d_80.jpg");
+insert into M_SCENARIO values(10, 3, 2, 2, 3, "バトル３", "bk/main_bg.jpg");
+insert into M_SCENARIO values(11, 3, 3, 3, 3, "バトル３リザルト", "bk/back_mori2.jpg");
+insert into M_SCENARIO values(12, 3, 4, 1, 1, "バトル後", "bk/BG24a_80.jpg");
 
-insert into M_SCENARIO values(99, 99, 1, 1, 1, "開発中により・・・");
-insert into M_SCENARIO values(100, 99, 99, 99, 99, "クリア済み・・・");
+insert into M_SCENARIO values(99, 99, 1, 1, 1, "開発中により・・・", "bk/BG04a_80.jpg");
+insert into M_SCENARIO values(100, 99, 99, 99, 99, "クリア済み・・・", "bk/BG04a_80.jpg");
 
 insert into M_ACTOR values(1, "アスリーン", 110);
 insert into M_ACTOR values(2, "ラーティ・クルス", 34);
