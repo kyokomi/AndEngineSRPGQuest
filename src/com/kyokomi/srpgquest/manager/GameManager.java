@@ -7,7 +7,6 @@ import org.andengine.engine.handler.timer.ITimerCallback;
 import org.andengine.engine.handler.timer.TimerHandler;
 
 import com.kyokomi.core.dto.ActorPlayerDto;
-import com.kyokomi.srpgquest.constant.BattleActorType;
 import com.kyokomi.srpgquest.constant.GameStateType;
 import com.kyokomi.srpgquest.constant.MapBattleType;
 import com.kyokomi.srpgquest.constant.MapDataType;
@@ -16,7 +15,6 @@ import com.kyokomi.srpgquest.constant.SelectMenuType;
 import com.kyokomi.srpgquest.dto.MapBattleInfoDto;
 import com.kyokomi.srpgquest.dto.MapBattleInfoDto.MapSymbol;
 import com.kyokomi.srpgquest.layer.CutInLayer.ICutInCallback;
-import com.kyokomi.srpgquest.logic.BattleLogic;
 import com.kyokomi.srpgquest.map.common.MapPoint;
 import com.kyokomi.srpgquest.map.item.ActorPlayerMapItem;
 import com.kyokomi.srpgquest.map.item.MapItem;
@@ -47,9 +45,6 @@ public class GameManager {
 	/** マップ管理. */
 	private MapManager mMapManager;
 	
-	/** バトル汎用. */
-	private BattleLogic mBattleLogic;
-	
 	/** 選択したプレイヤーテンポラリ. */
 	private ActorPlayerMapItem mSelectActorPlayer;
 	
@@ -61,7 +56,6 @@ public class GameManager {
 		this.mSRPGGameManagerListener = pSRPGGameManagerListener;
 
 		// 初期化
-		mBattleLogic = new BattleLogic();
 		mPlayerList = new SparseArray<ActorPlayerDto>();
 		mEnemyList = new SparseArray<ActorPlayerDto>();
 		

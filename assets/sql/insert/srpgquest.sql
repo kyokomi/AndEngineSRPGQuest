@@ -14,8 +14,8 @@ insert into M_SCENARIO values(10, 3, 2, 2, 3, "バトル３", "bk/019-DesertTown
 insert into M_SCENARIO values(11, 3, 3, 3, 3, "バトル３リザルト", "bk/019-DesertTown01.jpg");
 insert into M_SCENARIO values(12, 3, 4, 1, 1, "バトル後", "bk/019-DesertTown01.jpg");
 
-insert into M_SCENARIO values(99, 99, 1, 1, 1, "開発中により・・・", "bk/BG04a_80.jpg");
-insert into M_SCENARIO values(100, 99, 99, 99, 99, "クリア済み・・・", "bk/BG04a_80.jpg");
+insert into M_SCENARIO values(99, 99, 1, 1, 1, "開発中により・・・", "bk/002-Woods01.jpg");
+insert into M_SCENARIO values(100, 99, 99, 99, 99, "クリア済み・・・", "bk/002-Woods01.jpg");
 
 insert into M_ACTOR values(0, "システムメッセージ", 0, 0);
 insert into M_ACTOR values(1, "アスリーン", 110, 0);

@@ -1,9 +1,9 @@
 package com.kyokomi.core.logic;
 
-import com.kyokomi.core.dao.TPlayerPartyDao;
+//import com.kyokomi.core.dao.TPlayerPartyDao;
 
 public class PlayerPartyLogic {
 
-	private TPlayerPartyDao tPlayerPartyDao;
+//	private TPlayerPartyDao tPlayerPartyDao;
 	
 }
