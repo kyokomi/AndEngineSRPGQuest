@@ -33,8 +33,7 @@ public class InitialScene extends SrpgBaseScene
 	public InitialScene(MultiSceneActivity baseActivity) {
 		super(baseActivity);
 		
-		init();
-		
+		init();		
 //		getMediaManager().playStart(MusicType.TITLE_BGM);
 	}
 

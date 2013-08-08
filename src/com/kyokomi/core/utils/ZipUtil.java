@@ -15,10 +15,13 @@ import android.util.Log;
 
 public class ZipUtil {
 
+	public interface ZipProgressListener {
+		public void progress(int progress);
+	}
 	public static boolean unZipInternalStorage(Context context, String assetFilePath) {
 		boolean isUnZip = false;
 		try {
-			isUnZip = unZipInternalStorage(context, context.getAssets().open(assetFilePath));
+			isUnZip = unZipInternalStorage(context, context.getAssets().open(assetFilePath), null);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -29,14 +32,13 @@ public class ZipUtil {
 	 * @param context
 	 * @param zipInputStream
 	 */
-	public static boolean unZipInternalStorage(Context context, InputStream zipInputStream) {
+	public static boolean unZipInternalStorage(Context context, InputStream zipInputStream, ZipProgressListener listener) {
 		boolean isUnZip = false;
 		try {
 			ZipInputStream in = new ZipInputStream(new BufferedInputStream(zipInputStream));
 			ZipEntry zipEntry = null;
 			BufferedOutputStream out = null;
 			int len = 0;
-			 
 			while ((zipEntry = in.getNextEntry()) != null) {
 				// 出力先を作成
 				String outPutPath  = getAbsolutePathOnInternalStorage(context, "/" + zipEntry.getName());
@@ -60,8 +62,11 @@ public class ZipUtil {
 		                out.write(buffer, 0, len);
 		            }
 					
+		            if (listener != null) {
+		            	listener.progress(size);
+		            }
 		            Log.d("ZIP", "Name = " + zipEntry.getName() + " size = " + size);
-					
+		            
 		            in.closeEntry();
 		            out.close();
 				}
