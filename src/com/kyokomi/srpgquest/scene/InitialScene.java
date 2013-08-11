@@ -1,7 +1,5 @@
 package com.kyokomi.srpgquest.scene;
 
-import java.io.IOException;
-
 import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.Scene;
@@ -15,14 +13,12 @@ import org.andengine.util.color.Color;
 import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.dto.ActorPlayerDto;
 import com.kyokomi.core.dto.SaveDataDto;
-import com.kyokomi.core.entity.MScenarioEntity;
-import com.kyokomi.core.sprite.ActorSprite;
 import com.kyokomi.core.sprite.CommonWindowRectangle;
-import com.kyokomi.core.sprite.PlayerStatusRectangle;
-import com.kyokomi.core.sprite.PlayerStatusRectangle.PlayerStatusRectangleType;
 import com.kyokomi.core.logic.ActorPlayerLogic;
-import com.kyokomi.core.manager.MediaManager.MusicType;
-import com.kyokomi.core.manager.MediaManager.SoundType;
+import com.kyokomi.srpgquest.logic.TextLogic;
+import com.kyokomi.srpgquest.sprite.PlayerStatusRectangle;
+import com.kyokomi.srpgquest.sprite.PlayerStatusRectangle.PlayerStatusRectangleType;
+import com.kyokomi.srpgquest.utils.ActorSpriteUtil;
 
 import android.graphics.Typeface;
 import android.view.KeyEvent;
@@ -37,16 +33,15 @@ public class InitialScene extends SrpgBaseScene
 	public InitialScene(MultiSceneActivity baseActivity) {
 		super(baseActivity);
 		
-		init();
-		
-		getMediaManager().playStart(MusicType.TITLE_BGM);
+		init();		
+//		getMediaManager().playStart(MusicType.TITLE_BGM);
 	}
 
 	@Override
 	public void init() {
 		// 背景
 		Sprite bg = getBaseActivity().getResourceUtil().getSprite(
-				"bk/bg_jan.jpg");
+				"bk/002-Woods01.jpg");
 		bg.setPosition(0, 0);
 		bg.setSize(getWindowWidth(), getWindowHeight());
 		attachChild(bg);
@@ -80,7 +75,7 @@ public class InitialScene extends SrpgBaseScene
 		ActorPlayerDto actorPlayerDto = actorPlayerLogic.createActorPlayerDto(this, 1);
 		PlayerStatusRectangle statusRect = new PlayerStatusRectangle(
 				this, getFont(), actorPlayerDto, 
-				ActorSprite.getFaceFileName(actorPlayerDto.getImageResId()), 0, 0);
+				ActorSpriteUtil.getFaceFileName(actorPlayerDto.getImageResId()), 0, 0);
 		statusRect.setColor(Color.BLACK);
 		statusRect.setAlpha(0.5f);
 		// 枠は別
@@ -114,15 +109,19 @@ public class InitialScene extends SrpgBaseScene
 		// 所持ゴールド、所持経験値
 		Font paramTitleFont = createFont(Typeface.DEFAULT, getDefualtFontSize(), Color.YELLOW);
 		
-		Rectangle goldTextRectangle = createTextRectangle(
+		TextLogic textLogic = new TextLogic();
+		
+		Rectangle goldTextRectangle = textLogic.createTextRectangle(
 				"所持ゴールド :", paramTitleFont, 
-				saveDataDto.getGold() + " Gold", getFont());
+				saveDataDto.getGold() + " Gold", getFont(), 
+				getBaseActivity().getVertexBufferObjectManager());
 		goldTextRectangle.setPosition(scenarioTitle.getX(), 
 				scenarioTitle.getY() + scenarioTitle.getHeight() + 4);
 		scenarioInfoRectangle.attachChild(goldTextRectangle);
-		Rectangle expTextRectangle = createTextRectangle(
+		Rectangle expTextRectangle = textLogic.createTextRectangle(
 				"所持経験値 :", paramTitleFont, 
-				saveDataDto.getExp() + " Exp", getFont());
+				saveDataDto.getExp() + " Exp", getFont(), 
+				getBaseActivity().getVertexBufferObjectManager());
 		expTextRectangle.setPosition(goldTextRectangle.getX(), 
 				goldTextRectangle.getY() + goldTextRectangle.getHeight() + 4);
 		scenarioInfoRectangle.attachChild(expTextRectangle);
@@ -154,13 +153,13 @@ public class InitialScene extends SrpgBaseScene
 	@Override
 	public void initSoundAndMusic() {
 		// 効果音をロード
-		try {
-			getMediaManager().resetAllMedia();
-			getMediaManager().createMedia(SoundType.BTN_PRESSED_SE);
-			getMediaManager().createMedia(MusicType.TITLE_BGM);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+//		try {
+//			getMediaManager().resetAllMedia();
+//			getMediaManager().createMedia(SoundType.BTN_PRESSED_SE);
+//			getMediaManager().createMedia(MusicType.TITLE_BGM);
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
 	}
 
 	/**
@@ -168,14 +167,14 @@ public class InitialScene extends SrpgBaseScene
 	 */
 	@Override
 	public void onResume() {
-		getMediaManager().playPauseingMusic();
+//		getMediaManager().playPauseingMusic();
 	}
 	/**
 	 * バックグラウンド時
 	 */
 	@Override
 	public void onPause() {
-		getMediaManager().pausePlayingMusic();
+//		getMediaManager().pausePlayingMusic();
 	}
 	
 	@Override
@@ -191,18 +190,18 @@ public class InitialScene extends SrpgBaseScene
 	@Override
 	public void onClick(ButtonSprite pButtonSprite, float pTouchAreaLocalX,
 			float pTouchAreaLocalY) {
-		// 効果音を再生
-		getMediaManager().play(SoundType.BTN_PRESSED_SE);
-		// BGMなどをリセット
-		getMediaManager().resetAllMedia();
+//		// 効果音を再生
+//		getMediaManager().play(SoundType.BTN_PRESSED_SE);
+//		// BGMなどをリセット
+//		getMediaManager().resetAllMedia();
 		
 		switch (pButtonSprite.getTag()) {
 		case SAVE_LOAD: // シナリオデータ読み込み
-			loadScenario();
+			showScene(new MainScene(getBaseActivity()));
 			break;
 		case NEW_GAME: // NewGame
 			getBaseActivity().getGameController().start(getBaseActivity());
-			loadScenario();
+			showScene(new MainScene(getBaseActivity()));
 			break;
 		}	
 	}
@@ -211,39 +210,5 @@ public class InitialScene extends SrpgBaseScene
 	public boolean onSceneTouchEvent(Scene pScene, TouchEvent pSceneTouchEvent) {
 		touchSprite(pSceneTouchEvent.getX(), pSceneTouchEvent.getY());
 		return false;
-	}
-
-	@Override
-	public MScenarioEntity getScenarioEntity() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void destory() {
-		// TODO Auto-generated method stub
-		
-	}
-	
-	// 汎用
-	
-	private Rectangle createTextRectangle(String titleStr, Font titleFont, String detatilStr, Font detailFont) {
-		Text titleText = new Text(0, 0, titleFont, titleStr, 
-				getBaseActivity().getVertexBufferObjectManager());
-		Text detatilText = new Text(0, 0, detailFont, detatilStr, 
-				getBaseActivity().getVertexBufferObjectManager());
-		titleText.setPosition(0, 0);
-		detatilText.setPosition(titleText.getX() + titleText.getWidth(), titleText.getY());
-		
-		float textWidth = titleText.getWidth() + detatilText.getWidth();
-		float textHeight = titleText.getHeight();
-		Rectangle resultRectangle = new Rectangle(0, 0, textWidth, textHeight, 
-				getBaseActivity().getVertexBufferObjectManager());
-		
-		resultRectangle.setColor(Color.TRANSPARENT);
-		resultRectangle.setAlpha(0.0f);
-		resultRectangle.attachChild(titleText);
-		resultRectangle.attachChild(detatilText);
-		return resultRectangle;
 	}
 }

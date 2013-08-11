@@ -1,5 +1,7 @@
 package com.kyokomi.core.utils;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -15,15 +17,18 @@ import org.andengine.opengl.texture.TextureOptions;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
 import org.andengine.opengl.texture.atlas.bitmap.BuildableBitmapTextureAtlas;
+import org.andengine.opengl.texture.atlas.bitmap.source.FileBitmapTextureAtlasSource;
 import org.andengine.opengl.texture.atlas.bitmap.source.IBitmapTextureAtlasSource;
 import org.andengine.opengl.texture.atlas.buildable.builder.BlackPawnTextureAtlasBuilder;
 import org.andengine.opengl.texture.atlas.buildable.builder.ITextureAtlasBuilder.TextureAtlasBuilderException;
 import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.opengl.texture.region.TiledTextureRegion;
 import org.andengine.ui.activity.BaseGameActivity;
+import org.andengine.util.FileUtils;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Log;
 
 /**
  * Spriteのインスタンス化を簡単に行う為のクラス.
@@ -65,7 +70,7 @@ public class ResourceUtil {
 		
 		return self;
 	}
-
+	
 	/**
 	 * 指定ファイルのSpriteを取得.
 	 * 再生性しないようにプールしている。
@@ -80,12 +85,13 @@ public class ResourceUtil {
 			s.setBlendFunction(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
 			return s;
 		}
+		
 		// サイズを自動的に取得する為にBitmapとして読み込み
 		InputStream is = null;
 		try {
-			is = gameActivity.getResources().getAssets().open("gfx/" + fileName);
-		} catch (IOException e) {
-			e.printStackTrace();
+			is = getInputStream(fileName);
+		} catch (FileNotFoundException e) {
+			Log.e(getClass().getName(), "FileNotFoundException File Open Error fileName = " + fileName);
 		}
 		Bitmap bm = BitmapFactory.decodeStream(is);
 		// Bitmapのサイズを基に2のべき乗の値を取得、BitmapTextureAtlasの生成
@@ -94,8 +100,12 @@ public class ResourceUtil {
 				TextureOptions.BILINEAR_PREMULTIPLYALPHA);
 		gameActivity.getEngine().getTextureManager().loadTexture(bta);
 		
-		ITextureRegion btr = BitmapTextureAtlasTextureRegionFactory.createFromAsset(
-				bta, gameActivity, fileName, 0, 0);
+		ITextureRegion btr = null;
+		try {
+			btr = getTextureRegion(fileName, bta);
+		} catch (IOException e) {
+			Log.e(getClass().getName(), "IOException File Open Error fileName = " + fileName);
+		}
 		Sprite s = new Sprite(0, 0, btr, gameActivity.getVertexBufferObjectManager());
 		s.setBlendFunction(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
 		
@@ -104,6 +114,7 @@ public class ResourceUtil {
 		
 		return s;
 	}
+	
 	
 	public TiledSprite getTiledSprite(String fileName, int column, int row) {
 		if (tiledTextureRegionPool.containsKey(fileName)) {
@@ -117,9 +128,10 @@ public class ResourceUtil {
 		// サイズを自動的に取得する為にBitmapとして読み込み
 		InputStream is = null;
 		try {
-			is = gameActivity.getResources().getAssets().open("gfx/" + fileName);
-		} catch (IOException e) {
-			e.printStackTrace();
+			is = getInputStream(fileName);
+		} catch (FileNotFoundException e) {
+			Log.e(getClass().getName() + ".getInputStream", 
+					"FileNotFoundException File Open Error fileName = " + fileName);
 		}
 		Bitmap bm = BitmapFactory.decodeStream(is);
 		// Bitmapのサイズを基に2のべき乗の値を取得、BitmapTextureAtlasの生成
@@ -128,8 +140,13 @@ public class ResourceUtil {
 				TextureOptions.BILINEAR_PREMULTIPLYALPHA);
 		gameActivity.getEngine().getTextureManager().loadTexture(bta);
 		
-		TiledTextureRegion ttr = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(
-				bta, gameActivity, fileName, 0, 0, column, row);
+		TiledTextureRegion ttr = null;
+		try {
+			ttr = getTiledTextureRegion(fileName, bta, column, row);
+		} catch (IOException e) {
+			Log.e(getClass().getName() + ".getTiledTextureRegion", 
+					"IOException File Open Error fileName = " + fileName);
+		}
 		TiledSprite s = new TiledSprite(0, 0, ttr, gameActivity.getVertexBufferObjectManager());
 		s.setBlendFunction(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
 		
@@ -151,9 +168,10 @@ public class ResourceUtil {
 		// サイズを自動的に取得する為にBitmapとして読み込み
 		InputStream is = null;
 		try {
-			is = gameActivity.getResources().getAssets().open("gfx/" + fileName);
-		} catch (IOException e) {
-			e.printStackTrace();
+			is = getInputStream(fileName);
+		} catch (FileNotFoundException e) {
+			Log.e(getClass().getName() + ".getInputStream", "" +
+					"FileNotFoundException File Open Error fileName = " + fileName);
 		}
 		Bitmap bm = BitmapFactory.decodeStream(is);
 		// Bitmapのサイズを基に2のべき乗の値を取得、BitmapTextureAtlasの生成
@@ -162,8 +180,14 @@ public class ResourceUtil {
 				TextureOptions.BILINEAR_PREMULTIPLYALPHA);
 		gameActivity.getEngine().getTextureManager().loadTexture(bta);
 		
-		TiledTextureRegion ttr = BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(
-				bta, gameActivity, fileName, 0, 0, column, row);
+		TiledTextureRegion ttr = null;
+		try {
+			ttr = getTiledTextureRegion(fileName, bta, column, row);
+		} catch (IOException e) {
+			Log.e(getClass().getName() + ".getTiledTextureRegion", 
+					"IOException File Open Error fileName = " + fileName);
+		}
+		
 		AnimatedSprite s = new AnimatedSprite(0, 0, ttr, gameActivity.getVertexBufferObjectManager());
 		s.setBlendFunction(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
 		
@@ -192,9 +216,10 @@ public class ResourceUtil {
 		// サイズを自動的に取得する為にBitmapとして読み込み
 		InputStream is = null;
 		try {
-			is = gameActivity.getResources().getAssets().open("gfx/" + normal);
-		} catch (IOException e) {
-			e.printStackTrace();
+			is = getInputStream(normal);
+		} catch (FileNotFoundException e) {
+			Log.e(getClass().getName() + ".getInputStream", 
+					"FileNotFoundException File Open Error fileName = " + normal);
 		}
 		Bitmap bm = BitmapFactory.decodeStream(is);
 		
@@ -204,11 +229,18 @@ public class ResourceUtil {
 				getTwoPowerSize(bm.getWidth() * 2), 
 				getTwoPowerSize(bm.getHeight()));
 		
-		ITextureRegion trNormal = BitmapTextureAtlasTextureRegionFactory.createFromAsset(
-				bta, gameActivity, normal);
-		ITextureRegion trPressed = BitmapTextureAtlasTextureRegionFactory.createFromAsset(
-				bta, gameActivity, pressed);
-		
+		ITextureRegion trNormal = null;
+		ITextureRegion trPressed = null;
+		try {
+			trNormal = getTextureRegion(normal, bta);
+		} catch (IOException e) {
+			Log.e(getClass().getName(), "IOException File Open Error fileName = " + normal);
+		}
+		try {
+			trPressed = getTextureRegion(pressed, bta);
+		} catch (IOException e) {
+			Log.e(getClass().getName(), "IOException File Open Error fileName = " + pressed);
+		}
 		try {
 			bta.build(new BlackPawnTextureAtlasBuilder<IBitmapTextureAtlasSource, BitmapTextureAtlas>(0, 0, 0));
 			bta.load();
@@ -251,4 +283,64 @@ public class ResourceUtil {
 		}
 		return pow2Value;
 	}
+	
+	private ITextureRegion getTextureRegion(String fileName, BitmapTextureAtlas bta) throws IOException {
+		InputStream in = null;
+		try {
+			in = gameActivity.getResources().getAssets().open("gfx/" + fileName);
+			return BitmapTextureAtlasTextureRegionFactory.createFromAsset(
+					bta, gameActivity, fileName, 0, 0);
+		} catch (IOException e) {
+			IBitmapTextureAtlasSource ats = FileBitmapTextureAtlasSource.createFromInternalStorage(
+					gameActivity, "/gfx/" + fileName, 0, 0);
+			return BitmapTextureAtlasTextureRegionFactory.createFromSource(bta, ats, 0, 0);
+		} finally {
+			if (in != null) {
+				in.close();
+			}
+		}
+	}
+	private ITextureRegion getTextureRegion(String fileName, BuildableBitmapTextureAtlas bta) throws IOException {
+		InputStream in = null;
+		try {
+			in = gameActivity.getResources().getAssets().open("gfx/" + fileName);
+			return BitmapTextureAtlasTextureRegionFactory.createFromAsset(
+					bta, gameActivity, fileName);
+		} catch (IOException e) {
+			IBitmapTextureAtlasSource ats = FileBitmapTextureAtlasSource.createFromInternalStorage(
+					gameActivity, "/gfx/" + fileName, 0, 0);
+			return BitmapTextureAtlasTextureRegionFactory.createFromSource(bta, ats);
+		} finally {
+			if (in != null) {
+				in.close();
+			}
+		}
+	}
+	private TiledTextureRegion getTiledTextureRegion(String fileName, BitmapTextureAtlas bta, int column, int row) throws IOException {
+		InputStream in = null;
+		try {
+			in = gameActivity.getResources().getAssets().open("gfx/" + fileName);
+			return BitmapTextureAtlasTextureRegionFactory.createTiledFromAsset(
+					bta, gameActivity, fileName, 0, 0, column, row);
+		} catch (IOException e) {
+			IBitmapTextureAtlasSource ats = FileBitmapTextureAtlasSource.createFromInternalStorage(
+					gameActivity, "/gfx/" + fileName, 0, 0);
+			return BitmapTextureAtlasTextureRegionFactory.createTiledFromSource(
+					bta, ats, 0, 0, column, row);
+		} finally {
+			if (in != null) {
+				in.close();
+			}
+		}
+	}
+	private InputStream getInputStream(String fileName) throws FileNotFoundException {
+		try {
+			return gameActivity.getResources().getAssets().open("gfx/" + fileName);
+		} catch (IOException e) {
+			String filePath = FileUtils.getAbsolutePathOnInternalStorage(gameActivity,
+					"/gfx/" + fileName);
+			return new FileInputStream(filePath);
+		}
+	}
+
 }

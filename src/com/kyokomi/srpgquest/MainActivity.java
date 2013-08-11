@@ -1,5 +1,7 @@
 package com.kyokomi.srpgquest;
 
+import java.io.InputStream;
+
 import org.andengine.audio.music.MusicFactory;
 import org.andengine.audio.sound.SoundFactory;
 import org.andengine.engine.camera.Camera;
@@ -8,19 +10,38 @@ import org.andengine.engine.options.ScreenOrientation;
 import org.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
 import org.andengine.entity.scene.Scene;
 
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.Volley;
 import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.dto.SaveDataDto;
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.core.utils.ResourceUtil;
+import com.kyokomi.core.utils.ZipUtil;
+import com.kyokomi.download.DownloadReceiver;
 import com.kyokomi.srpgquest.R;
 import com.kyokomi.srpgquest.scene.InitialScene;
-import com.kyokomi.srpgquest.scene.MapBattleScene;
+import com.kyokomi.srpgquest.scene.MainScene;
+import com.kyokomi.srpgquest.scene.SandBoxScene;
 import com.kyokomi.srpgquest.scene.SrpgBaseScene;
+import com.kyokomi.vollery.InputStreamRequest;
 
+import android.app.DownloadManager;
+import android.app.DownloadManager.Request;
+import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 
 /**
@@ -42,8 +63,12 @@ public class MainActivity extends MultiSceneActivity {
 		super.onCreate(pSavedInstanceState);
 		// DB初期化
 		initBaseDB();
+		
 		// Gameデータ初期化
 		initGameController();
+
+		// ダウンロード初期化
+//		initDownload();
 	}
 	@Override
 	public EngineOptions onCreateEngineOptions() {
@@ -170,7 +195,7 @@ public class MainActivity extends MultiSceneActivity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		menu.add(Menu.NONE, 0, Menu.NONE, "Clear");
-		menu.add(Menu.NONE, 1, Menu.NONE, "Reset");
+		menu.add(Menu.NONE, 2, Menu.NONE, "SandBox");
 //		menu.add("");
 		return super.onCreateOptionsMenu(menu);
 	}
@@ -181,13 +206,8 @@ public class MainActivity extends MultiSceneActivity {
 			// デバッグクリア
 			getMediaManager().stopPlayingMusic();
 			// 次のシナリオへ
-			if (getEngine().getScene() instanceof SrpgBaseScene) {
-				((SrpgBaseScene) getEngine().getScene()).destory();
-				if (getEngine().getScene() instanceof MapBattleScene) {
-					((MapBattleScene) getEngine().getScene()).clearMapBattle();
-				} else {
-					((SrpgBaseScene) getEngine().getScene()).nextScenario();
-				}
+			if (getEngine().getScene() instanceof MainScene) {
+				((MainScene) getEngine().getScene()).nextScenario();
 			}
 			
 		// ExpとGoldをリセット(DB保存はしません)
@@ -198,7 +218,123 @@ public class MainActivity extends MultiSceneActivity {
 				getGameController().addExp(saveDataDto.getExp() * -1);
 				getGameController().addGold(saveDataDto.getGold() * -1);
 			}
+		} else if (item.getItemId() == 2) {
+			// サンドボックス起動
+			if (getEngine().getScene() instanceof KeyListenScene) {
+				ResourceUtil.getInstance(this).resetAllTexture();
+				SandBoxScene scene = new SandBoxScene(this);
+				getEngine().setScene(scene);
+				// 履歴は残さない
+				appendScene(scene);
+			}
 		}
 		return super.onMenuItemSelected(featureId, item);
 	}
+	
+	
+//	// ----------------------------------------
+//	// 通信関連
+//	// ----------------------------------------
+//	
+//	private DownloadManager mDownloadManager;
+//	private DownloadReceiver mDownloadReceiver;
+//	
+//	private void initDownload() {
+//		mDownloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+//		
+//		IntentFilter filter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
+//		 
+//		mDownloadReceiver = new DownloadReceiver();
+//		
+//		registerReceiver(mDownloadReceiver, filter);
+//	}
+//	
+//	// --- TODO: 非推奨なダウンロード ----
+//	private RequestQueue mQueue;
+//	private Long mDownloadId;
+//	
+////	private void initDownload() {
+////		mProgressDialog = new ProgressDialog(this);
+////		mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+////		mProgressDialog.setCancelable(false);
+////		mProgressDialog.setMessage("ダウンロード中...");
+////	}
+//	
+//	public void startDownload(final ZipDownloadWithUnZipListener listener) {
+//		runOnUiThread(new Runnable() {
+//			@Override
+//			public void run() {
+//				Uri.Builder builder = new Uri.Builder();
+//				builder.scheme("http");
+//				builder.authority("s3-ap-northeast-1.amazonaws.com");
+//				builder.path("srpg-data/hoge.zip");
+//				
+//				Request request = new Request(builder.build());
+//				request.setDestinationInExternalFilesDir(getApplicationContext(), 
+//						Environment.DIRECTORY_DOWNLOADS, "/gfx.zip");
+////				request.setDestinationInExternalFilesDir(getApplicationContext(), 
+////						ZipUtil.getAbsolutePathOnInternalStorage(getApplicationContext(), "/download"), "/gfx.zip");
+//				request.setTitle("gfx");
+//				request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_MOBILE | DownloadManager.Request.NETWORK_WIFI);
+//				request.setMimeType("application/zip");
+//				
+////				mQueue = Volley.newRequestQueue(getApplicationContext());
+////				zipDownloadWithUnZip(listener);
+//				mDownloadId = mDownloadManager.enqueue(request);
+//			}
+//		});		
+//	}
+//	
+//	private ProgressDialog mProgressDialog;
+//	private void showProgressMessage(final String message) {
+//		runOnUiThread(new Runnable() {
+//			@Override
+//			public void run() {
+//				mProgressDialog.setMessage(message);				
+//			}
+//		});
+//	}
+//	
+//	public interface ZipDownloadWithUnZipListener {
+//		public void finish();
+//	}
+//	private void zipDownloadWithUnZip(final ZipDownloadWithUnZipListener listener) {
+//		
+//		String url = "https://s3-ap-northeast-1.amazonaws.com/srpg-data/gfx.zip";
+//		InputStreamRequest request = new InputStreamRequest(url, new Response.Listener<InputStream>() {
+//			@Override
+//			public void onResponse(final InputStream response) {
+//				showProgressMessage("ダウンロード完了");
+//				
+//				runOnUpdateThread(new Runnable() {
+//					@Override
+//					public void run() {
+//						
+//						ZipUtil.unZipInternalStorage(getApplicationContext(), response, 
+//								new ZipUtil.ZipProgressListener() {
+//							@Override
+//							public void progress(int progress) {
+//								showProgressMessage("展開中... " + progress);
+//							}
+//						});
+//						mProgressDialog.dismiss();
+//						showToast("初期ダウンロード処理完了");
+//						
+//						listener.finish();
+//					}
+//				});
+//			}
+//		}, new Response.ErrorListener() {
+//			@Override
+//			public void onErrorResponse(VolleyError error) {
+//				Log.e(TAG, "zipDownloadWithUnZip", error);
+//			}
+//		});
+//		
+//		mProgressDialog.show();
+//		
+//		mQueue.add(request);
+//	}
+//	
+//	private static final String TAG = "MainActivity";
 }

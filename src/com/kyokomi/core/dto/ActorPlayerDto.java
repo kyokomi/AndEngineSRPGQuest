@@ -10,6 +10,9 @@ public class ActorPlayerDto {
 	/** キャライメージのID. */
 	private int imageResId;
 	
+	/** 顔画像のデフォルトID. */
+	private int faceImgId;
+	
 	/** キャラ名. */
 	private String name;
 	
@@ -221,6 +224,14 @@ public class ActorPlayerDto {
 	 */
 	public int getMagicPointLimit() {
 		return magicPointLimit;
+	}
+
+	public int getFaceImgId() {
+		return faceImgId;
+	}
+
+	public void setFaceImgId(int faceImgId) {
+		this.faceImgId = faceImgId;
 	}
 
 	/**

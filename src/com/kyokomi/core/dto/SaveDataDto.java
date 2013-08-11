@@ -15,6 +15,7 @@ public class SaveDataDto {
 	private SceneType sceneType;
 	private Integer sceneId;
 	private String scenarioTitle;
+	private String backImgFilePath;
 	
 	public Integer getSaveId() {
 		return saveId;
@@ -75,5 +76,11 @@ public class SaveDataDto {
 	}
 	public void setScenarioTitle(String scenarioTitle) {
 		this.scenarioTitle = scenarioTitle;
+	}
+	public String getBackImgFilePath() {
+		return backImgFilePath;
+	}
+	public void setBackImgFilePath(String backImgFilePath) {
+		this.backImgFilePath = backImgFilePath;
 	}
 }

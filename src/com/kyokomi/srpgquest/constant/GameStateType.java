@@ -25,6 +25,12 @@ public enum GameStateType {
 	/** エネミーキャラ攻撃先選択中. */
 	ENEMY_ATTACK(23),
 	
+	/** バトル中 */
+	BATTLE(30),
+	
+	/** アニメーション中 */
+	ANIMATION(98),
+	
 	/** 終了. */
 	END(99),
 	;

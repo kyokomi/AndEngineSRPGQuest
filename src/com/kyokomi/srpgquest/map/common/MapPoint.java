@@ -12,12 +12,13 @@ public class MapPoint {
 		this.direction = direction;
 	}
 	
-	public MapPoint(float x, float y, int mapPointX, int mapPointY, float gridSize, MoveDirectionType direction) {
+	public MapPoint(float x, float y, int mapPointX, int mapPointY, float gridSizeX, float gridSizeY, MoveDirectionType direction) {
 		this.mapPointX = mapPointX;
 		this.mapPointY = mapPointY;
 		this.x = x;
 		this.y = y;
-		this.gridSize = gridSize;
+		this.gridSizeX = gridSizeX;
+		this.gridSizeY = gridSizeY;
 		this.direction = direction;
 	}
 	
@@ -28,7 +29,8 @@ public class MapPoint {
 	
 	private float y;
 	
-	private float gridSize;
+	private float gridSizeX;
+	private float gridSizeY;
 	
 	private MoveDirectionType direction;
 	
@@ -85,18 +87,23 @@ public class MapPoint {
 	public void setY(float y) {
 		this.y = y;
 	}
-	/**
-	 * @return the gridSize
-	 */
-	public float getGridSize() {
-		return gridSize;
+	
+	public float getGridSizeX() {
+		return gridSizeX;
 	}
-	/**
-	 * @param gridSize the gridSize to set
-	 */
-	public void setGridSize(float gridSize) {
-		this.gridSize = gridSize;
+
+	public void setGridSizeX(float gridSizeX) {
+		this.gridSizeX = gridSizeX;
 	}
+
+	public float getGridSizeY() {
+		return gridSizeY;
+	}
+
+	public void setGridSizeY(float gridSizeY) {
+		this.gridSizeY = gridSizeY;
+	}
+
 	/**
 	 * @return the direction
 	 */

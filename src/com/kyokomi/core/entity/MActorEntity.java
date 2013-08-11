@@ -20,6 +20,8 @@ public class MActorEntity implements IDatabaseEntity {
 	
 	private Integer imageResId;
 	
+	private Integer faceImgId;
+	
 	public MActorEntity() {
 		
 	}
@@ -29,9 +31,11 @@ public class MActorEntity implements IDatabaseEntity {
 	
 	@Override
 	public void initCursor(Cursor pCursor) {
-		this.actorId      = pCursor.getInt(0);
-		this.actorName    = pCursor.getString(1);
-		this.imageResId   = pCursor.getInt(2);
+		int count = 0;
+		this.actorId      = pCursor.getInt(count); count++;
+		this.actorName    = pCursor.getString(count); count++;
+		this.imageResId   = pCursor.getInt(count); count++;
+		this.faceImgId    = pCursor.getInt(count); count++;
 	}
 	public Integer getActorId() {
 		return actorId;
@@ -52,6 +56,12 @@ public class MActorEntity implements IDatabaseEntity {
 		this.imageResId = imageResId;
 	}
 	
+	public Integer getFaceImgId() {
+		return faceImgId;
+	}
+	public void setFaceImgId(Integer faceImgId) {
+		this.faceImgId = faceImgId;
+	}
 	@Override
 	public ContentValues createContentValues() {
 		// マスターはupdateもinsertもしないから不要

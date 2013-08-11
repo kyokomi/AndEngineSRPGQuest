@@ -1,11 +1,7 @@
 package com.kyokomi.core.scene;
 
-import java.io.IOException;
-
-import org.andengine.audio.sound.Sound;
-import org.andengine.audio.sound.SoundFactory;
-import org.andengine.entity.Entity;
 import org.andengine.entity.IEntity;
+import org.andengine.entity.primitive.Rectangle;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.shape.IAreaShape;
 import org.andengine.entity.sprite.AnimatedSprite;
@@ -24,7 +20,6 @@ import org.andengine.util.color.Color;
 
 import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.utils.ResourceUtil;
-import com.kyokomi.core.manager.MediaManager;
 
 import android.content.Intent;
 import android.graphics.Typeface;
@@ -106,7 +101,7 @@ public abstract class KeyListenScene extends Scene {
 	 * Scene表示.
 	 * @param scene
 	 */
-	protected void showScene(KeyListenScene scene) {
+	public void showScene(KeyListenScene scene) {
 		ResourceUtil.getInstance(getBaseActivity()).resetAllTexture();
 		getBaseActivity().getEngine().setScene(scene);
 		// 履歴は残さない
@@ -116,6 +111,10 @@ public abstract class KeyListenScene extends Scene {
 	// -------------------
 	// 汎用追加メソッド
 	// -------------------
+	
+	public Rectangle createRectangle(float pX, float pY, float pWidth, float pHeight) {
+		return new Rectangle(pX, pY, pWidth, pHeight, getBaseActivity().getVertexBufferObjectManager());
+	}
 	/**
 	 * ボタンの配置.
 	 * @param baseEntity   配置先
@@ -192,7 +191,7 @@ public abstract class KeyListenScene extends Scene {
 	 * 画面破棄.
 	 * detachChildrenとdetachSelfを呼ぶときは別スレッドで行う。
 	 */
-	protected void detachEntity(final IEntity entity) {
+	public void detachEntity(final IEntity entity) {
 		getBaseActivity().runOnUpdateThread(new Runnable() {
 			@Override
 			public void run() {
@@ -200,24 +199,37 @@ public abstract class KeyListenScene extends Scene {
 					// タッチの検知も無効にする
 					if (entity.getChildByIndex(i) instanceof ButtonSprite) {
 						unregisterTouchArea((ButtonSprite) entity.getChildByIndex(i));
+						entity.getChildByIndex(i).detachChildren();
+						entity.getChildByIndex(i).detachSelf();
+					}
+					if (entity.getChildByIndex(i) instanceof Sprite) {
+						Sprite sprite = (Sprite) entity.getChildByIndex(i);
+						sprite.dispose();
+						sprite = null;
 					}
 				}
 				entity.detachChildren();
 				entity.detachSelf();
+				
+				if (entity instanceof Sprite) {
+					Sprite sprite = (Sprite) entity;
+					sprite.dispose();
+					sprite = null;
+				}
 			}
 		});
 	}
 	
 	// ------- サウンド ------
-	protected Sound createSoundFromFileName(String fileName) throws IOException {
-		return SoundFactory.createSoundFromAsset(
-				getBaseActivity().getSoundManager(), 
-				getBaseActivity(), 
-				fileName);
-	}
-	public MediaManager getMediaManager() {
-		return getBaseActivity().getMediaManager();
-	}
+//	protected Sound createSoundFromFileName(String fileName) throws IOException {
+//		return SoundFactory.createSoundFromAsset(
+//				getBaseActivity().getSoundManager(), 
+//				getBaseActivity(), 
+//				fileName);
+//	}
+//	public MediaManager getMediaManager() {
+//		return getBaseActivity().getMediaManager();
+//	}
 //	// ------- BGM -------
 //	protected Music createMusicFromFileName(String fileName) throws IOException {
 //		return MusicFactory.createMusicFromAsset(
@@ -241,6 +253,8 @@ public abstract class KeyListenScene extends Scene {
 	
 	private FPSCounter mFpsCounter;
 	private Text mFpsText;
+	
+	protected static final int FPS_TAG = 999999999;
 	/**
 	 * FPSの画面表示.
 	 */
@@ -248,6 +262,7 @@ public abstract class KeyListenScene extends Scene {
 		mFpsText= new Text(x, y, font, "FPS:0.000000000000000000000000", 
 				getBaseActivity().getVertexBufferObjectManager());
 		mFpsText.setZIndex(999);
+		mFpsText.setTag(FPS_TAG);
 		attachChild(mFpsText);
 
 		mFpsCounter = new AverageFPSCounter(1) {
@@ -276,7 +291,7 @@ public abstract class KeyListenScene extends Scene {
 		mBaseFont = createFont(Typeface.DEFAULT, fontSize, Color.WHITE);
 		defualtFontSize = fontSize;
 	}
-	protected Font getFont() {
+	public Font getFont() {
 		if (mBaseFont == null) {
 			initFont(defualtFontSize);
 		}

@@ -5,11 +5,9 @@ import org.andengine.entity.sprite.ButtonSprite;
 
 import com.kyokomi.core.scene.KeyListenScene;
 import com.kyokomi.core.sprite.MenuRectangle;
-import com.kyokomi.core.sprite.MenuRectangle.MenuDirection;
 import com.kyokomi.srpgquest.constant.LayerZIndexType;
-import com.kyokomi.srpgquest.scene.SrpgBaseScene;
 
-public class MapBattleSelectMenuLayer {
+public class MapBattleSelectMenuLayer extends MenuRectangle {
 	public enum SelectMenuType {
 		SELECT_MENU_ATTACK_TYPE(1, "btn/attack_btn.gif", "btn/attack_btn_p.gif"),
 		SELECT_MENU_MOVE_TYPE(2,   "btn/move_btn.gif",   "btn/move_btn_p.gif"),
@@ -44,20 +42,17 @@ public class MapBattleSelectMenuLayer {
 		}
 	}
 	
-	private MenuRectangle mMenuRectangle;
 	private ButtonSprite.OnClickListener selectMenuOnClickListener;
 	
-	public MapBattleSelectMenuLayer(SrpgBaseScene pBaseScene, ButtonSprite.OnClickListener pSelectMenuOnClickListener) {
+	public MapBattleSelectMenuLayer(KeyListenScene pBaseScene, ButtonSprite.OnClickListener pSelectMenuOnClickListener) {
+		super(pBaseScene.getBaseActivity().getVertexBufferObjectManager());
 		this.selectMenuOnClickListener = pSelectMenuOnClickListener;
 		createSelectMenuSprite(pBaseScene);
 	}
 	
-	public void createSelectMenuSprite(SrpgBaseScene pBaseScene) {
+	public void createSelectMenuSprite(KeyListenScene pBaseScene) {
 		
-		// ベースメニューを作成
-		mMenuRectangle = new MenuRectangle(
-				pBaseScene.getBaseActivity().getVertexBufferObjectManager());
-		mMenuRectangle.setZIndex(LayerZIndexType.POPUP_LAYER.getValue());
+		setZIndex(LayerZIndexType.POPUP_LAYER.getValue());
 		
 		// 各ボタン配置
 		creatButtonWithAddMenu(pBaseScene, SelectMenuType.SELECT_MENU_ATTACK_TYPE);
@@ -66,19 +61,19 @@ public class MapBattleSelectMenuLayer {
 		creatButtonWithAddMenu(pBaseScene, SelectMenuType.SELECT_MENU_CANCEL_TYPE);
 		
 		// 縦表示メニュー生成
-		mMenuRectangle.create(MenuDirection.MENU_DIRECTION_Y);
-		pBaseScene.attachChild(mMenuRectangle);
-		pBaseScene.registerTouchArea(mMenuRectangle);
+		create(MenuDirection.MENU_DIRECTION_Y);
+		pBaseScene.attachChild(this);
+		pBaseScene.registerTouchArea(this);
 
 		// 非表示にする
 		hideSelectMenu();
 	}
 	
-	private ButtonSprite creatButtonWithAddMenu(SrpgBaseScene pBaseScene, SelectMenuType pSelectMenuType) {
+	private ButtonSprite creatButtonWithAddMenu(KeyListenScene pBaseScene, SelectMenuType pSelectMenuType) {
 		ButtonSprite btnSprite = pBaseScene.getResourceButtonSprite(
 				pSelectMenuType.getNormalFileName(), 
 				pSelectMenuType.getPressedFileName());
-		mMenuRectangle.addMenuItem(pSelectMenuType.getValue(), btnSprite);
+		addMenuItem(pSelectMenuType.getValue(), btnSprite);
 		btnSprite.setOnClickListener(selectMenuOnClickListener);
 		return btnSprite;
 	}
@@ -89,32 +84,26 @@ public class MapBattleSelectMenuLayer {
 		setCalcPosition(pBaseScene, x, y);
 		
 		// 攻撃
-		IEntity attackMenuItem = mMenuRectangle.getChildByTag(
-				SelectMenuType.SELECT_MENU_ATTACK_TYPE.getValue());
+		IEntity attackMenuItem = getChildByTag(SelectMenuType.SELECT_MENU_ATTACK_TYPE.getValue());
 		if (attackMenuItem instanceof ButtonSprite) {
 			((ButtonSprite) attackMenuItem).setEnabled(!isAttackDone);
 			((ButtonSprite) attackMenuItem).setVisible(!isAttackDone); // 非活性ボタンがあればイラナイ
 		}
 		// 移動
-		IEntity moveMenuItem = mMenuRectangle.getChildByTag(
-				SelectMenuType.SELECT_MENU_MOVE_TYPE.getValue());
+		IEntity moveMenuItem = getChildByTag(SelectMenuType.SELECT_MENU_MOVE_TYPE.getValue());
 		if (moveMenuItem instanceof ButtonSprite) {
 			((ButtonSprite) moveMenuItem).setEnabled(!isMovedDone);
 			((ButtonSprite) moveMenuItem).setVisible(!isMovedDone); // 非活性ボタンがあればイラナイ
 		}
 		
 		// 表示
-		mMenuRectangle.setEnabled(true);
-		mMenuRectangle.setVisible(true);
+		setEnabled(true);
+		setVisible(true);
 	}
 	public void hideSelectMenu() {
 		// 非表示
-		mMenuRectangle.setEnabled(false);
-		mMenuRectangle.setVisible(false);
-	}
-	
-	public MenuRectangle getMenuRectangle() {
-		return this.mMenuRectangle;
+		setEnabled(false);
+		setVisible(false);
 	}
 	
 	public void setCalcPosition(KeyListenScene pBaseScene, float x, float y) {
@@ -122,17 +111,17 @@ public class MapBattleSelectMenuLayer {
 		if (x < pBaseScene.getWindowWidth() / 2) {
 			x = x + 40;
 		} else {
-			x = x - mMenuRectangle.getWidth();
+			x = x - getWidth();
 		}
 		// 縦の下が画面外に入る場合は補正
-		if ((y + mMenuRectangle.getHeight()) > pBaseScene.getWindowHeight()) {
-			y = pBaseScene.getWindowHeight() - mMenuRectangle.getHeight();
+		if ((y + getHeight()) > pBaseScene.getWindowHeight()) {
+			y = pBaseScene.getWindowHeight() - getHeight();
 		}
 		// 縦の上が画面外に入る場合補正(上の1/4はステータス用)
 		if (y < (pBaseScene.getWindowHeight() / 4)) {
 			y = (pBaseScene.getWindowHeight() / 4);
 		}
-		mMenuRectangle.setX(x);
-		mMenuRectangle.setY(y);
+		setX(x);
+		setY(y);
 	}
 }
