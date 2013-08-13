@@ -9,6 +9,10 @@ import org.andengine.engine.options.ScreenOrientation;
 import org.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
 import org.andengine.entity.scene.Scene;
 
+import com.kyokomi.billing.util.IabHelper;
+import com.kyokomi.billing.util.IabResult;
+import com.kyokomi.billing.util.Inventory;
+import com.kyokomi.billing.util.Purchase;
 import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.dto.SaveDataDto;
 import com.kyokomi.core.scene.KeyListenScene;
@@ -19,10 +23,13 @@ import com.kyokomi.srpgquest.scene.MainScene;
 import com.kyokomi.srpgquest.scene.SandBoxScene;
 import com.kyokomi.srpgquest.scene.SrpgBaseScene;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 
 /**
@@ -35,19 +42,170 @@ import android.view.MenuItem;
  */
 public class MainActivity extends MultiSceneActivity {
 
-	// 画面サイズ
-	private int CAMERA_WIDTH = (int)(800 / 1.0);
-	private int CAMERA_HEIGHT = (int)(480 / 1.0);
+	private static final String TAG = "MainActivity";
+	
+	IabHelper mHelper;
+	
+	private static final String COIN_100 = "com.kyokomi.coin100";
 	
 	@Override
 	protected void onCreate(Bundle pSavedInstanceState) {
 		super.onCreate(pSavedInstanceState);
+
+		// 課金初期化
+		//initBilling();
+        
 		// DB初期化
 		initBaseDB();
 		
 		// Gameデータ初期化
 		initGameController();
 	}
+	
+	private void initBilling() {
+		
+		// 課金初期化
+		// TODO: コミットできねー！のでCONSTRUCT_YOURでコミット
+		// TODO: サーバーからもらう方式かな。。。
+		String base64EncodedPublicKey = "CONSTRUCT_YOUR";
+		mHelper = new IabHelper(this, base64EncodedPublicKey);
+        // TODO: コピペしてんじゃねーぞ判定1
+        if (base64EncodedPublicKey.contains("CONSTRUCT_YOUR")) {
+            throw new RuntimeException("Please put your app's public key in MainActivity.java. See README.");
+        }
+        mHelper.enableDebugLogging(true);
+        Log.d(TAG, "Starting setup.");
+        mHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
+            public void onIabSetupFinished(IabResult result) {
+                Log.d(TAG, "Setup finished.");
+
+                if (!result.isSuccess()) {
+                    return;
+                }
+
+                // Have we been disposed of in the meantime? If so, quit.
+                if (mHelper == null) return;
+
+                // IAB is fully set up. Now, let's get an inventory of stuff we own.
+                Log.d(TAG, "Setup successful. Querying inventory.");
+                mHelper.queryInventoryAsync(mGotInventoryListener);
+            }
+        });
+	}
+	
+    // Listener that's called when we finish querying the items and subscriptions we own
+    IabHelper.QueryInventoryFinishedListener mGotInventoryListener = new IabHelper.QueryInventoryFinishedListener() {
+        public void onQueryInventoryFinished(IabResult result, Inventory inventory) {
+            Log.d(TAG, "Query inventory finished.");
+
+            // Have we been disposed of in the meantime? If so, quit.
+            if (mHelper == null) return;
+
+            // Is it a failure?
+            if (result.isFailure()) {
+                return;
+            }
+
+            Log.d(TAG, "Query inventory was successful.");
+
+            /*
+             * Check for items we own. Notice that for each purchase, we check
+             * the developer payload to see if it's correct! See
+             * verifyDeveloperPayload().
+             */
+
+            Log.d(TAG, "Initial inventory query finished; enabling main UI.");
+        }
+    };
+    
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d(TAG, "onActivityResult(" + requestCode + "," + resultCode + "," + data);
+        if (mHelper == null) return;
+
+        // Pass on the activity result to the helper for handling
+        if (!mHelper.handleActivityResult(requestCode, resultCode, data)) {
+            // not handled, so handle it ourselves (here's where you'd
+            // perform any handling of activity results not related to in-app
+            // billing...
+            super.onActivityResult(requestCode, resultCode, data);
+        }
+        else {
+            Log.d(TAG, "onActivityResult handled by IABUtil.");
+        }
+    }
+    
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        // very important:
+        Log.d(TAG, "Destroying helper.");
+        if (mHelper != null) {
+            mHelper.dispose();
+            mHelper = null;
+        }
+    }
+    
+    // (arbitrary) request code for the purchase flow
+    static final int RC_REQUEST = 10001;
+    
+    // User clicked the "Buy Gas" button
+    public void onBuyCoin() {
+        Log.d(TAG, "Upgrade button clicked; launching purchase flow for upgrade.");
+//      setWaitScreen(true);
+
+      /* TODO: for security, generate your payload here for verification. See the comments on
+       *        verifyDeveloperPayload() for more info. Since this is a SAMPLE, we just use
+       *        an empty string, but on a production app you should carefully generate this. */
+      String payload = "";
+
+      // TODO: 購入呼び出し
+      mHelper.launchPurchaseFlow(this, COIN_100, RC_REQUEST,
+    		  new IabHelper.OnIabPurchaseFinishedListener() {
+				
+				@Override
+				public void onIabPurchaseFinished(IabResult result, Purchase info) {
+		            Log.d(TAG, "Purchase finished: " + result + ", purchase: " + info);
+
+		            // if we were disposed of in the meantime, quit.
+		            if (mHelper == null) return;
+
+		            if (result.isFailure()) {
+//		                complain("Error purchasing: " + result);
+//		                setWaitScreen(false);
+		                return;
+		            }
+//		            if (!verifyDeveloperPayload(info)) {
+//		                complain("Error purchasing. Authenticity verification failed.");
+//		                setWaitScreen(false);
+//		                return;
+//		            }
+
+		            Log.d(TAG, "Purchase successful.");
+
+		            if (info.getSku().equals(COIN_100)) {
+		                // bought the premium upgrade!
+		                Log.d(TAG, "Purchase is premium upgrade. Congratulating user.");
+//		                alert("Thank you for upgrading to premium!");
+//		                mIsPremium = true;
+//		                updateUi();
+//		                setWaitScreen(false);
+		            }
+		            else {
+		                // bought the infinite gas subscription
+		                Log.d(TAG, "Infinite error.");
+		            }
+				}
+			}, payload);
+    }
+    
+    // ------------------------------- ここまで課金 -----------------------------
+   
+	// 画面サイズ
+	private int CAMERA_WIDTH = (int)(800 / 1.0);
+	private int CAMERA_HEIGHT = (int)(480 / 1.0);
+
 	@Override
 	public EngineOptions onCreateEngineOptions() {
 		// サイズを指定し描画範囲をインスタンス化

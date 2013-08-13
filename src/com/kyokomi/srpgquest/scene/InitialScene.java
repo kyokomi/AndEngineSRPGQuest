@@ -15,6 +15,7 @@ import com.kyokomi.core.dto.ActorPlayerDto;
 import com.kyokomi.core.dto.SaveDataDto;
 import com.kyokomi.core.sprite.CommonWindowRectangle;
 import com.kyokomi.core.logic.ActorPlayerLogic;
+import com.kyokomi.srpgquest.MainActivity;
 import com.kyokomi.srpgquest.logic.TextLogic;
 import com.kyokomi.srpgquest.sprite.PlayerStatusRectangle;
 import com.kyokomi.srpgquest.sprite.PlayerStatusRectangle.PlayerStatusRectangleType;
@@ -190,6 +191,7 @@ public class InitialScene extends SrpgBaseScene
 	@Override
 	public void onClick(ButtonSprite pButtonSprite, float pTouchAreaLocalX,
 			float pTouchAreaLocalY) {
+		
 //		// 効果音を再生
 //		getMediaManager().play(SoundType.BTN_PRESSED_SE);
 //		// BGMなどをリセット
@@ -200,10 +202,12 @@ public class InitialScene extends SrpgBaseScene
 			showScene(new MainScene(getBaseActivity()));
 			break;
 		case NEW_GAME: // NewGame
-			getBaseActivity().getGameController().start(getBaseActivity());
-			showScene(new MainScene(getBaseActivity()));
+			// TODO: 一旦コメントアウト
+			((MainActivity) getBaseActivity()).onBuyCoin();
+//			getBaseActivity().getGameController().start(getBaseActivity());
+//			showScene(new MainScene(getBaseActivity()));
 			break;
-		}	
+		}
 	}
 
 	@Override
