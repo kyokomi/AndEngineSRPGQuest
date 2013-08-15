@@ -13,6 +13,7 @@ import com.kyokomi.billing.util.IabHelper;
 import com.kyokomi.billing.util.IabResult;
 import com.kyokomi.billing.util.Inventory;
 import com.kyokomi.billing.util.Purchase;
+import com.kyokomi.billing.util.SkuDetails;
 import com.kyokomi.core.activity.MultiSceneActivity;
 import com.kyokomi.core.dto.SaveDataDto;
 import com.kyokomi.core.scene.KeyListenScene;
@@ -29,7 +30,6 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 
 
 /**
@@ -87,6 +87,7 @@ public class MainActivity extends MultiSceneActivity {
                 if (mHelper == null) return;
 
                 // IAB is fully set up. Now, let's get an inventory of stuff we own.
+                // IABは、完全に設定されています。さて、我々が所有してもののインベントリを取得しましょう。
                 Log.d(TAG, "Setup successful. Querying inventory.");
                 mHelper.queryInventoryAsync(mGotInventoryListener);
             }
@@ -107,13 +108,48 @@ public class MainActivity extends MultiSceneActivity {
             }
 
             Log.d(TAG, "Query inventory was successful.");
-
+            
+            // 商品一覧チェック
+            SkuDetails details = inventory.getSkuDetails(COIN_100);
+            Log.d(TAG, "Title: " + details.getTitle());
+            
             /*
              * Check for items we own. Notice that for each purchase, we check
              * the developer payload to see if it's correct! See
              * verifyDeveloperPayload().
              */
 
+            /**
+             * TODO：購入の開発ペイロードが正しいことを確認します。
+             * それは、購入を開始したときに送られたものと同じものになります。
+             * 
+             * 警告：購入を開始するときにローカルでランダムな文字列を生成し、それをここで検証には良い方法のように思えるかもしれませんが、
+             * 上にあるため、これは、ユーザが1つのデバイス上のアイテムを購入した後、
+             * 別のデバイス上のアプリを使用した場合に失敗します他のデバイスは、あなたが最初に生成されるランダムな文字列にアクセスできません。
+             * 
+             * だから、良い開発者ペイロードは、次の特性があります。
+             * 
+             *  1。二つの異なるユーザーがアイテムを購入した場合、ペイロードは1ユーザの購入は別のユーザに再生することができないように、
+             *  それらの間で異なっている。
+             *  
+             *  2。アプリ購入の流れを（そう、そのユーザーが所有している他のデバイス上の1つのデバイスの仕事上のユーザーが購入したアイテム）が
+             *  開始されたものではなかった場合でも、ペイロードは、あなたがそれを検証できるようなものでなければならない。
+             *  
+             *  アプリのインストール全体で開発ペイロードを格納し、検証するために、独自のサーバを使用することをお勧めします。
+             */
+            
+            /**
+             * 検討:
+             * base64Keyをどこで持つか。。。
+             * 
+             * 購入時:
+             *  1.サーバーにプロダクト一覧を貰う（android <- サーバー）
+             *  2.ユーザーが購入を選択
+             *  3.サーバーに購入予定を送信し、requestCodeを貰う(int)（android -> サーバー）
+             *  4.購入処理呼び出し（android -> googlePlay）
+             *  5.onIabPurchaseFinishedで結果を受け取る
+             *  6.サーバーにresultCodeとか送信してチェック（android -> サーバー）
+             */
             Log.d(TAG, "Initial inventory query finished; enabling main UI.");
         }
     };

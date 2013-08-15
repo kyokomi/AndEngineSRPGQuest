@@ -1,4 +1,4 @@
-package com.kyokomi.vollery;
+package com.kyokomi.vollery.toolbox;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
