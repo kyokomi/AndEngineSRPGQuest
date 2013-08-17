@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.andengine.entity.IEntity;
 import org.andengine.entity.primitive.Rectangle;
+import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.sprite.TiledSprite;
 import org.andengine.entity.text.Text;
 import org.andengine.opengl.font.Font;
@@ -44,14 +45,14 @@ public class PlayerStatusRectangle extends Rectangle {
 	// スキル
 //	private Text mSkillHeaderText;
 	private Rectangle mSkillIconRectangle;
-	private List<TiledSprite> mSkillIconSpriteList;
+	private List<Sprite> mSkillIconSpriteList;
 	// 装備
 //	private Text mEquipHeaderText;
 	private Rectangle mEquipIconRectangle;
 	private Text mWeaponNameText;
-	private TiledSprite mWeaponIconSprite;
+	private Sprite mWeaponIconSprite;
 	private Text mAccessoryNameText;
-	private TiledSprite mAccessoryIconSprite;
+	private Sprite mAccessoryIconSprite;
 	
 	/** リフレッシュ用に全テキストを管理. */
 	private List<Text> mTextList;
@@ -143,12 +144,13 @@ public class PlayerStatusRectangle extends Rectangle {
 		
 		if (mActorPlayerDto.getSkillDtoList() != null && !mActorPlayerDto.getSkillDtoList().isEmpty()) {
 			// スキルアイコン
-			mSkillIconSpriteList = new ArrayList<TiledSprite>();
+			mSkillIconSpriteList = new ArrayList<Sprite>();
 			float x = skillHeadX;
 			float y = skillHeadY;
 			for (ActorPlayerSkillDto skillDto : mActorPlayerDto.getSkillDtoList()) {
-				TiledSprite skillIcon = SRPGSpriteUtil.getIconSetTiledSprite(pBaseScene);
-				skillIcon.setCurrentTileIndex(skillDto.getSkillImgResId());
+//				TiledSprite skillIcon = SRPGSpriteUtil.getIconSetTiledSprite(pBaseScene);
+				Sprite skillIcon = SRPGSpriteUtil.getIconSetSprite(pBaseScene, skillDto.getSkillImgResId());
+				//skillIcon.setCurrentTileIndex(skillDto.getSkillImgResId());
 				skillIcon.setPosition(x, y);
 				mSkillIconRectangle.attachChild(skillIcon);
 				mSkillIconSpriteList.add(skillIcon);
@@ -181,8 +183,9 @@ public class PlayerStatusRectangle extends Rectangle {
 		ActorPlayerEquipDto equipDto = mActorPlayerDto.getEquipDto();
 		if (equipDto != null) {
 			// 武器アイコン
-			mWeaponIconSprite = SRPGSpriteUtil.getIconSetTiledSprite(pBaseScene);
-			mWeaponIconSprite.setCurrentTileIndex(equipDto.getWeaponImgResId());
+			mWeaponIconSprite = SRPGSpriteUtil.getIconSetSprite(pBaseScene, equipDto.getWeaponImgResId());
+//			mWeaponIconSprite = SRPGSpriteUtil.getIconSetTiledSprite(pBaseScene);
+//			mWeaponIconSprite.setCurrentTileIndex(equipDto.getWeaponImgResId());
 			mWeaponIconSprite.setPosition(equipHeadX, equipHeadY);
 			mEquipIconRectangle.attachChild(mWeaponIconSprite);
 			// 武器テキスト
@@ -193,8 +196,9 @@ public class PlayerStatusRectangle extends Rectangle {
 			mWeaponNameText.setY(mWeaponNameText.getY() - mWeaponNameText.getHeight() / 2);
 			attachChildText(mEquipIconRectangle, mWeaponNameText);
 			// アクセサリーアイコン
-			mAccessoryIconSprite = SRPGSpriteUtil.getIconSetTiledSprite(pBaseScene);
-			mAccessoryIconSprite.setCurrentTileIndex(equipDto.getAccessoryImgResId());
+			mAccessoryIconSprite = SRPGSpriteUtil.getIconSetSprite(pBaseScene, equipDto.getAccessoryImgResId());
+//			mAccessoryIconSprite = SRPGSpriteUtil.getIconSetTiledSprite(pBaseScene);
+//			mAccessoryIconSprite.setCurrentTileIndex(equipDto.getAccessoryImgResId());
 			mAccessoryIconSprite.setPosition(mWeaponIconSprite.getX(), mWeaponIconSprite.getY() + mWeaponIconSprite.getHeight());
 			mEquipIconRectangle.attachChild(mAccessoryIconSprite);
 			// アクセサリーテキスト
@@ -283,7 +287,7 @@ public class PlayerStatusRectangle extends Rectangle {
 	public void skillVisible(boolean pVisible) {
 		// スキル
 		mSkillIconRectangle.setVisible(pVisible);
-		for (TiledSprite sprite : mSkillIconSpriteList) {
+		for (Sprite sprite : mSkillIconSpriteList) {
 			sprite.setVisible(pVisible);
 		}
 	}

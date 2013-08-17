@@ -26,6 +26,8 @@ import org.andengine.opengl.texture.region.TiledTextureRegion;
 import org.andengine.ui.activity.BaseGameActivity;
 import org.andengine.util.FileUtils;
 
+import com.kyokomi.andengine.opengl.texture.atlas.bitmap.source.AssetBitmapFitSizeTextureAtlasSource;
+
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
@@ -115,7 +117,47 @@ public class ResourceUtil {
 		return s;
 	}
 	
+	/**
+	 * 指定ファイルのSpriteを取得.（パフォーマンス）
+	 * TiledSpriteの画像ファイルの指定したx,y位置だけのテクスチャを作成してSpriteとして返す
+	 * coulme,rowで切り出したいがTiledSpriteでの切替が不要な場合に使用する。
+	 * 再生性しないようにプールしている。
+	 * @param fileName ファイル名
+	 * @return Sprite
+	 */
+	public Sprite getSprite(String fileName, int size, int x, int y) {
+		String poolFileName = fileName + x + "_" + y;
+		
+		// 同名のファイルからITextureRegionが生成済みであれば再利用
+		if (textureRegionPool.containsKey(poolFileName)) {
+			Sprite s = new Sprite(0, 0, textureRegionPool.get(poolFileName), 
+					gameActivity.getVertexBufferObjectManager());
+			s.setBlendFunction(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
+			return s;
+		}
+		
+		// サイズを自動的に取得する為にBitmapとして読み込み
+		
+		ITextureRegion btr = null;
+		btr = getTextureRegion(fileName, size, x, y);
+		
+		Sprite s = new Sprite(0, 0, btr, gameActivity.getVertexBufferObjectManager());
+		s.setBlendFunction(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
+		
+		// 再生性を防ぐ為、プールの登録
+		textureRegionPool.put(poolFileName, btr);
+		
+		return s;
+	}
 	
+	/**
+	 * ファイル名と縦横のコマ数を指定してTiledSpriteを取得する。
+	 * プールするキーがfileNameなので注意
+	 * @param fileName
+	 * @param column
+	 * @param row
+	 * @return
+	 */
 	public TiledSprite getTiledSprite(String fileName, int column, int row) {
 		if (tiledTextureRegionPool.containsKey(fileName)) {
 			TiledSprite s = new TiledSprite(0, 0, 
@@ -282,6 +324,23 @@ public class ResourceUtil {
 			pow2Value *= 2;
 		}
 		return pow2Value;
+	}
+	
+	private ITextureRegion getTextureRegion(String fileName, int spriteSize, int spriteX, int spriteY) {
+		int pTextureX = spriteSize * spriteX;
+		int pTextureY = spriteSize * spriteY;
+		
+		// Bitmapのサイズを基に2のべき乗の値を取得、BitmapTextureAtlasの生成
+		BitmapTextureAtlas bta = new BitmapTextureAtlas(gameActivity.getTextureManager(), 
+				getTwoPowerSize(spriteSize), getTwoPowerSize(spriteSize),
+				TextureOptions.BILINEAR_PREMULTIPLYALPHA);
+		gameActivity.getEngine().getTextureManager().loadTexture(bta);
+
+		IBitmapTextureAtlasSource ats = AssetBitmapFitSizeTextureAtlasSource.create(
+				gameActivity.getAssets(), "gfx/" + fileName,
+				pTextureX, pTextureY, spriteSize, spriteSize);
+		
+		return BitmapTextureAtlasTextureRegionFactory.createFromSource(bta, ats, 0, 0);
 	}
 	
 	private ITextureRegion getTextureRegion(String fileName, BitmapTextureAtlas bta) throws IOException {

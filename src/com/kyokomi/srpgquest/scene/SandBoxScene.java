@@ -25,6 +25,7 @@ import com.kyokomi.srpgquest.scene.part.BattlePart;
 import com.kyokomi.srpgquest.scene.part.BattlePart.BattleInitType;
 import com.kyokomi.srpgquest.scene.part.BattlePart.BattleStateType;
 import com.kyokomi.srpgquest.utils.MapGridUtil;
+import com.kyokomi.srpgquest.utils.SRPGSpriteUtil;
 
 import android.graphics.Point;
 import android.graphics.PointF;
@@ -47,15 +48,6 @@ public class SandBoxScene extends SrpgBaseScene
 		
 		// FPS表示
 		initFps(getWindowWidth() - 100, getWindowHeight() - 20, getFont());
-		
-		// バトルテスト
-		ActorPlayerLogic actorPlayerLogic = new ActorPlayerLogic();
-		
-		mBattlePart = new BattlePart(this);
-		ActorPlayerDto player = actorPlayerLogic.createActorPlayerDto(this, 1);
-		ActorPlayerDto enemy = actorPlayerLogic.createActorPlayerDto(this, 2);
-		
-		mBattlePart.init(player, enemy, BattleInitType.PLAYER_ATTACK);
 	}
 
 	@Override
@@ -76,6 +68,31 @@ public class SandBoxScene extends SrpgBaseScene
 				getBaseActivity().getVertexBufferObjectManager());
 		mapBaseRect.setTag(9999999); // TODO:どうにかして
 		mapBaseRect.setColor(Color.TRANSPARENT);
+		
+//		initSrpg(mapBaseRect);
+		
+//		initBattle();
+		
+		Sprite sprite = SRPGSpriteUtil.getIconSetSprite(this, 274);
+		sprite.setPosition(getWindowWidth()/2,  getWindowHeight()/2);
+		attachChild(sprite);
+		attachChild(mapBaseRect);
+		
+		// Sceneのタッチリスナーを登録
+		setOnSceneTouchListener(this);
+	}
+
+	private void initBattle() {
+		// バトルテスト
+		ActorPlayerLogic actorPlayerLogic = new ActorPlayerLogic();
+		
+		mBattlePart = new BattlePart(this);
+		ActorPlayerDto player = actorPlayerLogic.createActorPlayerDto(this, 1);
+		ActorPlayerDto enemy = actorPlayerLogic.createActorPlayerDto(this, 2);
+		
+		mBattlePart.init(player, enemy, BattleInitType.PLAYER_ATTACK);
+	}
+	private void initSrpg(Rectangle mapBaseRect) {
 		
 		// 選択カーソル生成
 		Sprite cursorSprite = getResourceSprite("grid128.png");
@@ -157,13 +174,7 @@ public class SandBoxScene extends SrpgBaseScene
 			}
 		}
 		mapBaseRect.sortChildren();
-		
-		attachChild(mapBaseRect);
-		
-		// Sceneのタッチリスナーを登録
-		setOnSceneTouchListener(this);
 	}
-
 	@Override
 	public void initSoundAndMusic() {
 		// 効果音をロード
