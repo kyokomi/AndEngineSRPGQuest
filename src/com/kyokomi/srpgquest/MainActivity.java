@@ -8,7 +8,14 @@ import org.andengine.engine.options.EngineOptions;
 import org.andengine.engine.options.ScreenOrientation;
 import org.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
 import org.andengine.entity.scene.Scene;
+import org.andengine.util.DialogUtils;
 
+import com.google.ads.Ad;
+import com.google.ads.AdListener;
+import com.google.ads.AdRequest;
+import com.google.ads.AdSize;
+import com.google.ads.AdView;
+import com.google.ads.AdRequest.ErrorCode;
 import com.kyokomi.billing.util.IabHelper;
 import com.kyokomi.billing.util.IabResult;
 import com.kyokomi.billing.util.Inventory;
@@ -24,12 +31,20 @@ import com.kyokomi.srpgquest.scene.MainScene;
 import com.kyokomi.srpgquest.scene.SandBoxScene;
 import com.kyokomi.srpgquest.scene.SrpgBaseScene;
 
+import android.annotation.TargetApi;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
+import android.app.FragmentManager;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 
 
 /**
@@ -54,6 +69,8 @@ public class MainActivity extends MultiSceneActivity {
 
 		// 課金初期化
 		//initBilling();
+		// 広告初期化
+		//initAdMob();
         
 		// DB初期化
 		initBaseDB();
@@ -62,6 +79,43 @@ public class MainActivity extends MultiSceneActivity {
 		initGameController();
 	}
 	
+	// ----------- 広告 ------------------
+	AdView mAdView;
+	
+	private void initAdMob() {
+		mAdView = new AdView(this, AdSize.BANNER, "a1520f83371e652");
+		mAdView.setAdListener(new AdListener() {
+			@Override
+			public void onReceiveAd(Ad arg0) {
+				Log.d(TAG, "onReceiveAd " + arg0);
+			}
+			@Override
+			public void onPresentScreen(Ad arg0) {
+				Log.d(TAG, "onPresentScreen " + arg0);
+			}
+			@Override
+			public void onLeaveApplication(Ad arg0) {
+				Log.d(TAG, "onLeaveApplication " + arg0);
+			}
+			@Override
+			public void onFailedToReceiveAd(Ad arg0, ErrorCode arg1) {
+				Log.d(TAG, "onFailedToReceiveAd " + arg1);
+			}
+			@Override
+			public void onDismissScreen(Ad arg0) {
+				Log.d(TAG, "onDismissScreen " + arg0);
+			}
+		});
+		
+		RelativeLayout layout = (RelativeLayout)findViewById(R.id.mainlayout);
+		layout.addView(mAdView);
+		AdRequest adRequest = new AdRequest();
+		adRequest.addTestDevice(AdRequest.TEST_EMULATOR);            // エミュレータ
+		// 端末のデバイスIDはlogcatに出ます
+		mAdView.loadAd(adRequest);
+	}
+	
+	// ------------ 課金 --------------
 	private void initBilling() {
 		
 		// 課金初期化
