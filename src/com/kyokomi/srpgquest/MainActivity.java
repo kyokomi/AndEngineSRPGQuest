@@ -8,7 +8,6 @@ import org.andengine.engine.options.EngineOptions;
 import org.andengine.engine.options.ScreenOrientation;
 import org.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
 import org.andengine.entity.scene.Scene;
-import org.andengine.util.DialogUtils;
 
 import com.google.ads.Ad;
 import com.google.ads.AdListener;
@@ -16,6 +15,7 @@ import com.google.ads.AdRequest;
 import com.google.ads.AdSize;
 import com.google.ads.AdView;
 import com.google.ads.AdRequest.ErrorCode;
+import com.google.android.gcm.GCMRegistrar;
 import com.kyokomi.billing.util.IabHelper;
 import com.kyokomi.billing.util.IabResult;
 import com.kyokomi.billing.util.Inventory;
@@ -31,19 +31,12 @@ import com.kyokomi.srpgquest.scene.MainScene;
 import com.kyokomi.srpgquest.scene.SandBoxScene;
 import com.kyokomi.srpgquest.scene.SrpgBaseScene;
 
-import android.annotation.TargetApi;
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.DialogFragment;
-import android.app.FragmentManager;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 
@@ -59,14 +52,13 @@ public class MainActivity extends MultiSceneActivity {
 
 	private static final String TAG = "MainActivity";
 	
-	IabHelper mHelper;
-	
-	private static final String COIN_100 = "com.kyokomi.coin100";
-	
 	@Override
 	protected void onCreate(Bundle pSavedInstanceState) {
 		super.onCreate(pSavedInstanceState);
 
+		// push通知
+		initGCMPush();
+		
 		// 課金初期化
 		//initBilling();
 		// 広告初期化
@@ -77,6 +69,29 @@ public class MainActivity extends MultiSceneActivity {
 		
 		// Gameデータ初期化
 		initGameController();
+	}
+	
+	// ----------- GCM ------------------
+	// TODO: これもどっかからもらわないと？アプリに埋め込むのはなんかなぁ
+	public static final String SENDER_ID = "766558119619";
+	
+	private void initGCMPush() {
+		/*
+		 * GCM への登録に成功してもサーバへの登録 ID の送信に失敗する可能性がありますが、その場合はリトライしなければなりません。
+		 */
+		
+		GCMRegistrar.checkDevice(MainActivity.this);
+		GCMRegistrar.checkManifest(MainActivity.this);
+		final String regId = GCMRegistrar.getRegistrationId(this);
+		if (regId.equals("")) {
+			// 未登録時
+			GCMRegistrar.register(this, SENDER_ID);
+		} else {
+			// 登録時
+			Log.d(TAG, "Already registered regId = " + regId);
+		}
+		String regId2 = GCMRegistrar.getRegistrationId(this);
+		Log.d(TAG, "regId2 = " + regId2);
 	}
 	
 	// ----------- 広告 ------------------
@@ -116,6 +131,10 @@ public class MainActivity extends MultiSceneActivity {
 	}
 	
 	// ------------ 課金 --------------
+	IabHelper mHelper;
+	
+	private static final String COIN_100 = "com.kyokomi.coin100";
+
 	private void initBilling() {
 		
 		// 課金初期化
