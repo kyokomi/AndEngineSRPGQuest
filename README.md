@@ -1,5 +1,13 @@
 ## AndroidのSRPGゲーム
 
+初の個人ゲーム開発でガッツリ作ったけど風呂敷を広げすぎて、収集つかなくなって開発中断した。。。
+
+SRPGがクォータビューになってるのが、すごくプログラミング的には楽しかったけど収集がつかなくなった。
+
+SQLiteはゴリゴリでORM使いたいなーと思いながら頑張ってた。
+
+Scene制御でメモリリークする原因がわからなくて気合で1Scene内でNode？Spriteとかremoveするコード書いてるのが印象的。
+
 ### 利用しているライブラリ
 - [AndEngine](https://github.com/nicolasgramlich/AndEngine)
 
@@ -17,4 +25,17 @@
 くどいけど素材は二次利用禁止。
 
 ソースコードは、MITです。
+
+### 画面イメージ
+
+![](https://github.com/kyokomi/AndEngineSRPGQuest/blob/master/work/s1.png)
+
+![](https://github.com/kyokomi/AndEngineSRPGQuest/blob/master/work/s2.png)
+
+![](https://github.com/kyokomi/AndEngineSRPGQuest/blob/master/work/s3.png)
+
+![](https://github.com/kyokomi/AndEngineSRPGQuest/blob/master/work/s4.png)
+
+![](https://github.com/kyokomi/AndEngineSRPGQuest/blob/master/work/s5.png)
+
 
