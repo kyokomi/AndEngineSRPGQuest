@@ -28,14 +28,14 @@ Scene制御でメモリリークする原因がわからなくて気合で1Scene
 
 ### 画面イメージ
 
-![](https://github.com/kyokomi/AndEngineSRPGQuest/blob/master/work/s1.png)
+![](https://raw.githubusercontent.com/kyokomi/AndEngineSRPGQuest/master/work/s1.png)
 
-![](https://github.com/kyokomi/AndEngineSRPGQuest/blob/master/work/s2.png)
+![](https://raw.githubusercontent.com/kyokomi/AndEngineSRPGQuest/master/work/s2.png)
 
-![](https://github.com/kyokomi/AndEngineSRPGQuest/blob/master/work/s3.png)
+![](https://raw.githubusercontent.com/kyokomi/AndEngineSRPGQuest/master/work/s3.png)
 
-![](https://github.com/kyokomi/AndEngineSRPGQuest/blob/master/work/s4.png)
+![](https://raw.githubusercontent.com/kyokomi/AndEngineSRPGQuest/master/work/s4.png)
 
-![](https://github.com/kyokomi/AndEngineSRPGQuest/blob/master/work/s5.png)
+![](https://raw.githubusercontent.com/kyokomi/AndEngineSRPGQuest/master/work/s5.png)
 
 
