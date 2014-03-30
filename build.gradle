@@ -1,0 +1,82 @@
+// keystoreの署名情報
+def keyStoreProperties = new Properties()
+file("keystores/release.keystore.properties").withInputStream {
+    stream -> keyStoreProperties.load(stream)
+}
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:0.9.+'
+    }
+}
+project(':modules:andengine') {
+    buildscript {
+        repositories {
+            mavenCentral()
+        }
+        dependencies {
+            classpath 'com.android.tools.build:gradle:0.9.+'
+        }
+    }
+}
+
+apply plugin: 'android'
+
+dependencies {
+    compile files('libs/android-support-v4.jar')
+    compile project(':modules:andengine')
+}
+
+allprojects {
+  tasks.withType(Compile) {
+    options.encoding = 'UTF-8'
+  }
+}
+
+android {
+    compileSdkVersion 19
+    buildToolsVersion "19.0.2"
+
+    defaultConfig {
+       versionCode 1
+       versionName "1.0"
+       minSdkVersion 9
+       targetSdkVersion 10
+    }
+  
+    signingConfigs {
+        release {
+            storeFile file(keyStoreProperties.storeFile)
+            storePassword keyStoreProperties.storePassword
+            keyAlias keyStoreProperties.keyAlias
+            keyPassword keyStoreProperties.keyPassword
+        }
+    }
+
+    buildTypes {
+        debug {
+          packageNameSuffix ".debug"
+        }
+        release {
+            signingConfig signingConfigs.release
+            runProguard true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+        }
+    }
+  
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+            java.srcDirs = ['src']
+            resources.srcDirs = ['src']
+            aidl.srcDirs = ['src']
+            renderscript.srcDirs = ['src']
+            res.srcDirs = ['res']
+            assets.srcDirs = ['assets']
+        }
+    }
+}
+
